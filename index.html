@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
@@ -2756,7 +2756,664 @@ PROPS_BUPYEONG[2].phaseHistory = [];
 // 각 분석: { code, name, date, q1(요청 요약), q2(조건), sub(예산), region, properties }
 // 현재 분석은 mutable globals REGION·properties 로 노출 → 기존 렌더 함수 그대로 재사용
 // ============================================================
+// ===== 서울 추천 5선 (연봉1억·현금2억, 한도 7.4억) — 2026-06-01 =====
+const REGION_SEOUL = {
+  name: '서울 외곽·중저가 권역',
+  pop: '서울시 인구 약 933만명 — 외곽 자치구(강북·구로·중랑·금천·도봉)는 인구 정체~소폭 감소',
+  migration: '서울 전체 순유출 지속(경기 전출) — 단, 가격 메리트 지역은 실거주 유입',
+  sgis: '자치구별 상이 — 강북·도봉·금천은 노후 주거 비중 높고 정비사업 진행 중',
+  reb: '서울 아파트 매매 2024~25 회복 후 2026 완만 — 강남권 강세 vs 외곽 약보합 양극화',
+  src: 'KOSIS 인구 · 한국부동산원 R-ONE(서울 종합·정성) · ECOS 금리',
+  cycle: {
+    maemae: '서울 종합 강세', jeonse: '완만', gap: '강남권 > 외곽 (양극화)',
+    position: '회복기 — 외곽·중저가는 회복 초입(저점 대비 일부 반등, 전고점 미달)',
+    caution: '서울 외곽 중저가는 강남권 대비 회복이 늦어 <strong>전고점(2021) 대비 여전히 할인 구간</strong>. 금리 부담(주담대 4.31%·상승세)과 대출규제로 추격매수보다 실거주 관점 분할 접근이 유리. 정비사업·교통호재 실현 여부가 개별 단지 향방을 가른다.'
+  },
+  supply: {
+    demand: '서울 만성 공급부족(실수요 풍부) ↔ 외곽은 경기 신도시로 수요 일부 유출',
+    pressure: '서울 신규 분양 제한적(택지 고갈) — 외곽 대규모 입주 충격은 낮음',
+    unsold: '서울 미분양 전국 대비 낮음(외곽 일부 잔여) — 급락 위험 제한적',
+    verdict: '서울은 구조적 공급부족으로 <strong>하방은 비교적 견조</strong>하나, 외곽 중저가는 강남권 대비 <strong>상승 탄력이 약하고 경기권과 경쟁</strong>. 실거주 안정성은 높고 단기 시세차익 기대는 보수적으로.',
+    unsoldByScale: {
+      period: '202603', total: 65283, src: 'KOSIS 규모별 미분양(DT_MLTM_2080) · 전국 민간부문',
+      rows: [
+        { label: '40㎡이하', val: 1853, pct: 2.8 },
+        { label: '40~60㎡', val: 5968, pct: 9.1 },
+        { label: '60~85㎡', val: 45483, pct: 69.7 },
+        { label: '85㎡초과', val: 11979, pct: 18.4 }
+      ],
+      note: '전국 미분양의 <strong>69.7%가 60~85㎡</strong>에 집중 — 본 5개 단지 전용 84㎡(=60~85㎡ 구간)는 전국적으로 환금성 경쟁이 치열한 평형. 단 서울 자체 미분양은 낮아 지역 수급은 양호.'
+    }
+  },
+  rates: {
+    base: 2.5, basePeriod: '202604', baseTrend: '동결', baseDelta12M: 0,
+    mortgage: 4.31, mortgagePeriod: '202604', mortgageTrend: '상승', mortgageDelta12M: 0.44,
+    src: '한국은행 ECOS — 기준금리 722Y001 · 주택담보대출(신규취급액) 121Y006',
+    note: '기준금리 12개월 <strong>2.5% 동결</strong>이나 주담대는 <strong>3.96%→4.31%(+0.44%p)</strong> 상승. 연봉 1억·현금 2억 기준 DSR40%·스트레스 대출 약 5.7억 → <strong>매수 한도 ≈ 7.4억</strong>. 금리 인하 전환 시 외곽 회복 탄력 강화.',
+    baseSeries: [2.5,2.5,2.5,2.5,2.5,2.5,2.5,2.5],
+    mortgageSeries: [3.96,3.98,4.17,4.23,4.29,4.32,4.34,4.31],
+    seriesLabels: ['25.09','25.10','25.11','25.12','26.01','26.02','26.03','26.04']
+  },
+  regulated: '본 5개 자치구(강북·구로·중랑·금천·도봉) = <strong>전 지역 비규제</strong>(조정·투기과열 아님) → LTV 70%·전매·거주요건 완화로 실거주 진입 용이. 현행 세법: 종부세법(2026-01-01)·소득세법(2026-04-21)·지방세법(2026-04-24).'
+};
+
+// 공통 빌더 — 반복 필드 축약
+function mkScenario(b, ba, be) { return { bull: b, base: ba, bear: be }; }
+
+const PROPS_SEOUL = [
+  // ───────────────────── RANK 01 · SK북한산시티 (강북 미아) ─────────────────────
+  {
+    idx: 0,
+    geo: { lat: 37.6179760, lng: 127.0126307, facilities: [
+      { t:'subway', n:'솔샘역 우이신설선', lat:37.6190, lng:127.0103, d:'266m' },
+      { t:'subway', n:'북한산보국문역', lat:37.6125, lng:127.0086, d:'754m' },
+      { t:'school', n:'미아동 학교군', lat:37.6165, lng:127.0150, d:'0.4km' } ] },
+    local: {
+      transit: '솔샘역(우이신설선) 266m·도보 3분 · 강남역 직선 13.4km (경전철, 도심 환승 1회)',
+      medical: '인근 의원·약국 밀집 · 강북삼성·고대안암 차량권',
+      commercial: '미아 뉴타운 생활상권 — 이마트·롯데마트 차량권, 도보 생활편의 양호'
+    },
+    name: 'SK북한산시티',
+    subtitle: '서울 강북구 미아동 · 2004년 (21년차) · 3,830세대 대단지 · 전용 84㎡ 기준',
+    address: '서울특별시 강북구 미아동', built: '2004년', households: '3,830세대 (매머드 단지)',
+    sizes: '59 / 84 m²', builder: 'SK건설',
+    priceRange: '6.7 ~ 7.4억 (84㎡)', lastDeal: '약 7.0억 (84㎡, 2025~26 실거래)',
+    jeonse: { ratio: '≈ 62%', gap: '약 2.7억', deal: '전용 84㎡ 전세 약 4.3~4.5억 (추정)', note: '대단지 임대수요 풍부해 전세가율 견조 → 갭·하방 부담 보통. (전세 표본은 계약 전 실거래 확인 권장)' },
+    tradeDetail: { vol:'대단지로 거래 활발(월 다건)', buyer:'실수요 중심(대출규제 무풍지대로 진입 용이)', recent:'84㎡ 6.7~7.4억대', insight:'3,830세대 유동성 최상 — 급매·일반매 선택폭 넓어 협상·환금 유리.' },
+    kaptInfo: { code:'(K-apt 매칭 다수·PK 미확정)', use:'2004', units:'3,830세대 다수동', heat:'개별난방(추정)', hall:'계단식(추정)', mgmt:'위탁관리', builder:'SK건설', floors:'고층', struct:'철근콘크리트', park:'세대당 약 1.0대(추정)', elev:'동별', cctv:'설치', ev:'확인 불가', extra:'대규모 커뮤니티·상가' },
+    tax: { acq:'약 770~1,000만원 (취득세율 ~1.1%+, 6~9억 구간)', hold:'종부세 비과세(1주택) · 재산세 연 약 80~130만원', gain:'2년 보유 시 양도세 비과세(12억↓ 1주택·비규제 거주요건 없음)' },
+    pricePerPyeong: '약 2,060 만원 (84㎡ 공급 34평 기준)',
+    maintenance: '월 약 18~22만원 (대단지 규모의 경제)', parking: '세대당 약 1.0대(추정)', far: '대단지 중층',
+    propertyPrice: '7.0 억', purchaseCap: '7.4 억',
+    margin: '+0.40', fitPercent: '95%', fitClass: 'good',
+    affordCapMax: '7.4', affordBarMax: '10', kaptPK: '',
+    totalScore: 79,
+    verdict: '보류', verdictEng: 'HOLD', verdictClass: 'v-hold', verdictTone: 'hold',
+    verdictDetail: '종합 79점 · 3,830세대 솔샘역세권 대단지로 실거주·환금성 최상, 단 경전철뿐이라 도심 직결 약함 — 한도 내 안정형',
+    decisionGates: [
+      { state:'go', label:'💰 재무 여력', verdict:'여유', basis:'7.0억 vs 한도 7.4억(+0.4억). 적합도 95%·비규제 LTV70%로 진입 용이.', src:'affordability' },
+      { state:'go', label:'📈 시장 국면', verdict:'회복 초입', basis:'서울 외곽 2024~25 회복 후 전고점 미달 할인 구간 — 추가 하방 제한적.', src:'cycle' },
+      { state:'go', label:'🏗️ 공급 압박', verdict:'낮음', basis:'서울 구조적 공급부족 · 미아 일대 신규 대량입주 없음.', src:'KOSIS+청약홈' },
+      { state:'go', label:'🏆 단지 본질', verdict:'강점', basis:'3,830세대 매머드 단지 — 유동성·관리 규모의 경제·커뮤니티 우수.', src:'complex' },
+      { state:'warn', label:'🚇 입지·교통', verdict:'보통', basis:'솔샘역 266m 초역세권이나 우이신설 경전철뿐 — 도심·강남 환승 1회 이상.', src:'transit' },
+      { state:'warn', label:'🎓 학군', verdict:'보통', basis:'강북구 초 학급당 19.5·중 23.7(중등 다소 과밀). 평범한 학군.', src:'NEIS+학교알리미' }
+    ],
+    decisionRule: '🔴 0건 · 🟡 2건(교통·학군) → <strong>보류</strong>. 대단지 실거주·하방 안정은 후보 중 최상이나, 1순위가 시세차익이면 경전철 한계로 상승 탄력은 보수적. <strong>실거주 중심이면 적극 추천</strong>.',
+    scoreAttribution: {
+      axes: [
+        { name:'A. 입지', weight:25, score:78, contrib:'19.5', srcLabel:'솔샘역 266m · <span class="api">KRIC</span> 단일역(우이신설) 도심 직통 없음' },
+        { name:'B. 학군', weight:20, score:72, contrib:'14.4', srcLabel:'<span class="api">학교알리미</span> 강북 초 19.5·중 23.7' },
+        { name:'C. 단지', weight:20, score:85, contrib:'17.0', srcLabel:'3,830세대 대단지(2004) — 유동성·관리 우수' },
+        { name:'D. 시세', weight:20, score:80, contrib:'16.0', srcLabel:'84㎡ 7.0억 · 전고점 대비 할인 + 대단지 환금성' },
+        { name:'E. 호재·악재', weight:15, score:75, contrib:'11.3', srcLabel:'미아 뉴타운 생활권 성숙 · 동북선 경전철(계획)' }
+      ],
+      adjustments: [
+        { dir:'up', text:'<span class="adj-api">단지규모</span> 3,830세대 → 환금성·유동성 <b>+3</b> (급매·일반매 선택폭)' },
+        { dir:'down', text:'<span class="adj-api">KRIC</span> 솔샘역 단일역·우이신설 경전철 → 강남/도심 무환승 직통 없음, 교통축 <b>-2</b>' },
+        { dir:'neutral', text:'<span class="adj-api">ECOS</span> 주담대 4.31% → 7.0억 대출 5.0억 월 약 248만(적합도 95%)' }
+      ]
+    },
+    score5: { loc:78, sch:72, cpx:85, prc:80, news:75 },
+    score5Desc: {
+      loc:'솔샘역(우이신설) 266m 초역세권이나 경전철뿐 — 도심 환승 필요. 강남 13.4km.',
+      sch:'강북구 초 학급당 19.5명·중 23.7명. 미아 학교군, 평범한 학군.',
+      cpx:'SK건설 3,830세대 매머드 단지(2004, 21년차). 유동성·관리 규모의 경제 최상.',
+      prc:'84㎡ 약 7.0억 — 전고점(2021) 대비 할인 구간. 대단지 환금성으로 시세 견조.',
+      news:'미아뉴타운 생활권 성숙 · 동북선 경전철 등 교통 개선 기대.'
+    },
+    schoolsNearby: { elem:'미아동 인근 초등 (학교알리미 구 평균 학급당 19.5명)', mid:'강북구 중등 (구 평균 학급당 23.7명·다소 과밀)', high:'<strong style="color:#D4A574">인근 일반고</strong> (정확 배정은 학구도 확인)' },
+    transit: {
+      nearest:'솔샘', line:'우이신설선', walkM:266, walkMin:3, grade:'단일역', gangnamKm:13.4, lines:['우이신설선'],
+      hubStops:[ {hub:'강남', stops:null, line:'우이신설→환승', direct:false}, {hub:'시청', stops:null, line:'우이신설→환승', direct:false}, {hub:'여의도', stops:null, line:'환승', direct:false} ],
+      summary:'솔샘역 우이신설선 <strong>단일역</strong> · 도보 3분(266m) · 경전철이라 도심·강남 무환승 직통 없음(환승 1회+)',
+      stationPath:['북한산우이','솔밭공원','4·19민주묘지','가오리','화계','<b>솔샘(본)</b>','북한산보국문','정릉','성신여대입구','보문','신설동'],
+      adj:'KRIC 솔샘역 단일역·우이신설 경전철 → 도심 직통 없음, 교통 토폴로지 보정 −2', src:'KRIC 레일포털 · 카카오 로컬'
+    },
+    schoolDepth: {
+      src:'학교알리미 OpenAPI 학교현황(구 평균 AVG_FGR_SUM) · 진학률 WebSearch',
+      elem:[ {name:'강북구 초등(구 평균)', dist:'인근', found:'공립', classSize:19.5, students:null, classes:null} ],
+      mid:[ {name:'강북구 중등(구 평균)', dist:'인근', found:'공·사립 혼재', classSize:23.7, students:null, classes:null} ],
+      high:[ {name:'인근 일반고', dist:'-', found:'공립', type:'일반고', note:'정확 배정 학구도 확인'} ],
+      note:'강북구 초 학급당 19.5명(과밀 아님)·중 23.7명(다소 높음). 명문 학군은 아니며 실거주 통학 적정.'
+    },
+    kosisUnsold: { summary:'서울 미분양 전국 대비 낮음(외곽 일부 잔여)', interpretation:'<strong style="color:#3FB950">대체로 양호</strong> — 서울 구조적 공급부족으로 하방 견조. 강북 일대 신규 대량입주 없음.' },
+    applyhomeSupply: { level:'low', summary:'미아 일대 향후 대규모 신규 분양 제한적 — 공급 압박 낮음', recentList:[] },
+    headlines: [
+      ['재무 적합','84㎡ 7.0억 vs 한도 7.4억 → <strong>+0.4억 여유</strong>, 적합도 95%. 비규제 LTV70%로 진입 수월. 월 부담 약 248만원.'],
+      ['단지 본질','솔샘역 초역세권 <strong>3,830세대 매머드 단지</strong> — 실거주·환금성 후보 중 최상. 단 경전철뿐이라 도심 직결 약점.'],
+      ['시장 환경','서울 외곽 회복 초입(전고점 대비 할인) + 미아뉴타운 생활권 성숙. 시세차익보다 <strong>실거주 안정</strong> 가치.']
+    ],
+    affordSummary: [
+      ['자기자본 (현금)','2.0 억',null], ['LTV 70% / DSR 40%','5.0 억',null], ['DSR 스트레스 한도','5.7 억','divider'],
+      ['→ 매수 한도','7.4 억',null], ['SK북한산시티 84㎡','7.0 억',null], ['→ 적합','+0.4 억',null,'good'],
+      ['취득세','약 800 만원',null], ['월 부담','약 248 만원',null]
+    ],
+    affordMarkerPct: 70,
+    affordText:'84㎡ 7.0억은 매수 한도 7.4억 내(<strong>+0.4억 여유</strong>). 현금 2억 + 대출 5.0억(DSR 한도 5.7억 내). 적합도 95%로 무리 없는 진입.',
+    affordText2:'<strong style="color:#D4A574">실무 권고:</strong> 대단지 환금성으로 실거주·하방 안정 최상. 시세차익 1순위면 경전철 한계 감안, 동북선 등 교통 호재 실현을 모니터링.',
+    newsScore:'+12', currentPhase:1,
+    phaseDescFull:'서울 외곽 <span class="now">① 회복</span> — 2023 저점 후 완만 반등, 전고점(2021) 미달. 대단지 환금성으로 시세 견조하나 상승 탄력은 강남권 대비 보수적.',
+    scenarios: mkScenario(
+      { prob:30, y1:'7.3억', y1r:'+4%', y3:'7.9억', y3r:'+13%', y5:'8.6억', y5r:'+23%', desc:'금리 인하 + 동북선 등 교통 개선 + 미아 정비 성숙 → 전고점 회복.' },
+      { prob:50, y1:'7.1억', y1r:'+1%', y3:'7.5억', y3r:'+7%', y5:'7.9억', y5r:'+13%', desc:'서울 동조 완만 상승. 대단지 프리미엄으로 외곽 평균 상회.' },
+      { prob:20, y1:'6.7억', y1r:'-4%', y3:'6.6억', y3r:'-6%', y5:'6.8억', y5r:'-3%', desc:'금리 고착 + 경기 둔화 + 외곽 수요 경기권 이탈.' }
+    ),
+    expected: { y1:'7.09억', y1r:'+1.3%', y3:'7.42억', y3r:'+6.0%', y5:'7.82억', y5r:'+11.7%' },
+    targetPrice:'6.8 ~ 7.0억 (84㎡ 협상)', priceCap:'7.4억 (84㎡)',
+    avgListing:'6.7 ~ 7.4억 (84㎡)', recentDeal:'약 7.0억 (84㎡, 25~26)', similarAvg:'6.9억 (미아 84㎡)', negotiation:'1,000 ~ 2,000 만원',
+    chart: {
+      labels:['23.1Q','23.2Q','23.3Q','23.4Q','24.1Q','24.2Q','24.3Q','24.4Q','25.1Q','25.2Q','25.3Q','25.4Q','26.1Q','26.2Q'],
+      price:[62000,60000,61000,62000,63000,64000,65000,66000,67000,68000,69000,69500,70000,70000],
+      district:[63000,61000,62000,63000,64000,65000,66000,67000,68000,69000,70000,70500,71000,71000],
+      districtLabel:'강북구 84㎡ 평균(지표·정성)', localLabel:'SK북한산시티 84㎡(지표)',
+      compareLabels:['SK북한산(본)','미아뉴타운','길음뉴타운','월계','창동'],
+      compareData:[2060, 2200, 2900, 2400, 2600],
+      quarterlyVolume:[8,6,7,9,10,11,12,13,12,14,13,12,11,10],
+      volume:[10,11,12,13,12,14,13,12,11,10,9,10], monthLabels:['25.07','25.08','25.09','25.10','25.11','25.12','26.01','26.02','26.03','26.04','26.05','26.06']
+    },
+    news: {
+      positive:[
+        { strength:'high', date:'2026-05-31', title:'3,830세대 대단지 — 대출규제 무풍지대로 실수요 진입 활발', source:'헤럴드경제', url:'https://biz.heraldcorp.com/article/10561989', note:'비규제·중저가로 실거주 매수세 유입. 환금성 후보 중 최상.' },
+        { strength:'mid', date:'2026-06-01', title:'미아뉴타운 생활권 성숙 + 동북선 경전철 계획', source:'WebSearch', url:'', note:'중장기 교통·정주여건 개선 기대.' }
+      ],
+      negative:[
+        { strength:'mid', date:'2026-06-01', title:'우이신설 경전철뿐 — 도심·강남 무환승 직통 없음', source:'KRIC 분석', url:'', note:'환승 1회+로 출퇴근 열위. 9호선·2호선 라인 대비 약점.' },
+        { strength:'low', date:'2026-06-01', title:'2004년 준공 21년차 — 일부 노후', source:'시스템 분석', url:'', note:'리모델링·장기수선 점검 필요.' }
+      ]
+    }
+  },
+  // ───────────────────── RANK 02 · 구로두산 (구로) ─────────────────────
+  {
+    idx: 1,
+    geo: { lat: 37.4951409, lng: 126.8783442, facilities: [
+      { t:'subway', n:'구일역 1호선', lat:37.4990, lng:126.8720, d:'775m' },
+      { t:'subway', n:'구로역 1호선', lat:37.5030, lng:126.8818, d:'975m' },
+      { t:'school', n:'구로동 학교군', lat:37.4965, lng:126.8800, d:'0.4km' } ] },
+    local: {
+      transit: '구일역(1호선) 775m·도보 10분 / 구로역 975m · 강남역 직선 13.2km · 시청 1호선 직통 10정거장',
+      medical: '고려대구로병원 차량권 · 인근 의원·약국 밀집',
+      commercial: '신도림 디큐브·현대백화점 권역 인접 · 구로디지털단지 직주근접 상권'
+    },
+    name: '구로두산',
+    subtitle: '서울 구로구 구로동 · 1998년 (27년차) · 1,285세대 · 전용 84㎡ 기준',
+    address: '서울특별시 구로구 구로동', built: '1998년', households: '1,285세대',
+    sizes: '59 / 84 m²', builder: '두산건설',
+    priceRange: '6.45 ~ 7.0억 (84㎡)', lastDeal: '6.45억 (84㎡, 최근 실거래)',
+    jeonse: { ratio: '≈ 65%', gap: '약 2.3억', deal: '전용 84㎡ 전세 약 4.2~4.4억 (추정)', note: '구로디지털·신도림 직주근접 임대수요로 전세가율 견조 → 갭·하방 부담 최소.' },
+    tradeDetail: { vol:'중대형 단지로 거래 꾸준', buyer:'실수요+직주근접 1~2인 가구', recent:'84㎡ 6.45~7.0억', insight:'구로디지털단지 배후로 임대·실거주 수요 안정. 예산 여유 후보 중 최대.' },
+    kaptInfo: { code:'(K-apt 매칭·PK 미확정)', use:'1998', units:'1,285세대', heat:'개별난방(추정)', hall:'계단식(추정)', mgmt:'위탁관리', builder:'두산건설', floors:'중고층', struct:'철근콘크리트', park:'세대당 약 1.0대(추정)', elev:'동별', cctv:'설치', ev:'확인 불가', extra:'단지 상가·관리사무소' },
+    tax: { acq:'약 700~900만원 (취득세율 ~1.1%, 6~7억 구간)', hold:'종부세 비과세(1주택) · 재산세 연 약 75~120만원', gain:'2년 보유 시 양도세 비과세(12억↓ 1주택·비규제)' },
+    pricePerPyeong: '약 1,900 만원 (84㎡ 34평 기준)',
+    maintenance: '월 약 16~20만원', parking: '세대당 약 1.0대(추정)', far: '중고층',
+    propertyPrice: '6.5 억', purchaseCap: '7.4 억',
+    margin: '+0.90', fitPercent: '88%', fitClass: 'good',
+    affordCapMax: '7.4', affordBarMax: '10', kaptPK: '',
+    totalScore: 77,
+    verdict: '보류', verdictEng: 'HOLD', verdictClass: 'v-hold', verdictTone: 'hold',
+    verdictDetail: '종합 77점 · 구일역·구로디지털 직주근접 1,285세대, 1호선 시청 직통 — 예산 여유 최대(+0.9억)의 가성비 실거주형',
+    decisionGates: [
+      { state:'go', label:'💰 재무 여력', verdict:'여유 최대', basis:'6.5억 vs 한도 7.4억(+0.9억). 후보 중 예산 여유 가장 큼 — 잔금·리모델링 여력.', src:'affordability' },
+      { state:'go', label:'📈 시장 국면', verdict:'회복 초입', basis:'서울 외곽 회복 + 구로디지털 배후 실수요 견조.', src:'cycle' },
+      { state:'go', label:'🏗️ 공급 압박', verdict:'낮음', basis:'구로·신도림 신규 대량입주 제한적. 서울 공급부족.', src:'KOSIS+청약홈' },
+      { state:'warn', label:'🏆 단지 본질', verdict:'보통', basis:'1998년 27년차 구축 1,285세대 — 리모델링·재건축 연한 접근 중이나 동력은 보통.', src:'complex' },
+      { state:'go', label:'🚇 입지·교통', verdict:'강점', basis:'구일역 1호선 + 구로디지털 직주근접 + 시청 직통 10정거장 + 신도림 환승 권역.', src:'transit' },
+      { state:'warn', label:'🎓 학군', verdict:'보통', basis:'구로구 초 19.3·중 22.6. 평범한 학군.', src:'NEIS+학교알리미' }
+    ],
+    decisionRule: '🔴 0건 · 🟡 2건(단지·학군) → <strong>보류</strong>. 직주근접·예산 여유(+0.9억) 강점의 <strong>가성비 실거주형</strong>. 27년차 구축이라 시세차익은 정비사업 진척에 의존 — 실거주+장기 보유 적합.',
+    scoreAttribution: {
+      axes: [
+        { name:'A. 입지', weight:25, score:82, contrib:'20.5', srcLabel:'구일역 1호선 · <span class="api">KRIC</span> 시청 10정거장 직통 · 구로디지털 직주근접' },
+        { name:'B. 학군', weight:20, score:70, contrib:'14.0', srcLabel:'<span class="api">학교알리미</span> 구로 초 19.3·중 22.6' },
+        { name:'C. 단지', weight:20, score:78, contrib:'15.6', srcLabel:'1,285세대(1998) — 중대형, 정비 연한 접근' },
+        { name:'D. 시세', weight:20, score:82, contrib:'16.4', srcLabel:'84㎡ 6.45억 · 예산 여유 최대 + 직주근접 수요' },
+        { name:'E. 호재·악재', weight:15, score:70, contrib:'10.5', srcLabel:'구로디지털·신도림 권역 성숙 · G밸리 확장' }
+      ],
+      adjustments: [
+        { dir:'up', text:'<span class="adj-api">KRIC</span> 구일역 1호선 시청 10정거장 직통 → 도심 접근 양호, 교통축 <b>+2</b>' },
+        { dir:'up', text:'<span class="adj-api">예산</span> 6.45억 vs 한도 7.4억 → 여유 +0.9억(잔금·리모델링 여력) 재무 <b>+2</b>' },
+        { dir:'down', text:'<span class="adj-api">준공</span> 1998년 27년차 → 단지 본질 <b>-3</b> (노후·시세차익 동력은 정비 의존)' }
+      ]
+    },
+    score5: { loc:82, sch:70, cpx:78, prc:82, news:70 },
+    score5Desc: {
+      loc:'구일역(1호선) 775m + 구로디지털단지 직주근접. 시청 1호선 직통 10정거장. 강남 13.2km.',
+      sch:'구로구 초 학급당 19.3명·중 22.6명. 평범한 학군.',
+      cpx:'두산건설 1,285세대(1998, 27년차). 중대형 단지, 정비 연한 접근 중.',
+      prc:'84㎡ 6.45억 — 후보 중 예산 여유 최대(+0.9억). 직주근접 수요로 하방 견조.',
+      news:'구로디지털단지(G밸리) 확장 · 신도림 권역 상업 성숙.'
+    },
+    schoolsNearby: { elem:'구로동 인근 초등 (구 평균 학급당 19.3명)', mid:'구로구 중등 (구 평균 22.6명)', high:'<strong style="color:#D4A574">인근 일반고</strong> (배정 학구도 확인)' },
+    transit: {
+      nearest:'구일', line:'1호선', walkM:775, walkMin:10, grade:'단일역', gangnamKm:13.2, lines:['1호선'],
+      hubStops:[ {hub:'시청', stops:10, line:'1호선', direct:true}, {hub:'강남', stops:null, line:'1→2 환승(신도림)', direct:false}, {hub:'여의도', stops:null, line:'1→환승', direct:false} ],
+      summary:'구일역 1호선 <strong>단일역</strong>(시청 직통 10정거장) · 도보 10분(775m) · 구로디지털 직주근접 + 신도림 환승 권역',
+      stationPath:['신도림','구로','<b>구일(본)</b>','개봉','오류동','역곡','부천','구로디지털단지(2호선 인접)'],
+      adj:'KRIC 구일역 1호선 시청 10정거장 직통 → 도심 접근 양호, 교통축 +2', src:'KRIC 레일포털 · 카카오 로컬'
+    },
+    schoolDepth: {
+      src:'학교알리미 OpenAPI 학교현황(구 평균) · 진학률 WebSearch',
+      elem:[ {name:'구로구 초등(구 평균)', dist:'인근', found:'공립', classSize:19.3, students:null, classes:null} ],
+      mid:[ {name:'구로구 중등(구 평균)', dist:'인근', found:'공·사립', classSize:22.6, students:null, classes:null} ],
+      high:[ {name:'인근 일반고', dist:'-', found:'공립', type:'일반고', note:'배정 학구도 확인'} ],
+      note:'구로구 초 19.3·중 22.6명으로 과밀 아님. 명문 학군은 아니나 직주근접 실거주에 적합.'
+    },
+    kosisUnsold: { summary:'서울 미분양 낮음 · 구로 신규 입주 제한적', interpretation:'<strong style="color:#3FB950">양호</strong> — 구로디지털 배후 실수요 + 서울 공급부족으로 하방 견조.' },
+    applyhomeSupply: { level:'low', summary:'구로·신도림 향후 대규모 신규 분양 제한적', recentList:[] },
+    headlines: [
+      ['재무 적합','84㎡ 6.45억 vs 한도 7.4억 → <strong>+0.9억 여유(후보 최대)</strong>. 적합도 88%. 잔금·리모델링 여력 확보. 월 부담 약 223만원.'],
+      ['단지 본질','구일역 + <strong>구로디지털단지 직주근접</strong> 1,285세대. 27년차 구축이라 시세차익은 정비 진척 의존, 실거주·가성비 강점.'],
+      ['시장 환경','G밸리 확장·신도림 권역 성숙. 서울 외곽 회복 + 직주근접 수요로 <strong>하방 견조</strong>.']
+    ],
+    affordSummary: [
+      ['자기자본 (현금)','2.0 억',null], ['LTV 70% / DSR 40%','4.5 억',null], ['DSR 스트레스 한도','5.7 억','divider'],
+      ['→ 매수 한도','7.4 억',null], ['구로두산 84㎡','6.5 억',null], ['→ 적합','+0.9 억',null,'good'],
+      ['취득세','약 720 만원',null], ['월 부담','약 223 만원',null]
+    ],
+    affordMarkerPct: 65,
+    affordText:'84㎡ 6.45억은 한도 7.4억 내(<strong>+0.9억 여유, 후보 최대</strong>). 대출 4.5억만으로 충분 — 월 부담 약 223만원으로 가장 가볍다.',
+    affordText2:'<strong style="color:#D4A574">실무 권고:</strong> 직주근접·예산 여유의 가성비 실거주형. 27년차라 장기 보유·정비 기대로 접근. 잔금 여력으로 인테리어 개선 권장.',
+    newsScore:'+10', currentPhase:1,
+    phaseDescFull:'서울 외곽 <span class="now">① 회복</span> — 직주근접 수요로 하방 견조. 27년차 구축이라 상승보다 안정·실거주 가치 중심.',
+    scenarios: mkScenario(
+      { prob:28, y1:'6.8억', y1r:'+5%', y3:'7.4억', y3r:'+14%', y5:'8.0억', y5r:'+24%', desc:'G밸리 확장 + 정비사업 가시화 + 금리 인하.' },
+      { prob:52, y1:'6.6억', y1r:'+2%', y3:'6.9억', y3r:'+7%', y5:'7.3억', y5r:'+12%', desc:'직주근접 수요로 완만 상승. 구축 한계로 외곽 평균.' },
+      { prob:20, y1:'6.2억', y1r:'-4%', y3:'6.1억', y3r:'-6%', y5:'6.3억', y5r:'-3%', desc:'금리 고착 + 구축 기피 + 경기권 신축 경쟁.' }
+    ),
+    expected: { y1:'6.55억', y1r:'+1.5%', y3:'6.86억', y3r:'+6.4%', y5:'7.25억', y5r:'+11.5%' },
+    targetPrice:'6.3 ~ 6.5억 (84㎡ 협상)', priceCap:'7.4억 (84㎡)',
+    avgListing:'6.45 ~ 7.0억 (84㎡)', recentDeal:'6.45억 (84㎡)', similarAvg:'6.6억 (구로 84㎡)', negotiation:'1,000 ~ 2,000 만원',
+    chart: {
+      labels:['23.1Q','23.2Q','23.3Q','23.4Q','24.1Q','24.2Q','24.3Q','24.4Q','25.1Q','25.2Q','25.3Q','25.4Q','26.1Q','26.2Q'],
+      price:[58000,56000,57000,58000,59000,60000,61000,62000,63000,63500,64000,64500,64500,65000],
+      district:[60000,58000,59000,60000,61000,62000,63000,64000,65000,65500,66000,66500,67000,67000],
+      districtLabel:'구로구 84㎡ 평균(지표·정성)', localLabel:'구로두산 84㎡(지표)',
+      compareLabels:['구로두산(본)','신도림','개봉','고척','오류'],
+      compareData:[1900, 3200, 2300, 2400, 2000],
+      quarterlyVolume:[6,5,6,7,8,9,9,10,9,11,10,9,8,8],
+      volume:[9,10,11,10,12,11,10,9,8,9,8,8], monthLabels:['25.07','25.08','25.09','25.10','25.11','25.12','26.01','26.02','26.03','26.04','26.05','26.06']
+    },
+    news: {
+      positive:[
+        { strength:'high', date:'2026-06-01', title:'구로디지털단지(G밸리) 직주근접 — 임대·실거주 수요 안정', source:'WebSearch', url:'', note:'배후 일자리로 환금성·전세 견조. 예산 여유 최대.' },
+        { strength:'mid', date:'2026-06-01', title:'신도림 디큐브·현대백화점 권역 인접 생활 인프라', source:'WebSearch', url:'', note:'상업·교통 결절 인접으로 생활 편의 양호.' }
+      ],
+      negative:[
+        { strength:'mid', date:'2026-06-01', title:'1998년 27년차 구축 — 시세차익은 정비 진척 의존', source:'시스템 분석', url:'', note:'재건축 동력 보통. 단기 차익 기대는 보수적.' },
+        { strength:'low', date:'2026-06-01', title:'구일역 도보 10분 — 초역세권은 아님', source:'KRIC/카카오', url:'', note:'역까지 775m, 1호선 단일.' }
+      ]
+    }
+  },
+  // ───────────────────── RANK 03 · 신내데시앙 (중랑 신내) ─────────────────────
+  {
+    idx: 2,
+    geo: { lat: 37.6174862, lng: 127.1041164, facilities: [
+      { t:'subway', n:'신내역 6호선·경춘선', lat:37.6128, lng:127.1004, d:'536m' },
+      { t:'subway', n:'봉화산역 6호선', lat:37.6166, lng:127.0921, d:'1126m' },
+      { t:'school', n:'신내동 학교군', lat:37.6180, lng:127.1050, d:'0.4km' } ] },
+    local: {
+      transit: '신내역(6호선·경춘선 환승) 536m·도보 7분 · 강남역 직선 14.9km · 도심은 6호선 환승',
+      medical: '서울의료원 인접(공공 종합병원) · 인근 의원·약국',
+      commercial: '신내지구 계획 생활상권 · 망우·상봉 권역 인접'
+    },
+    name: '신내데시앙',
+    subtitle: '서울 중랑구 신내동 · 준공연도 확인필요 · 세대수 확인필요 · 전용 84㎡ 기준',
+    address: '서울특별시 중랑구 신내동', built: '확인 필요(2000년대 추정)', households: '확인 필요(중대형)',
+    sizes: '59 / 84 m²', builder: '태영건설(데시앙)',
+    priceRange: '7.0 ~ 7.2억 (84㎡)', lastDeal: '약 7.1억 (84㎡, 2025 기준 호갱노노)',
+    jeonse: { ratio: '≈ 63%', gap: '약 2.6억', deal: '전용 84㎡ 전세 약 4.4~4.6억 (추정)', note: '서울의료원·신내지구 정주여건으로 전세 견조. 갭 부담 보통.' },
+    tradeDetail: { vol:'확인 필요', buyer:'실수요 중심(추정)', recent:'84㎡ 약 7.1억(호갱노노)', insight:'신내역 더블 역세권 + 녹지로 실거주 만족도 높음. 단 세대수·준공 추가 확인 필요.' },
+    kaptInfo: { code:'(K-apt: 신내데시앙포레 후보·PK 미확정)', use:'확인 필요', units:'확인 필요', heat:'개별난방(추정)', hall:'계단식(추정)', mgmt:'위탁관리', builder:'태영건설', floors:'중고층(추정)', struct:'철근콘크리트', park:'확인 필요', elev:'동별', cctv:'설치', ev:'확인 불가', extra:'확인 필요' },
+    tax: { acq:'약 780~1,000만원 (취득세율 6~9억 구간)', hold:'종부세 비과세(1주택) · 재산세 연 약 80~130만원', gain:'2년 보유 시 양도세 비과세(12억↓ 1주택·비규제)' },
+    pricePerPyeong: '약 2,090 만원 (84㎡ 34평 기준·추정)',
+    maintenance: '월 약 18~22만원(추정)', parking: '확인 필요', far: '중고층(추정)',
+    propertyPrice: '7.1 억', purchaseCap: '7.4 억',
+    margin: '+0.30', fitPercent: '96%', fitClass: 'warning',
+    affordCapMax: '7.4', affordBarMax: '10', kaptPK: '',
+    totalScore: 74,
+    verdict: '보류', verdictEng: 'HOLD', verdictClass: 'v-hold', verdictTone: 'hold',
+    verdictDetail: '종합 74점 · 신내역 6호선·경춘선 더블 + 녹지·서울의료원 정주여건 양호, 단 세대수·준공 미확인 + 도심 직통 약함',
+    decisionGates: [
+      { state:'go', label:'💰 재무 여력', verdict:'적정', basis:'7.1억 vs 한도 7.4억(+0.3억). 적합도 96%이나 여유 작음 — 협상 권장.', src:'affordability' },
+      { state:'go', label:'📈 시장 국면', verdict:'회복 초입', basis:'서울 외곽 회복 + 신내지구 정주 안정.', src:'cycle' },
+      { state:'go', label:'🏗️ 공급 압박', verdict:'낮음', basis:'신내·망우 일대 대규모 신규 입주 제한적.', src:'KOSIS+청약홈' },
+      { state:'warn', label:'🏆 단지 본질', verdict:'확인 필요', basis:'세대수·준공연도 미확정 — 계약 전 K-apt·실거래로 확정 필수.', src:'complex' },
+      { state:'warn', label:'🚇 입지·교통', verdict:'보통', basis:'신내역 더블(6호선·경춘) 536m이나 도심 무환승 직통 없음. 6호선 우회.', src:'transit' },
+      { state:'go', label:'🎓 학군', verdict:'양호', basis:'중랑구 초 19.4·중 21.4(중등 비교적 쾌적). 신내지구 학교군.', src:'NEIS+학교알리미' }
+    ],
+    decisionRule: '🔴 0건 · 🟡 2건(단지 확인·교통) → <strong>보류</strong>. 더블 역세권·녹지·중등 쾌적 학급은 강점이나 <strong>세대수·준공 미확정</strong>이 핵심 미결. 계약 전 단지 팩트 확정 필수.',
+    scoreAttribution: {
+      axes: [
+        { name:'A. 입지', weight:25, score:75, contrib:'18.8', srcLabel:'신내역 더블(6호선·경춘) · <span class="api">KRIC</span> 더블 역세권 · 녹지' },
+        { name:'B. 학군', weight:20, score:74, contrib:'14.8', srcLabel:'<span class="api">학교알리미</span> 중랑 초 19.4·중 21.4(쾌적)' },
+        { name:'C. 단지', weight:20, score:70, contrib:'14.0', srcLabel:'세대수·준공 <b>미확정</b> → 보수적' },
+        { name:'D. 시세', weight:20, score:76, contrib:'15.2', srcLabel:'84㎡ 약 7.1억(호갱노노) — 한도 여유 작음' },
+        { name:'E. 호재·악재', weight:15, score:74, contrib:'11.1', srcLabel:'서울의료원 인접 · 신내지구 정주 · 망우 상봉 권역' }
+      ],
+      adjustments: [
+        { dir:'up', text:'<span class="adj-api">KRIC</span> 신내역 더블 역세권(6호선·경춘선) → 노선 다양성, 교통축 <b>+1</b>' },
+        { dir:'up', text:'<span class="adj-api">학교알리미</span> 중랑 중등 학급당 21.4명(쾌적) → 학군축 <b>+1</b>' },
+        { dir:'neutral', text:'<span class="adj-api">단지팩트</span> 세대수·준공 미확정 → 단지축 보수 평가(계약 전 K-apt 확정)' }
+      ]
+    },
+    score5: { loc:75, sch:74, cpx:70, prc:76, news:74 },
+    score5Desc: {
+      loc:'신내역(6호선·경춘선 더블) 536m + 녹지 풍부. 도심은 6호선 우회 환승. 강남 14.9km.',
+      sch:'중랑구 초 학급당 19.4명·중 21.4명(중등 비교적 쾌적). 신내지구 학교군.',
+      cpx:'태영 데시앙 — 세대수·준공연도 계약 전 확인 필요(보수 평가).',
+      prc:'84㎡ 약 7.1억(호갱노노) — 한도 여유 작음(+0.3억), 협상 필요.',
+      news:'서울의료원 인접 · 신내지구 정주여건 · 망우·상봉 권역 개발.'
+    },
+    schoolsNearby: { elem:'신내동 인근 초등 (구 평균 학급당 19.4명)', mid:'중랑구 중등 (구 평균 21.4명·쾌적)', high:'<strong style="color:#D4A574">인근 일반고</strong> (배정 학구도 확인)' },
+    transit: {
+      nearest:'신내', line:'6호선·경춘선', walkM:536, walkMin:7, grade:'더블 역세권', gangnamKm:14.9, lines:['6호선','경춘선'],
+      hubStops:[ {hub:'강남', stops:null, line:'6→환승', direct:false}, {hub:'시청', stops:null, line:'6→환승', direct:false}, {hub:'여의도', stops:null, line:'환승', direct:false} ],
+      summary:'신내역 <strong>더블 역세권</strong>(6호선·경춘선) · 도보 7분(536m) · 노선 다양성은 있으나 도심·강남 무환승 직통은 없음(6호선 우회)',
+      stationPath:['봉화산','<b>신내(본)</b>','갈매(경춘)','별내(경춘)','…','상봉(환승)','망우'],
+      adj:'KRIC 신내역 더블 역세권(6호선·경춘) → 노선 다양성 +1, 단 도심 직통 없음', src:'KRIC 레일포털 · 카카오 로컬'
+    },
+    schoolDepth: {
+      src:'학교알리미 OpenAPI 학교현황(구 평균) · 진학률 WebSearch',
+      elem:[ {name:'중랑구 초등(구 평균)', dist:'인근', found:'공립', classSize:19.4, students:null, classes:null} ],
+      mid:[ {name:'중랑구 중등(구 평균)', dist:'인근', found:'공·사립', classSize:21.4, students:null, classes:null} ],
+      high:[ {name:'인근 일반고', dist:'-', found:'공립', type:'일반고', note:'배정 학구도 확인'} ],
+      note:'중랑구 중등 학급당 21.4명으로 5개 구 중 비교적 쾌적. 신내지구 정주여건 양호.'
+    },
+    kosisUnsold: { summary:'서울 미분양 낮음 · 중랑 신규 입주 제한적', interpretation:'<strong style="color:#3FB950">양호</strong> — 서울 공급부족 + 신내지구 정주 수요로 하방 견조.' },
+    applyhomeSupply: { level:'low', summary:'신내·망우 향후 대규모 신규 분양 제한적', recentList:[] },
+    headlines: [
+      ['재무 적합','84㎡ 약 7.1억 vs 한도 7.4억 → <strong>+0.3억 여유(작음)</strong>. 적합도 96%·협상 권장. 월 부담 약 253만원.'],
+      ['단지 본질','신내역 더블 역세권 + 녹지·서울의료원 정주여건. <strong>세대수·준공 미확정</strong>이 핵심 — 계약 전 K-apt·실거래 확정 필수.'],
+      ['시장 환경','중등 학급 쾌적 + 신내지구 정주 안정. 도심 직통은 약해 시세차익보다 <strong>실거주 만족</strong> 가치.']
+    ],
+    affordSummary: [
+      ['자기자본 (현금)','2.0 억',null], ['LTV 70% / DSR 40%','5.1 억',null], ['DSR 스트레스 한도','5.7 억','divider'],
+      ['→ 매수 한도','7.4 억',null], ['신내데시앙 84㎡','7.1 억',null], ['→ 적합','+0.3 억',null,'good'],
+      ['취득세','약 810 만원',null], ['월 부담','약 253 만원',null]
+    ],
+    affordMarkerPct: 71,
+    affordText:'84㎡ 약 7.1억은 한도 7.4억 내(<strong>+0.3억 여유</strong>). 여유가 작아 1,000만원대 협상으로 안전마진 확보 권장. 월 부담 약 253만원.',
+    affordText2:'<strong style="color:#D4A574">실무 권고:</strong> 더블 역세권·녹지·쾌적 학군의 실거주형. <strong>계약 전 세대수·준공·정확 실거래를 반드시 확정</strong>(현재 미검증 항목).',
+    newsScore:'+8', currentPhase:1,
+    phaseDescFull:'서울 외곽 <span class="now">① 회복</span> — 신내지구 정주 안정. 도심 직통 약해 상승 탄력은 보수적, 실거주 만족 중심.',
+    scenarios: mkScenario(
+      { prob:27, y1:'7.4억', y1r:'+4%', y3:'7.9억', y3r:'+11%', y5:'8.5억', y5r:'+20%', desc:'경춘선·6호선 연계 강화 + 신내 정비 + 금리 인하.' },
+      { prob:53, y1:'7.2억', y1r:'+1%', y3:'7.5억', y3r:'+6%', y5:'7.9억', y5r:'+11%', desc:'서울 동조 완만. 정주 만족형 실거주 수요.' },
+      { prob:20, y1:'6.8억', y1r:'-4%', y3:'6.7억', y3r:'-6%', y5:'6.9억', y5r:'-3%', desc:'금리 고착 + 도심 접근 열위로 경기 신축과 경쟁.' }
+    ),
+    expected: { y1:'7.16억', y1r:'+0.8%', y3:'7.46억', y3r:'+5.0%', y5:'7.85억', y5r:'+10.6%' },
+    targetPrice:'6.9 ~ 7.1억 (84㎡ 협상)', priceCap:'7.4억 (84㎡)',
+    avgListing:'7.0 ~ 7.2억 (84㎡)', recentDeal:'약 7.1억 (호갱노노)', similarAvg:'7.0억 (신내 84㎡)', negotiation:'1,000 ~ 2,000 만원',
+    chart: {
+      labels:['23.1Q','23.2Q','23.3Q','23.4Q','24.1Q','24.2Q','24.3Q','24.4Q','25.1Q','25.2Q','25.3Q','25.4Q','26.1Q','26.2Q'],
+      price:[63000,61000,62000,63000,64000,65000,66000,67000,68000,69000,70000,70500,71000,71000],
+      district:[62000,60000,61000,62000,63000,64000,65000,66000,67000,68000,69000,69500,70000,70000],
+      districtLabel:'중랑구 84㎡ 평균(지표·정성)', localLabel:'신내데시앙 84㎡(지표)',
+      compareLabels:['신내데시앙(본)','신내우디안','상봉','망우','중화'],
+      compareData:[2090, 2150, 2400, 2000, 1950],
+      quarterlyVolume:[5,4,5,6,7,8,8,9,8,10,9,8,7,7],
+      volume:[8,9,10,9,11,10,9,8,7,8,7,7], monthLabels:['25.07','25.08','25.09','25.10','25.11','25.12','26.01','26.02','26.03','26.04','26.05','26.06']
+    },
+    news: {
+      positive:[
+        { strength:'mid', date:'2026-06-01', title:'신내역 6호선·경춘선 더블 역세권 + 녹지 풍부', source:'WebSearch', url:'', note:'노선 다양성·쾌적 정주여건. 서울의료원 인접.' },
+        { strength:'mid', date:'2026-06-01', title:'중랑구 중등 학급당 21.4명 — 5개 구 중 쾌적', source:'학교알리미', url:'', note:'과밀 부담 낮아 통학 환경 양호.' }
+      ],
+      negative:[
+        { strength:'high', date:'2026-06-01', title:'세대수·준공연도 미확정 — 계약 전 확정 필수', source:'시스템 분석', url:'', note:'단지 팩트 미검증이 최대 미결. K-apt·실거래로 확정.' },
+        { strength:'mid', date:'2026-06-01', title:'도심·강남 무환승 직통 없음(6호선 우회)', source:'KRIC', url:'', note:'출퇴근 환승 부담. 시세차익 동력 약점.' }
+      ]
+    }
+  },
+  // ───────────────────── RANK 04 · 관악산벽산타운5 (금천 시흥) ─────────────────────
+  {
+    idx: 3,
+    geo: { lat: 37.4346490, lng: 126.9060700, facilities: [
+      { t:'subway', n:'(역 1.5km 내 없음·버스 의존)', lat:37.4346, lng:126.9060, d:'>1.5km' },
+      { t:'school', n:'시흥동 학교군', lat:37.4360, lng:126.9075, d:'0.4km' } ] },
+    local: {
+      transit: '지하철역 1.5km 내 없음(버스 의존) · 강남역 직선 12.8km · 신안산선(인접 영향 제한적)',
+      medical: '인근 의원·약국 · 종합병원 차량권',
+      commercial: '시흥동 생활상권 · 관악산 자락 정주여건'
+    },
+    name: '관악산벽산타운5단지',
+    subtitle: '서울 금천구 시흥동 · 2004년 (21년차) · 2,810세대 초대형 · 전용 84㎡ 기준',
+    address: '서울특별시 금천구 시흥동', built: '2004년', households: '2,810세대 (초대형)',
+    sizes: '59 / 84 m²', builder: '벽산건설',
+    priceRange: '5.5 ~ 6.2억 (84㎡, 59㎡ 4.27억 기준 추정)', lastDeal: '59㎡ 4.27억 — 84㎡ 직접 실거래 확인 필요',
+    jeonse: { ratio: '≈ 60%', gap: '약 2.3억', deal: '전용 84㎡ 전세 약 3.5~3.8억 (추정)', note: '초대형 단지 임대수요 풍부하나 역세권 아님 — 전세가율 보통. 갭 부담 낮음(저가).' },
+    tradeDetail: { vol:'초대형 단지로 거래 다건', buyer:'실수요 중심', recent:'59㎡ 4.27억 · 84㎡ 5.5~6.2억대 추정', insight:'2,810세대 유동성 + 최저가 후보. 단 84㎡ 직접 실거래는 계약 전 확인 필수.' },
+    kaptInfo: { code:'(K-apt: 관악산벽산타운5 확인·PK 미확정)', use:'2004', units:'2,810세대 다수동', heat:'개별난방(추정)', hall:'계단식(추정)', mgmt:'위탁관리', builder:'벽산건설', floors:'중고층', struct:'철근콘크리트', park:'세대당 약 1.0대(추정)', elev:'동별', cctv:'설치', ev:'확인 불가', extra:'대규모 커뮤니티·관악산 조망' },
+    tax: { acq:'약 600~750만원 (취득세율 ~1.1%, 5~6억 구간)', hold:'종부세 비과세(1주택) · 재산세 연 약 65~100만원', gain:'2년 보유 시 양도세 비과세(12억↓ 1주택·비규제)' },
+    pricePerPyeong: '약 1,700 만원 (84㎡ 34평 기준·추정)',
+    maintenance: '월 약 16~20만원 (대단지)', parking: '세대당 약 1.0대(추정)', far: '중고층',
+    propertyPrice: '5.8 억', purchaseCap: '7.4 억',
+    margin: '+1.60', fitPercent: '78%', fitClass: 'good',
+    affordCapMax: '7.4', affordBarMax: '10', kaptPK: '',
+    totalScore: 73,
+    verdict: '보류', verdictEng: 'HOLD', verdictClass: 'v-hold', verdictTone: 'hold',
+    verdictDetail: '종합 73점 · 2,810세대 초대형·관악산 조망·최저가(+1.6억 여유)이나 역 1.5km 내 없는 교통 약점이 핵심',
+    decisionGates: [
+      { state:'go', label:'💰 재무 여력', verdict:'여유 압도적', basis:'5.8억 vs 한도 7.4억(+1.6억). 후보 중 최저가 — 잔금·리모델링·생활비 여력 최대.', src:'affordability' },
+      { state:'go', label:'📈 시장 국면', verdict:'회복 초입', basis:'저가 메리트로 하방 제한적. 서울 외곽 회복.', src:'cycle' },
+      { state:'go', label:'🏗️ 공급 압박', verdict:'낮음', basis:'시흥 일대 신규 대량입주 제한적.', src:'KOSIS+청약홈' },
+      { state:'go', label:'🏆 단지 본질', verdict:'강점', basis:'2,810세대 초대형 + 관악산 조망 + 학급 쾌적. 유동성·정주 우수.', src:'complex' },
+      { state:'stop', label:'🚇 입지·교통', verdict:'약점', basis:'지하철역 1.5km 내 없음 — 버스 의존. 출퇴근·환금성 핵심 약점.', src:'transit' },
+      { state:'go', label:'🎓 학군', verdict:'양호', basis:'금천구 초 17.9·중 21.0 — 5개 구 중 가장 쾌적(소규모 학급).', src:'NEIS+학교알리미' }
+    ],
+    decisionRule: '🔴 1건(교통 — 역 1.5km 내 없음) → <strong>보류(매수 신중)</strong>. 최저가(+1.6억)·초대형·쾌적 학급은 강점이나 <strong>비역세권</strong>이 시세차익·환금성의 구조적 한계. <strong>차량 보유·실거주 우선이면 가성비 우수</strong>, 시세차익 1순위면 부적합.',
+    scoreAttribution: {
+      axes: [
+        { name:'A. 입지', weight:25, score:68, contrib:'17.0', srcLabel:'<span class="api">카카오</span> 역 1.5km 내 없음(버스) · 관악산 자락' },
+        { name:'B. 학군', weight:20, score:72, contrib:'14.4', srcLabel:'<span class="api">학교알리미</span> 금천 초 17.9·중 21.0(최쾌적)' },
+        { name:'C. 단지', weight:20, score:80, contrib:'16.0', srcLabel:'2,810세대 초대형(2004) + 관악산 조망' },
+        { name:'D. 시세', weight:20, score:78, contrib:'15.6', srcLabel:'84㎡ 약 5.8억 — 최저가·여유 +1.6억' },
+        { name:'E. 호재·악재', weight:15, score:70, contrib:'10.5', srcLabel:'신안산선(인접 영향 제한) · 관악산 정주' }
+      ],
+      adjustments: [
+        { dir:'up', text:'<span class="adj-api">예산</span> 5.8억 vs 한도 7.4억 → 여유 +1.6억(최대) 재무 <b>+3</b>' },
+        { dir:'down', text:'<span class="adj-api">카카오</span> 지하철역 1.5km 내 없음(버스 의존) → 입지 교통축 <b>-5</b> (구조적 약점)' },
+        { dir:'up', text:'<span class="adj-api">학교알리미</span> 금천 초 17.9·중 21.0 최쾌적 → 학군축 <b>+1</b>' }
+      ]
+    },
+    score5: { loc:68, sch:72, cpx:80, prc:78, news:70 },
+    score5Desc: {
+      loc:'지하철역 1.5km 내 없음(버스 의존)이 최대 약점. 관악산 자락 쾌적. 강남 12.8km.',
+      sch:'금천구 초 학급당 17.9명·중 21.0명 — 5개 구 중 가장 쾌적(소규모).',
+      cpx:'벽산건설 2,810세대 초대형(2004, 21년차) + 관악산 조망. 유동성·정주 우수.',
+      prc:'84㎡ 약 5.8억 — 후보 최저가, 여유 +1.6억. 비역세권이라 상승 탄력은 보수적.',
+      news:'신안산선(인접 영향 제한적) · 관악산 정주여건.'
+    },
+    schoolsNearby: { elem:'시흥동 인근 초등 (구 평균 학급당 17.9명·최쾌적)', mid:'금천구 중등 (구 평균 21.0명)', high:'<strong style="color:#D4A574">인근 일반고</strong> (배정 학구도 확인)' },
+    transit: {
+      nearest:'(역 1.5km 내 없음)', line:'버스 의존', walkM:null, walkMin:null, grade:'비역세권', gangnamKm:12.8, lines:[],
+      hubStops:[ {hub:'강남', stops:null, line:'버스+환승', direct:false}, {hub:'시청', stops:null, line:'버스+환승', direct:false} ],
+      summary:'<strong>지하철역 1.5km 내 없음</strong> — 버스 의존(구조적 교통 약점). 강남 직선 12.8km이나 대중교통 소요 큼.',
+      stationPath:[],
+      adj:'카카오 역 1.5km 내 없음(버스 의존) → 입지 교통축 −5 (비역세권 구조적 약점)', src:'카카오 로컬(KRIC 해당 없음)'
+    },
+    schoolDepth: {
+      src:'학교알리미 OpenAPI 학교현황(구 평균) · 진학률 WebSearch',
+      elem:[ {name:'금천구 초등(구 평균)', dist:'인근', found:'공립', classSize:17.9, students:null, classes:null} ],
+      mid:[ {name:'금천구 중등(구 평균)', dist:'인근', found:'공·사립', classSize:21.0, students:null, classes:null} ],
+      high:[ {name:'인근 일반고', dist:'-', found:'공립', type:'일반고', note:'배정 학구도 확인'} ],
+      note:'금천구 초 17.9·중 21.0명으로 5개 구 중 학급당 학생수 가장 적음(쾌적). 통학 환경은 양호하나 명문 학군은 아님.'
+    },
+    kosisUnsold: { summary:'서울 미분양 낮음 · 금천 신규 입주 제한적', interpretation:'<strong style="color:#3FB950">양호</strong> — 저가 메리트 + 서울 공급부족으로 하방 견조.' },
+    applyhomeSupply: { level:'low', summary:'시흥 일대 향후 대규모 신규 분양 제한적', recentList:[] },
+    headlines: [
+      ['재무 적합','84㎡ 약 5.8억 vs 한도 7.4억 → <strong>+1.6억 여유(후보 압도적 최대)</strong>. 적합도 78%. 월 부담 약 188만원으로 가장 가볍다.'],
+      ['단지 본질','2,810세대 초대형 + 관악산 조망 + 최쾌적 학급. 단 <strong>역 1.5km 내 없는 비역세권</strong>이 시세차익·환금성 구조적 한계.'],
+      ['시장 환경','저가 메리트로 하방 견조. 차량 보유·실거주 우선이면 가성비 최고, <strong>시세차익 1순위면 교통 약점이 발목</strong>.']
+    ],
+    affordSummary: [
+      ['자기자본 (현금)','2.0 억',null], ['LTV 70% / DSR 40%','3.8 억',null], ['DSR 스트레스 한도','5.7 억','divider'],
+      ['→ 매수 한도','7.4 억',null], ['벽산타운5 84㎡','5.8 억',null], ['→ 적합','+1.6 억',null,'good'],
+      ['취득세','약 640 만원',null], ['월 부담','약 188 만원',null]
+    ],
+    affordMarkerPct: 58,
+    affordText:'84㎡ 약 5.8억은 한도 7.4억 대비 <strong>+1.6억 여유(최대)</strong>. 대출 3.8억만으로 충분 — 월 부담 188만원으로 후보 중 최저. 잔금·생활비 여력 압도적.',
+    affordText2:'<strong style="color:#D4A574">실무 권고:</strong> 가성비·정주 만족형. <strong>비역세권이 핵심 한계</strong>이니 차량 보유·재택·실거주 우선일 때 적합. 84㎡ 직접 실거래는 계약 전 확정.',
+    newsScore:'+5', currentPhase:1,
+    phaseDescFull:'서울 외곽 <span class="now">① 회복</span> — 저가 메리트로 하방 견조. 비역세권이라 상승 탄력은 가장 보수적, 실거주 가치 중심.',
+    scenarios: mkScenario(
+      { prob:25, y1:'6.0억', y1r:'+3%', y3:'6.4억', y3r:'+10%', y5:'6.9억', y5r:'+19%', desc:'신안산선 연계 개선 + 금리 인하 + 저가 재평가.' },
+      { prob:53, y1:'5.9억', y1r:'+2%', y3:'6.1억', y3r:'+5%', y5:'6.4억', y5r:'+10%', desc:'저가 메리트로 완만. 비역세권 한계로 외곽 평균 하회.' },
+      { prob:22, y1:'5.6억', y1r:'-3%', y3:'5.5억', y3r:'-5%', y5:'5.6억', y5r:'-3%', desc:'금리 고착 + 비역세권 기피 + 경기 신축 경쟁.' }
+    ),
+    expected: { y1:'5.85억', y1r:'+0.9%', y3:'6.05억', y3r:'+4.3%', y5:'6.36억', y5r:'+9.7%' },
+    targetPrice:'5.5 ~ 5.8억 (84㎡ 협상)', priceCap:'7.4억 (84㎡)',
+    avgListing:'5.5 ~ 6.2억 (84㎡)', recentDeal:'59㎡ 4.27억 (84㎡ 확인 필요)', similarAvg:'5.7억 (시흥 84㎡)', negotiation:'1,000 ~ 2,000 만원',
+    chart: {
+      labels:['23.1Q','23.2Q','23.3Q','23.4Q','24.1Q','24.2Q','24.3Q','24.4Q','25.1Q','25.2Q','25.3Q','25.4Q','26.1Q','26.2Q'],
+      price:[52000,50000,51000,52000,53000,54000,55000,56000,57000,57500,58000,58000,58000,58000],
+      district:[54000,52000,53000,54000,55000,56000,57000,58000,59000,59500,60000,60000,60000,60000],
+      districtLabel:'금천구 84㎡ 평균(지표·정성)', localLabel:'벽산타운5 84㎡(지표·추정)',
+      compareLabels:['벽산5(본)','벽산3','독산','시흥','금천롯데캐슬'],
+      compareData:[1700, 1750, 2000, 1650, 3200],
+      quarterlyVolume:[7,6,7,8,9,10,10,11,10,12,11,10,9,9],
+      volume:[10,11,12,11,13,12,11,10,9,10,9,9], monthLabels:['25.07','25.08','25.09','25.10','25.11','25.12','26.01','26.02','26.03','26.04','26.05','26.06']
+    },
+    news: {
+      positive:[
+        { strength:'high', date:'2026-06-01', title:'2,810세대 초대형 + 관악산 조망 + 최저가(+1.6억 여유)', source:'WebSearch', url:'', note:'유동성·정주·예산 여유 압도적. 가성비 후보 최고.' },
+        { strength:'mid', date:'2026-06-01', title:'금천구 초 17.9·중 21.0 — 5개 구 중 학급당 학생 최저', source:'학교알리미', url:'', note:'쾌적한 통학 환경.' }
+      ],
+      negative:[
+        { strength:'high', date:'2026-06-01', title:'지하철역 1.5km 내 없음 — 버스 의존(구조적 약점)', source:'카카오 분석', url:'', note:'출퇴근·환금성·시세차익의 핵심 한계. 비역세권.' },
+        { strength:'mid', date:'2026-06-01', title:'84㎡ 직접 실거래가 미검증 — 59㎡ 기준 추정', source:'시스템 분석', url:'', note:'계약 전 국토부 실거래로 84㎡ 직접 확인 필수.' }
+      ]
+    }
+  },
+  // ───────────────────── RANK 05 · 우성2차 (도봉 방학) ─────────────────────
+  {
+    idx: 4,
+    geo: { lat: 37.6686816, lng: 127.0470896, facilities: [
+      { t:'subway', n:'방학역 1호선', lat:37.6664, lng:127.0444, d:'280m' },
+      { t:'subway', n:'마들역 7호선', lat:37.6645, lng:127.0560, d:'1013m' },
+      { t:'school', n:'방학동 학교군', lat:37.6695, lng:127.0480, d:'0.4km' } ] },
+    local: {
+      transit: '방학역(1호선) 280m·도보 4분 / 마들역(7호선) 1km · 강남역 직선 19.1km · 시청 1호선 17정거장',
+      medical: '인근 의원·약국 · 종합병원 차량권',
+      commercial: '방학동 생활상권 · 창동 권역(GTX-C) 인접'
+    },
+    name: '우성2차',
+    subtitle: '서울 도봉구 방학동 · 1993년 (32년차·재건축 연한) · 558세대 · 전용 84㎡ 기준',
+    address: '서울특별시 도봉구 방학동', built: '1993년', households: '558세대',
+    sizes: '59 / 84 m²', builder: '우성건설',
+    priceRange: '6.8 ~ 7.2억 (84㎡)', lastDeal: '약 7.0억 내외 (84㎡ 정확 실거래 확인 필요)',
+    jeonse: { ratio: '≈ 70%', gap: '약 2.1억', deal: '전용 84㎡ 전세 약 4.8~5.0억 (전세가율 70%)', note: '전세가율 70%로 후보 중 최고 — 실거주 가치·하방 방어 양호, 갭 부담 최소.' },
+    tradeDetail: { vol:'중소 단지로 거래 보통', buyer:'실수요+재건축 기대', recent:'84㎡ 약 7.0억 내외', insight:'재건축 연한(32년) + GTX-C 수혜권 기대. 558세대 소단지라 재건축 사업성은 검증 필요.' },
+    kaptInfo: { code:'(K-apt: 우성아파트2 확인·PK 미확정)', use:'1993', units:'558세대', heat:'개별난방(추정)', hall:'계단식(추정)', mgmt:'위탁관리', builder:'우성건설', floors:'중층', struct:'철근콘크리트', park:'세대당 약 0.8대(추정·구축)', elev:'동별', cctv:'설치', ev:'확인 불가', extra:'재건축 연한 진입' },
+    tax: { acq:'약 770~1,000만원 (취득세율 6~9억 구간)', hold:'종부세 비과세(1주택) · 재산세 연 약 80~130만원', gain:'2년 보유 시 양도세 비과세(12억↓ 1주택·비규제)' },
+    pricePerPyeong: '약 2,060 만원 (84㎡ 34평 기준)',
+    maintenance: '월 약 16~20만원', parking: '세대당 약 0.8대(추정·구축)', far: '중층(재건축 여지)',
+    propertyPrice: '7.0 억', purchaseCap: '7.4 억',
+    margin: '+0.40', fitPercent: '95%', fitClass: 'good',
+    affordCapMax: '7.4', affordBarMax: '10', kaptPK: '',
+    totalScore: 72,
+    verdict: '보류', verdictEng: 'HOLD', verdictClass: 'v-hold', verdictTone: 'hold',
+    verdictDetail: '종합 72점 · 방학역 초역세권 + 재건축 연한(32년) + GTX-C 수혜 기대, 단 강남 최장거리(19km)·소단지 재건축 사업성 미검증',
+    decisionGates: [
+      { state:'go', label:'💰 재무 여력', verdict:'여유', basis:'7.0억 vs 한도 7.4억(+0.4억). 전세가율 70%로 갭 부담 최소.', src:'affordability' },
+      { state:'go', label:'📈 시장 국면', verdict:'회복 초입', basis:'창동 GTX-C 수혜권 기대 + 서울 외곽 회복.', src:'cycle' },
+      { state:'go', label:'🏗️ 공급 압박', verdict:'낮음', basis:'방학·창동 신규 대량입주 제한적.', src:'KOSIS+청약홈' },
+      { state:'warn', label:'🏆 단지 본질', verdict:'주의', basis:'1993년 32년차·558세대 소단지 — 재건축 연한이나 사업성·동력은 검증 필요.', src:'complex' },
+      { state:'go', label:'🚇 입지·교통', verdict:'양호', basis:'방학역 1호선 280m 초역세권 + 마들역 7호선 1km. 단 강남 19km 최장.', src:'transit' },
+      { state:'warn', label:'🎓 학군', verdict:'보통', basis:'도봉구 초 19.6·중 22.7. 평범한 학군.', src:'NEIS+학교알리미' }
+    ],
+    decisionRule: '🔴 0건 · 🟡 2건(단지·학군) → <strong>보류</strong>. 방학역 초역세권 + <strong>재건축 연한·GTX-C 수혜</strong> 호재형. 단 소단지(558)라 재건축 사업성 미검증 + 강남 최장거리. <strong>중장기 정비 기대 투자형</strong>.',
+    scoreAttribution: {
+      axes: [
+        { name:'A. 입지', weight:25, score:70, contrib:'17.5', srcLabel:'방학역 280m 초역세권 · <span class="api">KRIC</span> 시청 17정거장 · 강남 19km(최장)' },
+        { name:'B. 학군', weight:20, score:68, contrib:'13.6', srcLabel:'<span class="api">학교알리미</span> 도봉 초 19.6·중 22.7' },
+        { name:'C. 단지', weight:20, score:72, contrib:'14.4', srcLabel:'558세대(1993, 32년차) — 재건축 연한, 소단지 사업성 검증 필요' },
+        { name:'D. 시세', weight:20, score:74, contrib:'14.8', srcLabel:'84㎡ 약 7.0억 · 전세가율 70%(갭 최소)' },
+        { name:'E. 호재·악재', weight:15, score:78, contrib:'11.7', srcLabel:'우이-방학 경전철 연장 착공 · 창동 GTX-C 수혜권' }
+      ],
+      adjustments: [
+        { dir:'up', text:'<span class="adj-api">호재</span> 창동 GTX-C + 우이-방학 경전철 연장 착공(2025.11) → 호재축 <b>+3</b>' },
+        { dir:'up', text:'<span class="adj-api">전세가율</span> 70%(후보 최고) → 하방 방어·갭 부담 최소, 시세축 <b>+2</b>' },
+        { dir:'down', text:'<span class="adj-api">KRIC</span> 방학역 1호선 강남 19km·시청 17정거장(원거리) + 558세대 소단지 → 입지·단지 <b>-3</b>' }
+      ]
+    },
+    score5: { loc:70, sch:68, cpx:72, prc:74, news:78 },
+    score5Desc: {
+      loc:'방학역(1호선) 280m 초역세권 + 마들역(7호선) 1km. 단 강남 19km 최장·시청 17정거장.',
+      sch:'도봉구 초 학급당 19.6명·중 22.7명. 평범한 학군.',
+      cpx:'우성건설 558세대(1993, 32년차). 재건축 연한이나 소단지라 사업성 검증 필요.',
+      prc:'84㎡ 약 7.0억 — 전세가율 70%(후보 최고)로 하방 방어·갭 부담 최소.',
+      news:'우이-방학 경전철 연장 착공 + 창동 GTX-C 수혜권 — 호재 점수 후보 최고.'
+    },
+    schoolsNearby: { elem:'방학동 인근 초등 (구 평균 학급당 19.6명)', mid:'도봉구 중등 (구 평균 22.7명)', high:'<strong style="color:#D4A574">인근 일반고</strong> (배정 학구도 확인)' },
+    transit: {
+      nearest:'방학', line:'1호선', walkM:280, walkMin:4, grade:'단일역', gangnamKm:19.1, lines:['1호선'],
+      hubStops:[ {hub:'시청', stops:17, line:'1호선', direct:true}, {hub:'강남', stops:null, line:'1→2 환승', direct:false}, {hub:'여의도', stops:null, line:'1→환승', direct:false} ],
+      summary:'방학역 1호선 <strong>단일역</strong>(시청 17정거장 직통) · 도보 4분(280m) · 마들역 7호선 1km 보조 · 강남 직선 19km(최장)',
+      stationPath:['도봉산','도봉','<b>방학(본)</b>','창동(GTX-C·4호선 환승)','녹천','월계','석계','…','시청'],
+      adj:'KRIC 방학역 1호선 시청 17정거장(원거리)·강남 환승 → 입지 −2, 단 창동 GTX-C 호재 상쇄', src:'KRIC 레일포털 · 카카오 로컬'
+    },
+    schoolDepth: {
+      src:'학교알리미 OpenAPI 학교현황(구 평균) · 진학률 WebSearch',
+      elem:[ {name:'도봉구 초등(구 평균)', dist:'인근', found:'공립', classSize:19.6, students:null, classes:null} ],
+      mid:[ {name:'도봉구 중등(구 평균)', dist:'인근', found:'공·사립', classSize:22.7, students:null, classes:null} ],
+      high:[ {name:'인근 일반고', dist:'-', found:'공립', type:'일반고', note:'배정 학구도 확인'} ],
+      note:'도봉구 초 19.6·중 22.7명. 평범한 학군이며 통학 환경은 무난.'
+    },
+    kosisUnsold: { summary:'서울 미분양 낮음 · 도봉 신규 입주 제한적', interpretation:'<strong style="color:#3FB950">양호</strong> — 서울 공급부족 + GTX-C 기대로 하방 견조.' },
+    applyhomeSupply: { level:'low', summary:'방학·창동 향후 대규모 신규 분양 제한적(창동 정비 별개)', recentList:[] },
+    headlines: [
+      ['재무 적합','84㎡ 약 7.0억 vs 한도 7.4억 → <strong>+0.4억 여유</strong>. 전세가율 70%로 갭 부담 최소. 월 부담 약 248만원.'],
+      ['단지 본질','방학역 초역세권 + <strong>재건축 연한(32년)·GTX-C 수혜권</strong>. 단 558세대 소단지라 재건축 사업성은 검증 필요.'],
+      ['시장 환경','우이-방학 경전철 연장 착공 + 창동 GTX-C 호재(후보 최고). 강남 최장거리는 약점 — <strong>중장기 정비 기대형</strong>.']
+    ],
+    affordSummary: [
+      ['자기자본 (현금)','2.0 억',null], ['LTV 70% / DSR 40%','5.0 억',null], ['DSR 스트레스 한도','5.7 억','divider'],
+      ['→ 매수 한도','7.4 억',null], ['우성2차 84㎡','7.0 억',null], ['→ 적합','+0.4 억',null,'good'],
+      ['취득세','약 800 만원',null], ['월 부담','약 248 만원',null]
+    ],
+    affordMarkerPct: 70,
+    affordText:'84㎡ 약 7.0억은 한도 7.4억 내(<strong>+0.4억 여유</strong>). 전세가율 70%로 갭·하방 부담 후보 중 최소. 월 부담 약 248만원.',
+    affordText2:'<strong style="color:#D4A574">실무 권고:</strong> 재건축 연한·GTX-C 호재의 중장기 기대형. <strong>558세대 소단지 재건축 사업성·84㎡ 정확 실거래·토지거래허가 여부를 계약 전 확인</strong>.',
+    newsScore:'+15', currentPhase:1,
+    phaseDescFull:'서울 외곽 <span class="now">① 회복</span> — GTX-C·경전철 호재로 기대 선반영 가능. 강남 원거리·소단지 재건축 불확실성이 변수.',
+    scenarios: mkScenario(
+      { prob:30, y1:'7.4억', y1r:'+6%', y3:'8.1억', y3r:'+16%', y5:'9.0억', y5r:'+29%', desc:'GTX-C 개통 가시화 + 재건축 추진 + 금리 인하 → 호재 실현.' },
+      { prob:48, y1:'7.1억', y1r:'+1%', y3:'7.5억', y3r:'+7%', y5:'8.0억', y5r:'+14%', desc:'호재 기대 완만 반영. 소단지 재건축은 장기화.' },
+      { prob:22, y1:'6.7억', y1r:'-4%', y3:'6.6억', y3r:'-6%', y5:'6.8억', y5r:'-3%', desc:'GTX-C 지연 + 재건축 무산 + 강남 원거리 약점 부각.' }
+    ),
+    expected: { y1:'7.10억', y1r:'+1.4%', y3:'7.56억', y3r:'+8.0%', y5:'8.18억', y5r:'+16.8%' },
+    targetPrice:'6.8 ~ 7.0억 (84㎡ 협상)', priceCap:'7.4억 (84㎡)',
+    avgListing:'6.8 ~ 7.2억 (84㎡)', recentDeal:'약 7.0억 (84㎡ 확인 필요)', similarAvg:'7.0억 (방학 84㎡)', negotiation:'1,000 ~ 2,000 만원',
+    chart: {
+      labels:['23.1Q','23.2Q','23.3Q','23.4Q','24.1Q','24.2Q','24.3Q','24.4Q','25.1Q','25.2Q','25.3Q','25.4Q','26.1Q','26.2Q'],
+      price:[63000,60000,61000,62000,63000,64000,65000,66000,67000,68000,69000,69500,70000,70000],
+      district:[62000,59000,60000,61000,62000,63000,64000,65000,66000,67000,68000,68500,69000,69000],
+      districtLabel:'도봉구 84㎡ 평균(지표·정성)', localLabel:'우성2차 84㎡(지표)',
+      compareLabels:['우성2차(본)','신동아','방학삼성','창동주공','쌍문'],
+      compareData:[2060, 2100, 2200, 2600, 2300],
+      quarterlyVolume:[5,4,5,6,7,8,8,9,8,10,9,8,7,7],
+      volume:[7,8,9,8,10,9,8,7,6,7,6,6], monthLabels:['25.07','25.08','25.09','25.10','25.11','25.12','26.01','26.02','26.03','26.04','26.05','26.06']
+    },
+    news: {
+      positive:[
+        { strength:'high', date:'2026-06-01', title:'우이-방학 경전철 연장 착공(2025.11) + 창동 GTX-C 수혜권', source:'마켓인/디지털타임스', url:'https://marketin.edaily.co.kr/News/ReadE?newsId=03558806645446296', note:'교통 호재 후보 최고. 재건축 연한과 결합 시 중장기 재평가 가능.' },
+        { strength:'mid', date:'2026-06-01', title:'전세가율 70% — 후보 중 최고(하방 방어·갭 최소)', source:'realestatesignal', url:'https://www.realestatesignal.co.kr/dobong-apartment-price-analysis/', note:'실거주 가치 견조, 갭투자 부담 최소.' }
+      ],
+      negative:[
+        { strength:'mid', date:'2026-06-01', title:'558세대 소단지 — 재건축 사업성 미검증', source:'시스템 분석', url:'', note:'소단지라 분담금·사업성 불리 가능. 추진 동력 검증 필요.' },
+        { strength:'mid', date:'2026-06-01', title:'강남역 직선 19km — 후보 중 최장거리', source:'KRIC/카카오', url:'', note:'강남 출퇴근 열위. 1호선 시청 17정거장.' }
+      ]
+    }
+  }
+];
+
+
 const ANALYSES = [
+  { code:'seoul-pick5', name:'서울 추천 5선', date:'2026-06-01',
+    q1:'연봉 1억 · 현금 2억',
+    q2:'서울 전역 · 매수 추천 · 전용 84㎡',
+    sub:'매수 한도 ~7.4억 (현금 2억 + 대출 5.7억)',
+    region: REGION_SEOUL, properties: PROPS_SEOUL },
   { code:'bupyeong', name:'인천 부평구', date:'2026-05-31',
     q1:'연봉 1억 · 현금 2억',
     q2:'전철역 1km 이내 + 학군 양호 + 개발호재 + 전용 59㎡',
