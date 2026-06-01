@@ -1,0 +1,3945 @@
+﻿<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mintelligence Realty Advisor — 매수자 의사결정 보고서</title>
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:wght@400;500;600;700&family=Noto+Serif+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css">
+
+<!-- Libraries -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<!-- 카카오맵 JS SDK (지도: 목록 마커 + 보고서 반경 원·시설) -->
+<script src="//dapi.kakao.com/v2/maps/sdk.js?appkey=09c7a3252bde5c8bcc7bc1effc85d029&autoload=false"></script>
+
+<style>
+  :root {
+    /* Dark mode (input pages removed) */
+    --bg: #0D1421;
+    --bg-card: #161D2E;
+    --bg-dark: #050810;
+    --ink: #E6EDF3;
+    --ink-soft: #C9D1D9;
+    --ink-muted: #8B949E;
+    --ink-faint: #6E7681;
+    --rule: #21262D;
+    --rule-soft: #181F2E;
+    --accent: #58A6FF;
+    --accent-deep: #1F6FEB;
+    --positive: #3FB950;
+    --positive-bg: #102D1B;
+    --negative: #F85149;
+    --negative-bg: #3D1517;
+    --warning: #D4A574;
+    --warning-bg: #2F2316;
+    --gold: #D4A574;
+
+    --font-display: "Noto Serif KR", "IBM Plex Serif", Georgia, serif;
+    --font-body: "Pretendard Variable", Pretendard, -apple-system, sans-serif;
+    --font-mono: "IBM Plex Mono", "SF Mono", monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 15px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .container {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 40px 32px 100px;
+  }
+
+  /* ===== HEADER ===== */
+  header.brand {
+    border-bottom: 1px solid var(--rule);
+    padding-bottom: 24px;
+    margin-bottom: 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+  }
+  .brand-mark {
+    font-family: var(--font-display);
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+  }
+  .brand-mark .accent {
+    color: var(--accent);
+    font-style: italic;
+  }
+  .brand-tag {
+    font-size: 12px;
+    color: var(--ink-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    margin-top: 6px;
+  }
+  .brand-meta {
+    text-align: right;
+    font-size: 12px;
+    color: var(--ink-muted);
+    line-height: 1.7;
+  }
+  .brand-meta strong { color: var(--ink); }
+
+  /* ===== STEP NAV ===== */
+  .stepnav {
+    display: flex;
+    gap: 0;
+    margin-bottom: 32px;
+    border-bottom: 1px solid var(--rule);
+  }
+  .stepnav-item {
+    flex: 1;
+    padding: 14px 16px;
+    font-size: 13px;
+    color: var(--ink-muted);
+    text-align: center;
+    border-bottom: 2px solid transparent;
+    font-weight: 500;
+    letter-spacing: -0.005em;
+  }
+  .stepnav-item .num {
+    font-family: var(--font-display);
+    font-size: 11px;
+    font-style: italic;
+    margin-right: 6px;
+    color: var(--ink-faint);
+  }
+  .stepnav-item.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+    font-weight: 600;
+  }
+  .stepnav-item.active .num { color: var(--accent); }
+  .stepnav-item.done { color: var(--ink-soft); }
+  .stepnav-item.done .num { color: var(--positive); }
+  .stepnav-item.done::after { content: " ✓"; color: var(--positive); }
+
+  /* ===== STEP CONTAINER ===== */
+  .step { display: none; }
+  .step.active { display: block; }
+
+  .step-title {
+    font-family: var(--font-display);
+    font-size: 32px;
+    font-weight: 600;
+    letter-spacing: -0.025em;
+    margin-bottom: 8px;
+  }
+  .step-subtitle {
+    color: var(--ink-muted);
+    font-size: 14px;
+    margin-bottom: 32px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--rule-soft);
+  }
+
+  /* ===== STEP HEADER (top nav) ===== */
+  .step-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 24px;
+    margin-bottom: 4px;
+  }
+  .step-header > .left { flex: 1; min-width: 0; }
+  .step-nav-buttons {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+    margin-top: 16px;
+  }
+  .btn-nav {
+    padding: 9px 18px;
+    font-size: 13px;
+    font-weight: 600;
+    background: transparent;
+    border: 1px solid var(--rule);
+    color: var(--ink-soft);
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all 0.15s;
+    font-family: var(--font-body);
+    white-space: nowrap;
+    letter-spacing: -0.005em;
+  }
+  .btn-nav:hover:not(:disabled) {
+    border-color: var(--ink);
+    color: var(--ink);
+  }
+  .btn-nav.primary {
+    background: var(--ink);
+    color: var(--bg);
+    border-color: var(--ink);
+  }
+  .btn-nav.primary:hover:not(:disabled) {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+  .btn-nav:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+    border-color: var(--rule);
+  }
+  @media (max-width: 780px) {
+    .step-header { flex-direction: column; align-items: stretch; }
+    .step-nav-buttons { margin-top: 4px; justify-content: flex-end; }
+  }
+
+  /* ===== FORM ===== */
+  .form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 28px 32px;
+  }
+  .form-grid.three { grid-template-columns: repeat(3, 1fr); }
+
+  .field { display: flex; flex-direction: column; }
+  .field-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--ink-soft);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 8px;
+  }
+  .field-label .hint {
+    text-transform: none;
+    color: var(--ink-faint);
+    font-weight: 400;
+    letter-spacing: 0;
+    margin-left: 6px;
+    font-size: 11px;
+  }
+  .field input, .field select {
+    border: 1px solid var(--rule);
+    background: var(--bg-card);
+    padding: 11px 14px;
+    font-size: 15px;
+    font-family: var(--font-body);
+    color: var(--ink);
+    border-radius: 2px;
+    transition: border-color 0.15s;
+  }
+  .field input:focus, .field select:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+  .field-suffix { position: relative; }
+  .field-suffix .suffix {
+    position: absolute;
+    right: 14px; top: 50%;
+    transform: translateY(-50%);
+    color: var(--ink-muted);
+    font-size: 13px;
+    pointer-events: none;
+  }
+  .field-suffix input { padding-right: 42px; }
+
+  .star-rating { display: flex; gap: 4px; }
+  .star-rating .star {
+    cursor: pointer;
+    font-size: 20px;
+    color: var(--ink-faint);
+    user-select: none;
+  }
+  .star-rating .star.on { color: var(--warning); }
+
+  /* ===== BUTTONS ===== */
+  .actions {
+    margin-top: 48px;
+    padding-top: 28px;
+    border-top: 1px solid var(--rule);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .btn {
+    border: none;
+    padding: 14px 28px;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: var(--font-body);
+    letter-spacing: -0.005em;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all 0.15s;
+  }
+  .btn-primary { background: var(--ink); color: var(--bg); }
+  .btn-primary:hover { background: var(--accent); }
+  .btn-secondary {
+    background: transparent;
+    color: var(--ink-muted);
+    border: 1px solid var(--rule);
+  }
+  .btn-secondary:hover { color: var(--ink); border-color: var(--ink); }
+  .btn-arrow::after { content: " →"; }
+  .btn-arrow-back::before { content: "← "; }
+
+  /* ===== RECOMMENDATIONS ===== */
+  .reco-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-bottom: 32px;
+  }
+  .reco-card {
+    background: var(--bg-card);
+    border: 1px solid var(--rule);
+    padding: 26px 24px;
+    cursor: pointer;
+    transition: all 0.18s;
+    position: relative;
+  }
+  .reco-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(15, 76, 129, 0.08);
+  }
+  .reco-card.selected {
+    border-color: var(--accent);
+    border-width: 2px;
+    padding: 25px 23px;
+  }
+  .reco-card.selected::before {
+    content: "선택됨";
+    position: absolute;
+    top: -10px; left: 16px;
+    background: var(--accent);
+    color: white;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 3px 8px;
+    letter-spacing: 0.05em;
+  }
+  .reco-rank {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 12px;
+    color: var(--ink-faint);
+    letter-spacing: 0.1em;
+    margin-bottom: 4px;
+  }
+  .reco-name {
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    margin-bottom: 4px;
+  }
+  .reco-addr {
+    font-size: 12px;
+    color: var(--ink-muted);
+    margin-bottom: 20px;
+  }
+  .reco-score {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    margin-bottom: 4px;
+  }
+  .reco-score .big {
+    font-family: var(--font-display);
+    font-size: 36px;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: -0.03em;
+  }
+  .reco-score .max { font-size: 14px; color: var(--ink-muted); }
+  .reco-judgement {
+    display: inline-block;
+    padding: 4px 10px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    margin-bottom: 18px;
+  }
+  .reco-judgement.buy { background: var(--positive-bg); color: var(--positive); }
+  .reco-judgement.hold { background: var(--warning-bg); color: var(--warning); }
+  .reco-judgement.cautious { background: var(--negative-bg); color: var(--negative); }
+  .reco-meta { font-size: 13px; line-height: 1.7; }
+  .reco-meta .row {
+    display: flex;
+    justify-content: space-between;
+    border-top: 1px dashed var(--rule-soft);
+    padding-top: 6px;
+    margin-top: 6px;
+  }
+  .reco-meta .row:first-child { border-top: none; padding-top: 0; margin-top: 0; }
+  .reco-meta .k { color: var(--ink-muted); }
+  .reco-meta .v { color: var(--ink); font-weight: 500; }
+
+  /* ============================================================ */
+  /* ============== REPORT (DARK MODE) ========================== */
+  /* ============================================================ */
+
+  #step-report { padding: 0; }
+
+  .report-toolbar {
+    background: #050810;
+    color: #E6EDF3;
+    padding: 16px 24px;
+    margin: -40px -32px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    border-bottom: 1px solid #21262D;
+  }
+  .report-toolbar .left { font-size: 13px; }
+  .report-toolbar .left strong { font-weight: 600; color: #FFFFFF; }
+  .report-toolbar .left .meta { opacity: 0.55; }
+  .report-toolbar .btn { padding: 10px 18px; font-size: 13px; }
+  .report-toolbar .btn-primary { background: #D4A574; color: #050810; }
+  .report-toolbar .btn-primary:hover { background: #E3B873; }
+  .report-toolbar .btn-secondary { color: #E6EDF3; border-color: #30363D; background: transparent; }
+  .report-toolbar .btn-secondary:hover { border-color: #E6EDF3; }
+
+  /* Dark report area — this becomes the PDF */
+  .report-pdf-area {
+    background: #0D1421;
+    padding: 56px 60px;
+    margin: 32px auto;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.4);
+    max-width: 920px;
+    color: #E6EDF3;
+
+    /* override variables inside report */
+    --d-bg: #0D1421;
+    --d-bg-card: #161D2E;
+    --d-bg-card-2: #1A2333;
+    --d-ink: #E6EDF3;
+    --d-ink-soft: #C9D1D9;
+    --d-ink-muted: #8B949E;
+    --d-ink-faint: #6E7681;
+    --d-rule: #21262D;
+    --d-rule-soft: #181F2E;
+    --d-accent: #58A6FF;
+    --d-positive: #3FB950;
+    --d-positive-bg: #102D1B;
+    --d-negative: #F85149;
+    --d-negative-bg: #3D1517;
+    --d-warning: #D4A574;
+    --d-warning-bg: #2F2316;
+    --d-gold: #E3B873;
+  }
+
+  /* Report Header */
+  .report-header {
+    border-bottom: 3px solid #D4A574;
+    padding-bottom: 24px;
+    margin-bottom: 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+  .report-pdf-area .brand-mark {
+    font-size: 22px;
+    color: #FFFFFF;
+    margin-bottom: 4px;
+  }
+  .report-pdf-area .brand-mark .accent { color: #D4A574; }
+  .report-header .left .doc-type {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--d-ink-muted);
+  }
+  .report-header .right {
+    text-align: right;
+    font-size: 11px;
+    color: var(--d-ink-muted);
+    line-height: 1.7;
+  }
+  .report-header .right strong { color: #FFFFFF; }
+
+  .report-title {
+    font-family: var(--font-display);
+    font-size: 40px;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1.15;
+    margin-bottom: 10px;
+    color: #FFFFFF;
+  }
+  .report-subtitle {
+    color: var(--d-ink-muted);
+    font-size: 14px;
+    margin-bottom: 32px;
+  }
+
+  /* Section */
+  .rsection {
+    margin-top: 44px;
+    padding-top: 28px;
+    border-top: 1px solid var(--d-rule);
+  }
+  .rsection.first { border-top: none; padding-top: 0; margin-top: 0; }
+  .rsection-num {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 12px;
+    color: #D4A574;
+    letter-spacing: 0.15em;
+    margin-bottom: 4px;
+  }
+  .rsection-title {
+    font-family: var(--font-display);
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 4px;
+    color: #FFFFFF;
+  }
+  .rsection-deck {
+    color: var(--d-ink-muted);
+    font-size: 13px;
+    margin-bottom: 24px;
+  }
+
+  /* Executive Summary */
+  .verdict-grid {
+    display: grid;
+    grid-template-columns: 1.3fr 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .verdict-card {
+    padding: 22px;
+    background: var(--d-bg-card);
+    border: 1px solid var(--d-rule);
+  }
+  .verdict-card.primary {
+    background: linear-gradient(135deg, #1A2333 0%, #0D1421 100%);
+    border: 1px solid #D4A574;
+    position: relative;
+    overflow: hidden;
+  }
+  .verdict-card.primary::before {
+    content: "";
+    position: absolute;
+    top: 0; right: 0;
+    width: 80px; height: 80px;
+    background: radial-gradient(circle at top right, rgba(212, 165, 116, 0.25), transparent);
+  }
+  .verdict-card .label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    margin-bottom: 10px;
+    color: var(--d-ink-muted);
+    font-weight: 600;
+  }
+  .verdict-card .big {
+    font-family: var(--font-display);
+    font-size: 38px;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1;
+    margin-bottom: 6px;
+    color: #FFFFFF;
+  }
+  .verdict-card.primary .big { color: #D4A574; }
+  .verdict-card .big .small { font-size: 16px; color: var(--d-ink-muted); margin-left: 4px; }
+  .verdict-card .big.positive { color: #3FB950; }
+  .verdict-card .sub { font-size: 13px; color: var(--d-ink-muted); line-height: 1.5; }
+
+  /* Score Bar */
+  .score-bar {
+    height: 28px;
+    background: #21262D;
+    display: flex;
+    overflow: hidden;
+    margin-top: 12px;
+    border-radius: 2px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .score-bar > div {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+  }
+  .score-bar .fin { background: #1F6FEB; }
+  .score-bar .news { background: #D4A574; color: #050810; }
+  .score-bar .other { background: #5E7287; }
+
+  /* Headlines */
+  .headlines {
+    margin-top: 20px;
+    background: var(--d-bg-card);
+    padding: 22px 26px;
+    border-left: 3px solid #D4A574;
+  }
+  .headlines .h-title {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: #D4A574;
+    margin-bottom: 12px;
+    font-weight: 600;
+  }
+  .headlines ol {
+    padding-left: 22px;
+    font-size: 14px;
+    line-height: 1.75;
+    color: var(--d-ink-soft);
+  }
+  .headlines ol li { margin-bottom: 8px; }
+  .headlines ol li:last-child { margin-bottom: 0; }
+  .headlines strong { color: #D4A574; font-weight: 600; }
+
+  /* Property Overview Table */
+  .prop-overview {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0;
+    border: 1px solid var(--d-rule);
+    background: var(--d-bg-card);
+  }
+  .prop-cell {
+    padding: 16px 18px;
+    border-right: 1px solid var(--d-rule);
+    border-bottom: 1px solid var(--d-rule);
+  }
+  .prop-cell:nth-child(3n) { border-right: none; }
+  .prop-cell:nth-last-child(-n+3) { border-bottom: none; }
+  .prop-cell .k {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--d-ink-muted);
+    margin-bottom: 6px;
+    font-weight: 600;
+  }
+  .prop-cell .v {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--d-ink);
+  }
+  .prop-cell .v.big {
+    font-family: var(--font-display);
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: #FFFFFF;
+  }
+  .prop-cell .v.accent { color: #D4A574; }
+
+  /* Affordability */
+  .afford-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+  .afford-bar-wrap { margin-top: 8px; }
+  .afford-bar-bg {
+    height: 36px;
+    background: #21262D;
+    position: relative;
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .afford-bar-fill {
+    position: absolute;
+    top: 0; left: 0;
+    height: 100%;
+    background: linear-gradient(90deg, #3FB950 0%, #D4A574 60%, #F85149 100%);
+    opacity: 0.7;
+  }
+  .afford-marker {
+    position: absolute;
+    top: -2px;
+    height: calc(100% + 4px);
+    width: 3px;
+    background: #FFFFFF;
+    z-index: 2;
+  }
+  .afford-marker::after {
+    content: attr(data-label);
+    position: absolute;
+    top: -24px; left: 50%;
+    transform: translateX(-50%);
+    font-size: 11px;
+    background: #FFFFFF;
+    color: #0D1421;
+    padding: 3px 7px;
+    white-space: nowrap;
+    font-weight: 600;
+  }
+  .afford-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+    color: var(--d-ink-muted);
+    margin-top: 6px;
+  }
+  .afford-summary {
+    background: var(--d-bg-card);
+    padding: 20px;
+    font-size: 13px;
+    line-height: 1.8;
+    border: 1px solid var(--d-rule);
+  }
+  .afford-summary .line {
+    display: flex;
+    justify-content: space-between;
+    padding: 5px 0;
+  }
+  .afford-summary .line.divider {
+    border-top: 1px solid var(--d-rule);
+    margin-top: 6px;
+    padding-top: 10px;
+  }
+  .afford-summary .line .k { color: var(--d-ink-muted); }
+  .afford-summary .line .v { font-weight: 500; color: var(--d-ink); }
+  .afford-summary .line .v.bad { color: #F85149; }
+  .afford-summary .line .v.good { color: #3FB950; }
+
+  /* 5축 점수 */
+  .score-breakdown {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 12px;
+  }
+  .score-axis {
+    background: var(--d-bg-card);
+    padding: 20px 18px;
+    border: 1px solid var(--d-rule);
+    position: relative;
+    overflow: hidden;
+  }
+  .score-axis::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 3px;
+    background: linear-gradient(90deg, #58A6FF, #D4A574);
+  }
+  .score-axis .ax-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--d-ink-muted);
+    margin-bottom: 6px;
+    font-weight: 600;
+  }
+  .score-axis .ax-score {
+    font-family: var(--font-display);
+    font-size: 36px;
+    font-weight: 700;
+    color: #FFFFFF;
+    letter-spacing: -0.02em;
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+  .score-axis .ax-score .denom {
+    font-size: 14px;
+    color: var(--d-ink-faint);
+    font-weight: 400;
+  }
+  .score-axis .ax-weight {
+    font-size: 11px;
+    color: #D4A574;
+    margin-bottom: 12px;
+    font-weight: 500;
+  }
+  .score-axis .ax-desc {
+    font-size: 12px;
+    color: var(--d-ink-soft);
+    line-height: 1.55;
+  }
+
+  /* Charts */
+  .chart-wrap {
+    background: var(--d-bg-card);
+    padding: 24px 22px 18px;
+    border: 1px solid var(--d-rule);
+    margin-top: 12px;
+  }
+  .chart-wrap.tight { padding: 18px; }
+  .chart-title {
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    color: #FFFFFF;
+  }
+  .chart-title .meta {
+    font-weight: 400;
+    color: var(--d-ink-muted);
+    margin-left: 8px;
+    font-size: 12px;
+  }
+  .chart-canvas-wrap { height: 280px; position: relative; }
+
+  /* News */
+  .news-section {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+  .news-col h4 {
+    font-family: var(--font-display);
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    padding: 10px 0;
+    border-bottom: 2px solid var(--d-rule);
+  }
+  .news-col.pos h4 { color: #3FB950; border-bottom-color: #3FB950; }
+  .news-col.neg h4 { color: #F85149; border-bottom-color: #F85149; }
+  .news-item {
+    padding: 13px 0;
+    border-bottom: 1px dashed var(--d-rule);
+  }
+  .news-item:last-child { border-bottom: none; }
+  .news-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--d-ink-muted);
+    margin-bottom: 6px;
+  }
+  .news-strength {
+    display: inline-block;
+    padding: 2px 7px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    border-radius: 2px;
+  }
+  .news-col.pos .news-strength.high { background: var(--d-positive-bg); color: #3FB950; }
+  .news-col.neg .news-strength.high { background: var(--d-negative-bg); color: #F85149; }
+  .news-strength.mid { background: var(--d-warning-bg); color: #D4A574; }
+  .news-title {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 4px;
+    color: var(--d-ink);
+  }
+  .news-source { font-size: 11px; color: var(--d-ink-muted); font-style: italic; }
+  .news-note {
+    margin-top: 8px;
+    padding: 10px 13px;
+    background: var(--d-bg-card-2);
+    border-left: 2px solid #D4A574;
+    font-size: 12px;
+    line-height: 1.6;
+    color: var(--d-ink-soft);
+  }
+  .news-note::before { content: "👤 "; opacity: 0.8; }
+
+  .sentiment-gauge {
+    margin-top: 22px;
+    padding: 18px;
+    background: var(--d-bg-card);
+    text-align: center;
+    border: 1px solid var(--d-rule);
+  }
+  .sentiment-gauge .label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--d-ink-muted);
+    margin-bottom: 4px;
+  }
+  .sentiment-gauge .score {
+    font-family: var(--font-display);
+    font-size: 32px;
+    font-weight: 700;
+    color: #3FB950;
+  }
+  .sentiment-gauge .scale { font-size: 11px; color: var(--d-ink-muted); }
+
+  /* Scenarios */
+  .scenarios {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+  }
+  .scenario {
+    background: var(--d-bg-card);
+    border: 1px solid var(--d-rule);
+    padding: 22px;
+    position: relative;
+  }
+  .scenario::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 4px;
+  }
+  .scenario.bull::before { background: #3FB950; }
+  .scenario.base::before { background: #D4A574; }
+  .scenario.bear::before { background: #F85149; }
+  .scenario-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 6px;
+  }
+  .scenario-name {
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 700;
+  }
+  .scenario.bull .scenario-name { color: #3FB950; }
+  .scenario.base .scenario-name { color: #D4A574; }
+  .scenario.bear .scenario-name { color: #F85149; }
+  .scenario-prob {
+    font-size: 12px;
+    color: var(--d-ink-muted);
+    font-weight: 600;
+  }
+  .scenario-desc {
+    font-size: 12px;
+    color: var(--d-ink-soft);
+    line-height: 1.6;
+    margin-bottom: 14px;
+  }
+  .scenario-table {
+    width: 100%;
+    font-size: 12px;
+    border-collapse: collapse;
+  }
+  .scenario-table th {
+    text-align: left;
+    color: var(--d-ink-muted);
+    font-weight: 500;
+    padding: 5px 0;
+    border-bottom: 1px solid var(--d-rule);
+  }
+  .scenario-table td {
+    padding: 7px 0;
+    border-bottom: 1px dashed var(--d-rule);
+    color: var(--d-ink-soft);
+  }
+  .scenario-table .ret { font-weight: 600; }
+  .scenario.bull .scenario-table .ret { color: #3FB950; }
+  .scenario.base .scenario-table .ret { color: #D4A574; }
+  .scenario.bear .scenario-table .ret { color: #F85149; }
+
+  .expectation-bar {
+    margin-top: 24px;
+    background: linear-gradient(135deg, #1A2333 0%, #050810 100%);
+    border: 1px solid #D4A574;
+    color: white;
+    padding: 24px;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 32px;
+  }
+  .expectation-bar .item .lab {
+    font-size: 11px;
+    color: var(--d-ink-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin-bottom: 6px;
+    font-weight: 600;
+  }
+  .expectation-bar .item .val {
+    font-family: var(--font-display);
+    font-size: 28px;
+    font-weight: 700;
+    color: #D4A574;
+    letter-spacing: -0.02em;
+  }
+  .expectation-bar .item .val .pct { font-size: 16px; color: #E6EDF3; margin-left: 6px; }
+
+  /* Buy Guide */
+  .buy-guide {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  .buy-guide .panel {
+    background: var(--d-bg-card);
+    padding: 24px;
+    border: 1px solid var(--d-rule);
+  }
+  .buy-guide .panel h5 {
+    font-family: var(--font-display);
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 14px;
+    color: #FFFFFF;
+  }
+  .price-table { width: 100%; font-size: 13px; border-collapse: collapse; }
+  .price-table td { padding: 9px 0; border-bottom: 1px dashed var(--d-rule); }
+  .price-table td.lab { color: var(--d-ink-muted); width: 60%; }
+  .price-table td.val {
+    text-align: right;
+    font-weight: 500;
+    font-family: var(--font-mono);
+    color: var(--d-ink);
+  }
+  .price-table tr.highlight td {
+    background: var(--d-positive-bg);
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+  .price-table tr.highlight td.val { color: #3FB950; font-weight: 700; }
+  .price-table tr.highlight td.lab { color: #3FB950; }
+
+  .timing-list { list-style: none; padding: 0; }
+  .timing-list li {
+    padding: 11px 0;
+    border-bottom: 1px dashed var(--d-rule);
+    font-size: 13px;
+    line-height: 1.65;
+    color: var(--d-ink-soft);
+  }
+  .timing-list li:last-child { border-bottom: none; }
+  .timing-list li strong { color: #D4A574; font-weight: 600; }
+
+  /* Risk Monitoring */
+  .risk-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .risk-item {
+    padding: 16px 18px;
+    background: var(--d-bg-card);
+    border-left: 3px solid #D4A574;
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--d-ink-soft);
+  }
+  .risk-item strong {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: #FFFFFF;
+  }
+  .risk-item .freq {
+    display: block;
+    margin-top: 6px;
+    font-size: 11px;
+    color: var(--d-ink-muted);
+    font-style: italic;
+  }
+
+  /* Sources */
+  .sources {
+    margin-top: 44px;
+    padding-top: 24px;
+    border-top: 1px solid var(--d-rule);
+    font-size: 11px;
+    color: var(--d-ink-muted);
+    line-height: 1.75;
+  }
+  .sources .label {
+    font-weight: 700;
+    color: #D4A574;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-right: 6px;
+  }
+  .sources p { margin-bottom: 10px; }
+
+  .disclaimer {
+    margin-top: 18px;
+    padding: 16px 20px;
+    background: var(--d-warning-bg);
+    border-left: 3px solid #D4A574;
+    font-size: 11px;
+    line-height: 1.7;
+    color: var(--d-ink-soft);
+  }
+  .disclaimer strong { color: #D4A574; }
+
+  /* Agent tags (in report) */
+  .report-pdf-area .agent-tag {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    padding: 3px 8px;
+    margin-left: 8px;
+    vertical-align: middle;
+    border-radius: 2px;
+  }
+  .report-pdf-area .agent-tag.auto { background: rgba(88, 166, 255, 0.15); color: #58A6FF; }
+  .report-pdf-area .agent-tag.human { background: rgba(212, 165, 116, 0.15); color: #D4A574; }
+  .report-pdf-area .agent-tag.auto::before { content: "🤖 "; }
+  .report-pdf-area .agent-tag.human::before { content: "👤 "; }
+
+  /* Report footer */
+  .report-footer {
+    margin-top: 52px;
+    padding-top: 22px;
+    border-top: 2px solid #D4A574;
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--d-ink-muted);
+  }
+  .report-footer .left strong { color: #FFFFFF; }
+  .report-footer .right { text-align: right; }
+
+  /* Responsive */
+  @media (max-width: 780px) {
+    .container { padding: 20px 16px 60px; }
+    .form-grid, .form-grid.three { grid-template-columns: 1fr; }
+    .reco-grid { grid-template-columns: 1fr; }
+    .verdict-grid { grid-template-columns: 1fr; }
+    .score-breakdown { grid-template-columns: repeat(2, 1fr); }
+    .news-section { grid-template-columns: 1fr; }
+    .scenarios { grid-template-columns: 1fr; }
+    .buy-guide { grid-template-columns: 1fr; }
+    .risk-list { grid-template-columns: 1fr; }
+    .expectation-bar { grid-template-columns: 1fr; gap: 16px; }
+    .prop-overview { grid-template-columns: repeat(2, 1fr); }
+    .report-pdf-area { padding: 28px 20px; margin: 16px 0; }
+    .report-title { font-size: 28px; }
+  }
+
+  /* ================================ */
+  /* MARKET PHASE 8-DIAGRAM           */
+  /* ================================ */
+  .market-phase {
+    background: var(--d-bg-card);
+    padding: 24px 26px;
+    border: 1px solid var(--d-rule);
+    margin-top: 14px;
+  }
+  .phase-head {
+    margin-bottom: 18px;
+  }
+  .phase-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #FFFFFF;
+    margin-bottom: 6px;
+  }
+  .phase-desc {
+    font-size: 12px;
+    color: var(--d-ink-soft);
+    line-height: 1.6;
+  }
+  .phase-desc strong { color: #D4A574; }
+  .phase-desc .now {
+    display: inline-block;
+    background: #D4A574;
+    color: #050810;
+    padding: 2px 8px;
+    font-weight: 700;
+    margin: 0 4px;
+    font-size: 11px;
+  }
+
+  .phase-frame {
+    display: grid;
+    grid-template-columns: 72px 1fr;
+    grid-template-rows: 1fr 26px;
+    gap: 6px;
+  }
+  .phase-yaxis {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    text-align: right;
+    font-size: 10px;
+    color: var(--d-ink-muted);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding-right: 8px;
+    border-right: 1px solid var(--d-rule);
+  }
+  .phase-yaxis .yu { color: #3FB950; }
+  .phase-yaxis .yd { color: #F85149; }
+
+  .phase-cells {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    gap: 6px;
+    min-height: 360px;
+  }
+
+  .phase-cells .cell {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 12px 14px;
+    background: var(--d-bg-card-2);
+    border: 1px solid var(--d-rule);
+    position: relative;
+    border-radius: 2px;
+  }
+  .phase-cells .cell .num {
+    font-family: var(--font-display);
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--d-ink-muted);
+    line-height: 1;
+  }
+  .phase-cells .cell .name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--d-ink);
+    margin-top: 6px;
+    letter-spacing: -0.005em;
+  }
+  .phase-cells .cell .dir {
+    font-size: 10px;
+    color: var(--d-ink-faint);
+    margin-top: 3px;
+    line-height: 1.3;
+  }
+  .phase-cells .cell .action {
+    font-size: 11px;
+    color: var(--d-ink-muted);
+    margin-top: auto;
+    padding-top: 8px;
+    font-style: italic;
+  }
+
+  /* center cell */
+  .phase-cells .cell.center {
+    background: transparent;
+    border: 1px dashed var(--d-rule);
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+  .phase-cells .cell.center .num {
+    color: #D4A574;
+    font-size: 28px;
+    margin-bottom: 4px;
+  }
+  .phase-cells .cell.center .name {
+    font-size: 11px;
+    color: var(--d-ink-muted);
+    font-weight: 600;
+    margin-top: 0;
+  }
+  .phase-cells .cell.center .dir {
+    font-size: 10px;
+    margin-top: 4px;
+  }
+
+  /* active cell — current phase */
+  .phase-cells .cell.active {
+    background: linear-gradient(135deg, rgba(212, 165, 116, 0.18), rgba(212, 165, 116, 0.04));
+    border: 2px solid #D4A574;
+    padding: 11px 13px;
+    box-shadow: 0 0 20px rgba(212, 165, 116, 0.15);
+  }
+  .phase-cells .cell.active .num { color: #D4A574; }
+  .phase-cells .cell.active .name { color: #FFFFFF; }
+  .phase-cells .cell.active .action { color: #D4A574; font-weight: 600; font-style: normal; }
+  .phase-cells .cell.active .here-badge {
+    position: absolute;
+    top: -10px; right: 10px;
+    background: #D4A574;
+    color: #050810;
+    font-size: 9px;
+    padding: 3px 8px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    border-radius: 2px;
+  }
+
+  .phase-xaxis {
+    grid-column: 2 / 3;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    text-align: center;
+    font-size: 10px;
+    color: var(--d-ink-muted);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding-top: 6px;
+    border-top: 1px solid var(--d-rule);
+  }
+  .phase-xaxis span:first-child { color: #F85149; }
+  .phase-xaxis span:last-child { color: #3FB950; }
+
+  /* PDF mode adjustments for phase */
+  .report-pdf-area.pdf-mode .market-phase { padding: 18px 20px; }
+  .report-pdf-area.pdf-mode .phase-cells { min-height: 290px; }
+  .report-pdf-area.pdf-mode .phase-cells .cell { padding: 10px 11px; }
+  .report-pdf-area.pdf-mode .phase-cells .cell.active { padding: 9px 10px; }
+  .report-pdf-area.pdf-mode .phase-cells .cell .num { font-size: 16px; }
+  .report-pdf-area.pdf-mode .phase-cells .cell .name { font-size: 11px; margin-top: 5px; }
+  .report-pdf-area.pdf-mode .phase-cells .cell .dir { font-size: 9px; }
+  .report-pdf-area.pdf-mode .phase-cells .cell .action { font-size: 10px; padding-top: 6px; }
+  .report-pdf-area.pdf-mode .phase-cells .cell.center .num { font-size: 22px; }
+  .report-pdf-area.pdf-mode .phase-yaxis { font-size: 9px; }
+  .report-pdf-area.pdf-mode .phase-xaxis { font-size: 9px; }
+
+  /* ===== SVG 8-PHASE OCTAGON CYCLE ===== */
+  .phase-svg {
+    width: 100%;
+    max-width: 700px;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+  }
+  .phase-edge line { transition: all 0.3s; }
+  .ph-num  { font-size: 16px; font-weight: 700; font-family: var(--font-display); }
+  .ph-name { font-size: 12px; font-weight: 600; }
+  .ph-mean { font-size: 10px; font-weight: 500; }
+
+  /* Phase history list (below history SVG) */
+  .qhist-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 6px 12px;
+    margin-top: 20px;
+    padding: 16px 18px;
+    background: var(--d-bg-card-2);
+    border: 1px solid var(--d-rule);
+    border-radius: 2px;
+  }
+  .qhist-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    color: var(--d-ink-soft);
+    padding: 3px 0;
+  }
+  .qhist-item .num {
+    background: #58A6FF;
+    color: #0D1421;
+    font-weight: 700;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-size: 10px;
+    flex-shrink: 0;
+  }
+  .qhist-item .q { font-weight: 600; color: var(--d-ink); min-width: 40px; }
+  .qhist-item .phase { color: var(--d-ink-muted); font-size: 10px; }
+  .qhist-item.last .num { background: #D4A574; }
+  .qhist-item.last .q,
+  .qhist-item.last .phase { color: #D4A574; font-weight: 700; }
+
+  .report-pdf-area.pdf-mode .phase-svg { max-width: 600px; }
+
+  /* ===== BRAND CLICK (home) ===== */
+  .brand-link {
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+  .brand-link:hover { opacity: 0.75; }
+
+  @media print {
+    .stepnav, .report-toolbar, .actions { display: none !important; }
+    .report-pdf-area { box-shadow: none; margin: 0; padding: 24px; max-width: 100%; }
+    .rsection { page-break-inside: avoid; }
+  }
+
+  /* ================================ */
+  /* PDF EXPORT MODE (A4 width fit)  */
+  /* ================================ */
+  .report-pdf-area.pdf-mode {
+    width: 794px !important;
+    max-width: 794px !important;
+    padding: 36px 40px !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+  }
+  .report-pdf-area.pdf-mode .report-title { font-size: 32px; }
+  .report-pdf-area.pdf-mode .report-subtitle { font-size: 13px; margin-bottom: 24px; }
+  .report-pdf-area.pdf-mode .rsection-title { font-size: 20px; }
+  .report-pdf-area.pdf-mode .rsection { margin-top: 32px; padding-top: 22px; }
+
+  /* Verdict cards stack better at A4 width */
+  .report-pdf-area.pdf-mode .verdict-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .report-pdf-area.pdf-mode .verdict-card.primary {
+    grid-column: 1 / -1;
+  }
+  .report-pdf-area.pdf-mode .verdict-card { padding: 16px; }
+  .report-pdf-area.pdf-mode .verdict-card .big { font-size: 30px; }
+
+  /* 5축 점수 5개 좁게 */
+  .report-pdf-area.pdf-mode .score-breakdown {
+    gap: 6px;
+  }
+  .report-pdf-area.pdf-mode .score-axis {
+    padding: 14px 10px;
+  }
+  .report-pdf-area.pdf-mode .score-axis .ax-score {
+    font-size: 24px;
+  }
+  .report-pdf-area.pdf-mode .score-axis .ax-label {
+    font-size: 10px;
+    letter-spacing: 0.08em;
+  }
+  .report-pdf-area.pdf-mode .score-axis .ax-desc {
+    font-size: 11px;
+    line-height: 1.4;
+  }
+  .report-pdf-area.pdf-mode .score-axis .ax-weight {
+    font-size: 10px;
+    margin-bottom: 8px;
+  }
+
+  /* 단지 개요 3열 → 더 조밀 */
+  .report-pdf-area.pdf-mode .prop-cell {
+    padding: 12px 14px;
+  }
+  .report-pdf-area.pdf-mode .prop-cell .v { font-size: 13px; }
+  .report-pdf-area.pdf-mode .prop-cell .v.big { font-size: 16px; }
+  .report-pdf-area.pdf-mode .prop-cell .k { font-size: 10px; }
+
+  /* 차트 영역 너비 맞춤 */
+  .report-pdf-area.pdf-mode .chart-canvas-wrap {
+    height: 240px;
+  }
+  .report-pdf-area.pdf-mode .chart-wrap { padding: 18px 16px 14px; }
+  .report-pdf-area.pdf-mode .chart-wrap.tight .chart-canvas-wrap { height: 200px; }
+
+  /* News 2열 유지하되 폰트 약간 조밀 */
+  .report-pdf-area.pdf-mode .news-section { gap: 16px; }
+  .report-pdf-area.pdf-mode .news-item { padding: 10px 0; }
+  .report-pdf-area.pdf-mode .news-title { font-size: 13px; }
+  .report-pdf-area.pdf-mode .news-note { font-size: 11px; padding: 8px 10px; }
+
+  /* Scenarios 3열 좁게 */
+  .report-pdf-area.pdf-mode .scenarios { gap: 8px; }
+  .report-pdf-area.pdf-mode .scenario { padding: 16px 14px; }
+  .report-pdf-area.pdf-mode .scenario-name { font-size: 15px; }
+  .report-pdf-area.pdf-mode .scenario-desc { font-size: 11px; }
+  .report-pdf-area.pdf-mode .scenario-table { font-size: 11px; }
+
+  /* Expectation bar */
+  .report-pdf-area.pdf-mode .expectation-bar {
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+    padding: 18px;
+  }
+  .report-pdf-area.pdf-mode .expectation-bar .item .val { font-size: 22px; }
+  .report-pdf-area.pdf-mode .expectation-bar .item .lab { font-size: 10px; }
+
+  /* Buy guide 2열 */
+  .report-pdf-area.pdf-mode .buy-guide { gap: 12px; }
+  .report-pdf-area.pdf-mode .buy-guide .panel { padding: 16px; }
+  .report-pdf-area.pdf-mode .price-table { font-size: 12px; }
+  .report-pdf-area.pdf-mode .timing-list li { font-size: 12px; padding: 9px 0; }
+
+  /* Risk 2열 */
+  .report-pdf-area.pdf-mode .risk-list { gap: 8px; }
+  .report-pdf-area.pdf-mode .risk-item { padding: 12px 14px; font-size: 12px; }
+
+  /* Sources */
+  .report-pdf-area.pdf-mode .sources { font-size: 10px; }
+  .report-pdf-area.pdf-mode .disclaimer { font-size: 10px; padding: 12px 14px; }
+
+  /* Affordability */
+  .report-pdf-area.pdf-mode .afford-grid { gap: 16px; }
+  .report-pdf-area.pdf-mode .afford-summary { padding: 14px; font-size: 12px; }
+
+  /* Headlines */
+  .report-pdf-area.pdf-mode .headlines { padding: 16px 18px; }
+  .report-pdf-area.pdf-mode .headlines ol { font-size: 13px; }
+
+  /* Report header */
+  .report-pdf-area.pdf-mode .report-header { padding-bottom: 18px; margin-bottom: 22px; }
+  .report-pdf-area.pdf-mode .report-header .right { font-size: 10px; }
+
+  /* Report footer */
+  .report-pdf-area.pdf-mode .report-footer { margin-top: 36px; font-size: 10px; }
+
+  /* ============================================================ */
+  /* ===== 4-TIER VERDICT + 신호등 + 판단 근거 투명화 (v0.7) ===== */
+  /* ============================================================ */
+
+  /* 4단계 판단 색상 */
+  .verdict-card.primary .big.v-buy    { color: #3FB950; }
+  .verdict-card.primary .big.v-hold   { color: #D4A574; }
+  .verdict-card.primary .big.v-risk   { color: #E8833A; }
+  .verdict-card.primary .big.v-reject { color: #F85149; }
+  .verdict-pills { display:flex; gap:5px; margin-top:12px; }
+  .verdict-pill {
+    flex:1; text-align:center; font-size:10px; font-weight:700; padding:5px 0;
+    border-radius:2px; background:#21262D; color:var(--d-ink-faint); letter-spacing:0.02em;
+  }
+  .verdict-pill.on.buy    { background:var(--d-positive-bg); color:#3FB950; }
+  .verdict-pill.on.hold   { background:var(--d-warning-bg);  color:#D4A574; }
+  .verdict-pill.on.risk   { background:#3A2414; color:#E8833A; }
+  .verdict-pill.on.reject { background:var(--d-negative-bg); color:#F85149; }
+
+  /* 매수 결정 신호등 보드 */
+  .signal-board {
+    margin-top: 22px;
+    background: var(--d-bg-card);
+    border: 1px solid var(--d-rule);
+    padding: 20px 22px;
+  }
+  .signal-board .sb-head {
+    display: flex; justify-content: space-between; align-items: baseline;
+    margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--d-rule);
+  }
+  .signal-board .sb-title { font-size: 14px; font-weight: 700; color: #FFFFFF; letter-spacing: 0.01em; }
+  .signal-board .sb-tally { font-size: 12px; color: var(--d-ink-muted); font-weight: 600; }
+  .signal-board .sb-tally b.g { color: #3FB950; }
+  .signal-board .sb-tally b.y { color: #D4A574; }
+  .signal-board .sb-tally b.r { color: #F85149; }
+  .signal-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .signal-gate {
+    background: var(--d-bg-card-2); border: 1px solid var(--d-rule);
+    border-left: 3px solid var(--d-ink-faint); padding: 13px 15px;
+  }
+  .signal-gate.go   { border-left-color: #3FB950; }
+  .signal-gate.warn { border-left-color: #D4A574; }
+  .signal-gate.stop { border-left-color: #F85149; }
+  .signal-gate .sg-top { display: flex; align-items: center; gap: 7px; margin-bottom: 7px; }
+  .signal-gate .sg-dot { font-size: 11px; }
+  .signal-gate .sg-label { font-size: 12px; font-weight: 700; color: var(--d-ink); }
+  .signal-gate .sg-verdict { font-size: 12px; font-weight: 700; margin-bottom: 5px; }
+  .signal-gate.go .sg-verdict   { color: #3FB950; }
+  .signal-gate.warn .sg-verdict { color: #D4A574; }
+  .signal-gate.stop .sg-verdict { color: #F85149; }
+  .signal-gate .sg-basis { font-size: 11px; color: var(--d-ink-muted); line-height: 1.5; }
+  .signal-gate .sg-src { display:inline-block; margin-top:7px; font-size:9px; color:var(--d-ink-faint); letter-spacing:0.03em; text-transform:uppercase; }
+
+  /* 판단 근거 투명화 — 점수 기여도 + API 보정 */
+  .attribution { display: grid; grid-template-columns: 1.1fr 1fr; gap: 16px; margin-top: 14px; }
+  .attr-axes, .attr-adj { background: var(--d-bg-card); border: 1px solid var(--d-rule); padding: 20px 22px; }
+  .attr-axes .aa-title, .attr-adj .aa-title { font-size: 12px; font-weight: 700; color: #FFFFFF; margin-bottom: 16px; letter-spacing: 0.01em; }
+  .attr-axes .aa-title .meta, .attr-adj .aa-title .meta { font-weight: 400; color: var(--d-ink-muted); font-size: 11px; margin-left: 6px; }
+  .attr-row { margin-bottom: 14px; }
+  .attr-row:last-child { margin-bottom: 0; }
+  .attr-row .ar-head { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 5px; }
+  .attr-row .ar-name { color: var(--d-ink-soft); font-weight: 600; }
+  .attr-row .ar-name .w { color: var(--d-ink-faint); font-weight: 400; margin-left: 5px; font-size: 11px; }
+  .attr-row .ar-contrib { color: #FFFFFF; font-weight: 700; font-family: var(--font-mono); }
+  .attr-bar-bg { height: 8px; background: #21262D; border-radius: 4px; overflow: hidden; }
+  .attr-bar-fill { height: 100%; background: linear-gradient(90deg, #1F6FEB, #58A6FF); border-radius: 4px; }
+  .attr-row .ar-src { font-size: 10px; color: var(--d-ink-faint); margin-top: 5px; line-height: 1.4; }
+  .attr-row .ar-src .api { color: #58A6FF; font-weight: 700; }
+  .attr-total { display: flex; justify-content: space-between; align-items: baseline; margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--d-rule); }
+  .attr-total .at-lab { font-size: 12px; color: var(--d-ink-muted); font-weight: 600; }
+  .attr-total .at-val { font-family: var(--font-display); font-size: 26px; font-weight: 700; color: #FFFFFF; }
+  .attr-total .at-band { font-size: 12px; font-weight: 700; margin-left: 8px; }
+  .adj-item { padding: 12px 0; border-bottom: 1px dashed var(--d-rule); font-size: 12px; line-height: 1.55; }
+  .adj-item:last-child { border-bottom: none; padding-bottom: 0; }
+  .adj-item .adj-flag { display: inline-block; font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 2px; margin-right: 8px; letter-spacing: 0.03em; white-space: nowrap; }
+  .adj-item .adj-flag.up      { background: var(--d-positive-bg); color: #3FB950; }
+  .adj-item .adj-flag.down    { background: var(--d-negative-bg); color: #F85149; }
+  .adj-item .adj-flag.neutral { background: rgba(88,166,255,0.12); color: #58A6FF; }
+  .adj-item .adj-text { color: var(--d-ink-soft); }
+  .adj-item .adj-text b { color: #FFFFFF; }
+  .adj-item .adj-api { color: #58A6FF; font-weight: 700; }
+  @media (max-width: 780px) {
+    .signal-grid { grid-template-columns: 1fr; }
+    .attribution { grid-template-columns: 1fr; }
+    .report-pdf-area.pdf-mode .signal-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  .report-pdf-area.pdf-mode .signal-grid { grid-template-columns: repeat(3, 1fr); gap: 7px; }
+  .report-pdf-area.pdf-mode .signal-gate { padding: 10px 11px; }
+  .report-pdf-area.pdf-mode .attribution { gap: 10px; }
+  .report-pdf-area.pdf-mode .attr-axes, .report-pdf-area.pdf-mode .attr-adj { padding: 14px 16px; }
+
+  /* ============================================================ */
+  /* ===== UNIFIED SPA: VIEWS + THEME (v1.1) ==================== */
+  /* ============================================================ */
+  .view { display: none; }
+  .view.active { display: block; }
+  #view-home.active { display: flex; }
+
+  .theme-toggle {
+    position: fixed; bottom: 24px; right: 24px; z-index: 300;
+    width: 44px; height: 44px; border-radius: 50%;
+    border: 1px solid var(--rule); background: var(--bg-card); color: var(--ink);
+    font-size: 18px; cursor: pointer; transition: all .15s;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+  }
+  .theme-toggle:hover { border-color: var(--accent); transform: scale(1.08); }
+  @media print { .theme-toggle { display: none; } }
+
+  /* HOME (chat) */
+  #view-home { min-height: 100vh; align-items: center; justify-content: center; padding: 24px; }
+  .home-wrap { width: 100%; max-width: 720px; margin: 0 auto; text-align: center; }
+  .home-brand { font-size: 13px; color: var(--ink-muted); letter-spacing: .04em; margin-bottom: 26px; }
+  .home-brand .spark { color: var(--accent); }
+  .home-brand .accent { color: var(--accent); font-style: italic; font-weight: 600; }
+  .home-title { font-family: var(--font-display); font-size: 34px; font-weight: 700; letter-spacing: -.03em; color: var(--ink); margin-bottom: 26px; }
+  .home-box { border: 1px solid var(--rule); background: var(--bg-card); border-radius: 16px; padding: 20px 22px; text-align: left; box-shadow: 0 4px 24px rgba(0,0,0,.06); }
+  .home-box-ph { color: var(--ink-muted); font-size: 15px; margin-bottom: 18px; }
+  .home-box-bar { display: flex; align-items: center; gap: 10px; }
+  .hb-plus { width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--rule); display: flex; align-items: center; justify-content: center; color: var(--ink-muted); font-size: 18px; }
+  .hb-model { font-size: 12px; color: var(--ink-muted); margin-left: auto; }
+  .home-recent { text-align: left; font-size: 12px; color: var(--ink-faint); margin: 26px 0 10px; letter-spacing: .06em; text-transform: uppercase; }
+  .query-box { display: block; width: 100%; text-align: left; border: 1px solid var(--rule); background: var(--bg-card); border-radius: 14px; padding: 18px 20px; cursor: pointer; transition: all .15s; font-family: inherit; }
+  .query-box:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,.10); }
+  .query-text { color: var(--ink); font-size: 15px; line-height: 1.6; margin-bottom: 10px; }
+  .query-text b { color: var(--accent); }
+  .query-meta { font-size: 12px; color: var(--ink-muted); }
+  .query-meta strong { color: var(--accent); }
+
+  /* LIST */
+  #view-list .container { padding-top: 40px; }
+  .list-querybar { display: block; width: 100%; text-align: left; margin-bottom: 24px; padding: 12px 16px; border: 1px dashed var(--rule); background: var(--bg-card); border-radius: 10px; color: var(--ink-muted); font-size: 13px; cursor: pointer; font-family: inherit; transition: all .15s; }
+  .list-querybar:hover { border-color: var(--accent); color: var(--ink); }
+  .list-title { font-family: var(--font-display); font-size: 26px; font-weight: 700; color: var(--ink); margin-bottom: 6px; }
+  .list-sub { color: var(--ink-muted); font-size: 13px; margin-bottom: 24px; line-height: 1.6; }
+  .list-cards { display: grid; gap: 14px; }
+  .lc { display: block; width: 100%; text-align: left; border: 1px solid var(--rule); background: var(--bg-card); border-radius: 14px; padding: 22px 24px; cursor: pointer; transition: all .15s; font-family: inherit; }
+  .lc:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,.08); }
+  .lc-top { display: flex; align-items: baseline; gap: 10px; margin-bottom: 7px; }
+  .lc-rank { font-family: var(--font-display); font-style: italic; font-size: 13px; color: var(--ink-faint); }
+  .lc-name { font-family: var(--font-display); font-size: 21px; font-weight: 700; color: var(--ink); letter-spacing: -.02em; }
+  .lc-verdict { margin-left: auto; font-size: 12px; font-weight: 700; padding: 4px 11px; border-radius: 20px; white-space: nowrap; }
+  .lc-verdict.v-buy { background: rgba(63,185,80,.15); color: #3FB950; }
+  .lc-verdict.v-hold { background: rgba(212,165,116,.18); color: #C68A4E; }
+  .lc-verdict.v-risk { background: rgba(232,131,58,.15); color: #E8833A; }
+  .lc-verdict.v-reject { background: rgba(248,81,73,.15); color: #F85149; }
+  .lc-meta { font-size: 13px; color: var(--ink-muted); margin-bottom: 10px; }
+  .lc-meta .lc-score { font-family: var(--font-display); color: var(--accent); font-weight: 700; }
+  .lc-line { font-size: 13px; color: var(--ink-soft); line-height: 1.55; }
+  .lc-go { margin-top: 12px; font-size: 12px; color: var(--accent); font-weight: 600; }
+  .list-disc { margin-top: 26px; font-size: 11px; color: var(--ink-faint); line-height: 1.7; }
+
+  /* ── Maps ── */
+  .list-map-wrap { margin: 0 0 22px; }
+  #list-map { width: 100%; height: 320px; border-radius: 14px; border: 1px solid var(--rule); overflow: hidden; background: var(--bg-card); }
+  .list-map-cap { margin-top: 8px; font-size: 11px; color: var(--ink-faint); }
+  .report-map-wrap { margin: 4px 0 26px; }
+  #report-map { width: 100%; height: 360px; border-radius: 14px; border: 1px solid var(--rule); overflow: hidden; background: var(--bg-card); }
+  .report-map-legend { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; margin-top: 10px; font-size: 11.5px; color: var(--ink-soft); }
+  .report-map-legend .lg-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 4px; vertical-align: middle; }
+  .lg-center { background: #D4A574; } .lg-subway { background: #2F6FED; } .lg-hospital { background: #E5484D; } .lg-school { background: #2BA672; }
+  .report-map-legend .lg-ring { color: var(--ink-faint); }
+  .report-map-cap { margin-top: 6px; font-size: 11px; color: var(--ink-faint); }
+  /* 지도 마커 오버레이 */
+  .map-pin { display:flex; align-items:center; justify-content:center; width:26px; height:26px; border-radius:50% 50% 50% 0; transform:rotate(-45deg); border:2px solid #fff; box-shadow:0 2px 6px rgba(0,0,0,.35); font-size:11px; font-weight:800; color:#fff; }
+  .map-pin span { transform:rotate(45deg); }
+  .map-pin.subway { background:#2F6FED; } .map-pin.hospital { background:#E5484D; } .map-pin.school { background:#2BA672; }
+  .map-pin.center { width:30px; height:30px; background:#D4A574; font-size:13px; }
+  .map-fac-label { background:var(--bg-card); color:var(--ink); border:1px solid var(--rule); border-radius:6px; padding:2px 7px; font-size:10.5px; font-weight:700; white-space:nowrap; box-shadow:0 1px 4px rgba(0,0,0,.25); transform:translateY(-42px); }
+  .map-num { display:flex; align-items:center; justify-content:center; width:34px; height:34px; border-radius:50% 50% 50% 0; transform:rotate(-45deg); background:#D4A574; border:2.5px solid #fff; box-shadow:0 3px 8px rgba(0,0,0,.4); color:#1a1206; font-weight:900; font-size:16px; cursor:pointer; }
+  .map-num span { transform:rotate(45deg); }
+
+  /* ── 지역 펀더멘털 패널 ── */
+  .region-panel { margin: 4px 0 26px; border: 1px solid var(--rule); border-radius: 14px; background: var(--bg-card); overflow: hidden; }
+  .region-panel-head { padding: 12px 16px; font-weight: 800; font-size: 13.5px; border-bottom: 1px solid var(--rule); display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; }
+  .region-src { font-size: 10.5px; font-weight: 600; color: var(--ink-faint); }
+  .region-grid { display: grid; grid-template-columns: 1fr 1fr; }
+  .region-cell { padding: 12px 16px; border-top: 1px solid var(--rule); }
+  .region-cell:nth-child(odd) { border-right: 1px solid var(--rule); }
+  .region-cell:nth-child(-n+2) { border-top: none; }
+  .rc-k { font-size: 10.5px; color: var(--ink-faint); font-weight: 700; letter-spacing: .03em; margin-bottom: 3px; }
+  .rc-v { font-size: 12.5px; color: var(--ink); line-height: 1.5; }
+  @media (max-width: 600px) { .region-grid { grid-template-columns: 1fr; } .region-cell:nth-child(odd) { border-right: none; } .region-cell:nth-child(2) { border-top: 1px solid var(--rule); } }
+
+  /* report toolbar round btn */
+  .btn-round { width: 38px; height: 38px; border-radius: 50%; border: 1px solid #30363D; background: transparent; color: #E6EDF3; cursor: pointer; font-size: 14px; font-weight: 700; transition: all .15s; }
+  .btn-round:hover { border-color: #D4A574; color: #D4A574; }
+  .tb-hint { font-size: 12px; color: #8B949E; letter-spacing: .04em; }
+
+  @media (max-width: 780px) { .home-title { font-size: 26px; } #view-list .container { padding-top: 24px; } }
+
+  /* ===== LIGHT THEME ===== */
+  html[data-theme="light"] {
+    --bg: #F4F1EC; --bg-card: #FFFFFF; --bg-dark: #FFFFFF;
+    --ink: #1A1A1A; --ink-soft: #3A3A3A; --ink-muted: #6B6B6B; --ink-faint: #9A9A9A;
+    --rule: #E5DFD4; --rule-soft: #EFEAE0; --accent: #1F6FEB; --accent-deep: #1452B8;
+  }
+  html[data-theme="light"] .report-pdf-area {
+    background: #FFFFFF; color: #1A1A1A; box-shadow: 0 8px 40px rgba(0,0,0,.10);
+    --d-bg: #FFFFFF; --d-bg-card: #F7F4EE; --d-bg-card-2: #F0EBE2;
+    --d-ink: #1A1A1A; --d-ink-soft: #3A3A3A; --d-ink-muted: #6B6B6B; --d-ink-faint: #9A9A9A;
+    --d-rule: #E5DFD4; --d-rule-soft: #EFEAE0; --d-accent: #1F6FEB;
+  }
+  html[data-theme="light"] .report-toolbar { background: #FFFFFF; color: #1A1A1A; border-bottom-color: #E5DFD4; }
+  html[data-theme="light"] .report-toolbar .left strong { color: #1A1A1A; }
+  html[data-theme="light"] .btn-round { border-color: #D8D2C6; color: #3A3A3A; }
+  html[data-theme="light"] .tb-hint { color: #6B6B6B; }
+  html[data-theme="light"] .report-title,
+  html[data-theme="light"] .rsection-title,
+  html[data-theme="light"] .report-pdf-area .brand-mark,
+  html[data-theme="light"] .prop-cell .v.big,
+  html[data-theme="light"] .chart-title,
+  html[data-theme="light"] .score-axis .ax-score,
+  html[data-theme="light"] .attr-total .at-val,
+  html[data-theme="light"] .attr-axes .aa-title,
+  html[data-theme="light"] .attr-adj .aa-title,
+  html[data-theme="light"] .signal-board .sb-title,
+  html[data-theme="light"] .attr-row .ar-contrib,
+  html[data-theme="light"] .buy-guide .panel h5,
+  html[data-theme="light"] .risk-item strong,
+  html[data-theme="light"] .adj-item .adj-text b,
+  html[data-theme="light"] .signal-gate .sg-label,
+  html[data-theme="light"] .report-header .right strong,
+  html[data-theme="light"] .report-footer .left strong { color: #1A1A1A; }
+  html[data-theme="light"] .verdict-card .big { color: #1A1A1A; }
+  html[data-theme="light"] .verdict-card.primary { background: linear-gradient(135deg,#FBF7F0 0%,#FFFFFF 100%); }
+  html[data-theme="light"] .score-bar, html[data-theme="light"] .afford-bar-bg, html[data-theme="light"] .attr-bar-bg { background: #E5DFD4; }
+  html[data-theme="light"] .score-bar .other { background: #8A99A8; }
+</style>
+</head>
+<body>
+
+<!-- 테마 토글 -->
+<button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" aria-label="theme">🌙</button>
+
+<!-- VIEW 1: HOME (chat) -->
+<section id="view-home" class="view active">
+  <div class="home-wrap">
+    <div class="home-brand"><span class="spark">✳</span> Mintelligence<span class="accent"> Realty</span> Advisor</div>
+    <h1 class="home-title">어떤 매수를 고민 중이신가요?</h1>
+    <div class="home-box">
+      <div class="home-box-ph">지역 · 예산 · 조건을 알려주시면 추천 단지와 의사결정 보고서를 드립니다</div>
+      <div class="home-box-bar"><span class="hb-plus">+</span><span class="hb-model">Mintelligence Realty · 의사결정 엔진</span></div>
+    </div>
+    <div class="home-recent">최근 분석</div>
+    <div id="home-analyses"></div>
+  </div>
+</section>
+
+<!-- VIEW 2: CANDIDATE LIST -->
+<section id="view-list" class="view">
+  <div class="container">
+    <header class="brand">
+      <div class="brand-link" onclick="showHome()" style="cursor:pointer;">
+        <div class="brand-mark">Mintelligence<span class="accent"> Realty</span> Advisor</div>
+        <div class="brand-tag">Buyer Decision Report · 매수자 의사결정</div>
+      </div>
+      <div class="brand-meta" id="list-brand-meta"><strong>강동구 추천</strong><br>분석일 2026-05-31</div>
+    </header>
+    <button class="list-querybar" id="list-querybar" onclick="showHome()">← 최근 분석으로</button>
+    <h2 class="list-title">추천 단지 <span id="list-count">3</span>곳</h2>
+    <p class="list-sub" id="list-sub">실거래로 검증한 후보입니다. 카드를 누르면 상세 보고서가 열립니다.</p>
+    <div class="list-map-wrap">
+      <div id="list-map"></div>
+      <p class="list-map-cap">추천 단지 위치 — 번호는 카드 순서와 동일합니다. 마커를 누르면 보고서가 열립니다.</p>
+    </div>
+    <div id="list-cards" class="list-cards"></div>
+    <div class="list-disc">⚠️ 본 결과는 정보 제공물이며 의사결정 책임은 사용자에게 있습니다. 현장 임장·정확 배정·자금 계획은 별도 확인이 필요합니다.</div>
+  </div>
+</section>
+
+<!-- VIEW 3: REPORT -->
+<section id="view-report" class="view">
+  <div class="report-toolbar">
+    <div class="left"><strong id="rep-tb-name">강동역두산위브센티움</strong> · 매수자 의사결정 보고서 <span class="meta">— 2026-05-31</span></div>
+    <div style="display:flex; gap:10px; align-items:center;">
+      <button class="btn-round" onclick="showList()" title="목록으로">◀</button>
+      <span class="tb-hint">목록</span>
+      <button class="btn btn-primary" id="pdfBtn" onclick="downloadPDF()" style="margin-left:8px;">📄 PDF 저장</button>
+    </div>
+  </div>
+  <div class="report-pdf-area" id="pdfArea"></div>
+</section>
+
+
+
+<script>
+// ====================================
+// PROPERTIES DATA (3 단지)
+// ====================================
+// 지역(강동구) 공통 지표 — KOSIS 인구·순이동 / SGIS 가구·주택·사업체 / R-ONE 가격지수 (2026-05-31 라이브)
+const REGION_GANGDONG = {
+  name: '강동구',
+  pop: '인구 49.9만명 · 최근 12개월 +3,126명(+0.63%)',
+  migration: '순이동 +2,411명(12M 누적) — ↑ 순유입(수요 강세)',
+  sgis: '가구 18.96만 · 주택 14.54만호 · 사업체 3.81만(종사자 15.74만) · 평균연령 43.7세',
+  reb: '아파트 매매지수 13M +14% · 전세 +9% → 전세<매매(갭 확대·하방지지 약화)',
+  src: 'KOSIS 인구·순이동 · 통계청 SGIS · 한국부동산원 R-ONE',
+  // 시장 사이클 (R-ONE 가격지수) — SECTION 06
+  cycle: {
+    maemae: '+14%', jeonse: '+9%', gap: '매매 > 전세 (갭 확대)',
+    position: '상승 후반 — 회복기를 지나 과열 진입 경계 구간',
+    caution: '매매가 전세보다 빠르게 올라(+14% vs +9%) 전세가율이 하락 중 — 실수요 대비 기대수익이 선반영된 상태. 단기 추격매수보다 조정 시 분할매수가 유리. 다만 아래 수급(공급 가뭄)으로 급락 가능성은 제한적.'
+  },
+  // 수급 밸런스 — SECTION 07
+  supply: {
+    demand: '인구 +3,126명(12M·+0.63%) · 순이동 +2,411명 순유입',
+    pressure: '향후 6개월 신규 분양 공고 0건 (청약홈)',
+    unsold: '미분양 379→308호 (6M, −18.7% 감소세)',
+    verdict: '수요 유입 ↑ + 신규 공급 가뭄 + 미분양 소화 → <strong>수급 타이트</strong>. 가격 급락 위험은 낮으나, 대안 신규 단지가 없어 기존 매물 가격을 떠받침 — <strong>매수자 협상력은 불리</strong>.'
+  },
+  // 정책·규제 — SECTION 09
+  regulated: '강동구 = <strong>비규제지역</strong> (조정대상·투기과열지구 아님) → LTV·전매·거주요건 완화. 현행 세법: 종부세법(시행 2026-01-01)·소득세법(2026-04-21)·지방세법(2026-04-24).'
+};
+
+const PROPS_GANGDONG = [
+{
+    idx: 0,
+    geo: { lat: 37.537224, lng: 127.134762, facilities: [
+      { t:'subway',   n:'강동역 5호선',   lat:37.5358819, lng:127.1323963, d:'256m' },
+      { t:'subway',   n:'길동역 5호선',   lat:37.5378265, lng:127.1400213, d:'469m' },
+      { t:'subway',   n:'천호역 5호선',   lat:37.5385112, lng:127.1239285, d:'968m' },
+      { t:'hospital', n:'강동성심병원',   lat:37.5359971, lng:127.1353780, d:'0.15km' },
+      { t:'school',   n:'동신중',         lat:37.5368276, lng:127.1343169, d:'0.06km' },
+      { t:'school',   n:'서울천동초',     lat:37.5407770, lng:127.1379629, d:'0.49km' },
+      { t:'school',   n:'둔촌고',         lat:37.5309989, lng:127.1443801, d:'1.09km' } ] },
+    local: {
+      transit: '강동역 5호선 256m(도보 3분) · 강남역 직선 10.4km (5호선, 강남 환승)',
+      medical: '강동 종합병원 3개·의원 484개 · 최근접 강동성심병원 0.15km',
+      commercial: '반경 500m 상가 1,000+개 (음식 262·소매 197·과학기술 136)'
+    },
+    name: '강동역두산위브센티움',
+    subtitle: '서울 강동구 천호동 155-5 · 2004년 (21년차) · 140세대 주상복합 · 전용 60㎡ 기준',
+    address: '서울특별시 강동구 천호동 155-5', built: '2004년 5월', households: '140세대 (주상복합)',
+    sizes: '39 / 60 m² (주상복합)', builder: '두산건설 (두산위브)',
+    priceRange: '6.90 ~ 7.60억 (60㎡)', lastDeal: '7.33억 (26.2Q)',
+    jeonse: {
+      ratio: '≈ 68%', gap: '약 2.3억',
+      deal: '전용 60㎡ 전세 4.0~5.0억 (중앙값 5.0억 · 최근 7M 표본 2건)',
+      note: '전세가율이 후보 중 가장 높음(준신축 실거주 가치) → 하락 방어력 양호·갭 부담 최소. 단 60㎡ 전세 표본이 적고 31㎡ 소형 월세가 다수 — 임대시장은 소형 중심.'
+    },
+    tradeDetail: { vol:'17건 / 최근 12개월', buyer:'개인 100% · 전부 중개거래 · 해제 0건', recent:'26.4 7.0~7.4억 · 26.3 6.9~7.5억 (전용 60㎡)', insight:'법인·투자수요 유입 없는 실수요 중심 거래 + 이상(해제)거래 없음. 소규모 단지치고 유동성 적정.' },
+    kaptInfo: { code:'A10020603', use:'2004.05.03', units:'140세대 · 1개동', heat:'개별난방', hall:'복도식', mgmt:'위탁관리', builder:'두산건설', floors:'지상 15층', struct:'철골철근콘크리트', park:'130대 (세대당 0.93)', elev:'4대', cctv:'32대', ev:'지하 3기', extra:'관리사무소·자전거보관소' },
+    tax: {
+      acq: '약 1,100~1,570만원 (취득세율 1.6~2.1%, 6~9억 누진구간 · 전용 60㎡=85㎡↓ 농특세 면제)',
+      hold: '종부세 비과세 (1주택 공시가 12억 공제 · 추정 공시가 ~5억). 재산세 연 약 90~140만원',
+      gain: '2년 보유 시 양도세 비과세 (12억↓ 1주택 · 강동 비규제=거주요건 없음) → 5년 후 매각차익 전액 비과세 가능'
+    },
+    pricePerPyeong: '약 2,720 만원 (공급면적·주상복합)',
+    maintenance: '월 약 25만원 (주상복합 추정)', parking: '약 1.0 대 (추정)', far: '주상복합 (고용적률)',
+    propertyPrice: '7.33 억', purchaseCap: '6.50 억',
+    margin: '-0.83', fitPercent: '88%', fitClass: 'warning',
+    affordCapMax: '6.5', affordBarMax: '9',
+    kaptPK: '',
+    totalScore: 67,
+    verdict: '위험', verdictEng: 'RISK', verdictClass: 'v-risk', verdictTone: 'risk',
+    verdictDetail: '종합 67점 · 강동역 초역세권 준신축 「안정형」이나, 1순위 목표 「5년 시세차익」 동력 약함 (주상복합 140세대·5년 보합)',
+    decisionGates: [
+      { state: 'warn', label: '💰 재무 여력', verdict: '추가자금 필요', basis: '적합도 88% · 7.33억 vs 자력 한도 6.5억(-0.83억). 예산 상향(추가자금 0.85억) 시 매수 가능.', src: 'affordability-analyst' },
+      { state: 'go',   label: '📈 시장 국면', verdict: '회복세', basis: '강동 전용59 25년 강세 + 미분양 -18.7% 감소 + 24년 저점(6.4억) 후 7.33억 회복.', src: 'cycle-analyst' },
+      { state: 'go',   label: '🏗️ 공급 압박', verdict: '압박 없음', basis: '강동 미분양 6M -18.7% 감소 + 향후 6M 신규 분양 0건 = 하방 보호.', src: 'KOSIS + 청약홈' },
+      { state: 'stop', label: '🏆 단지 본질', verdict: '주의', basis: '주상복합 140세대 소규모(2004) · 대지지분 작아 재건축 동력 약 · 환금성·관리비 주의.', src: 'complex-analyst' },
+      { state: 'go',   label: '🚇 입지·교통', verdict: '강점', basis: '강동역(5호선) 초역세권 도보 1~2분 + 천호 상권. 단 강남은 잠실 8호선 환승.', src: 'location-analyst' },
+      { state: 'warn', label: '🎓 학군', verdict: '보통', basis: '서울성내초 0.57km·성내중 0.75km(학급당 20~23). 평범한 강동 학군.', src: 'NEIS + 학교알리미' }
+    ],
+    decisionRule: '🔴 1건(단지 본질 — 주상복합 140세대, 시세차익 동력 약) → <strong>위험(매수 신중)</strong>. 강동역 역세권 준신축이라 <strong>실거주·하방 안정은 우수</strong>하나, 1순위 목표인 「5년 시세차익」엔 부적합. 시세차익이 핵심이면 RANK 02(중앙하이츠 재건축)·RANK 03(둔촌 9호선) 비교 권장.',
+    scoreAttribution: {
+      axes: [
+        { name: 'A. 입지',     weight: 25, score: 76, contrib: '19.0', srcLabel: '강동역 5호선 초역세권 · 천호 상권 (다음·네이버 부동산)' },
+        { name: 'B. 학군',     weight: 20, score: 64, contrib: '12.8', srcLabel: '<span class="api">학교알리미</span> 인근 초 0.57km·중 0.75km · 학급당 20~23명' },
+        { name: 'C. 단지',     weight: 20, score: 62, contrib: '12.4', srcLabel: '주상복합 140세대 소규모·2004 (<span class="api">K-apt 미등록</span> → 네이버·실거래 검증)' },
+        { name: 'D. 시세',     weight: 20, score: 60, contrib: '12.0', srcLabel: '국토부 실거래 5년 <b>보합</b> + <span class="api">KOSIS</span> 미분양 -18.7% 안정' },
+        { name: 'E. 호재·악재', weight: 15, score: 72, contrib: '10.8', srcLabel: '천호뉴타운 정비 호재 + <span class="api">청약홈</span> 공급압박 0' }
+      ],
+      adjustments: [
+        { dir: 'neutral', text: '<span class="adj-api">K-apt 미등록</span>(주상복합) → 세대수·준공은 <b>네이버부동산·실거래로 검증</b> (140세대·2004)' },
+        { dir: 'up',      text: '<span class="adj-api">KOSIS</span> 강동구 미분양 6M <b>-18.7%</b> 감소세 → 시세축 하방 안정 +2' },
+        { dir: 'up',      text: '<span class="adj-api">청약홈</span> 강동 향후 6M 신규 분양 <b>0건</b> → 공급 압박 없음, 호재축 +2' },
+        { dir: 'down',    text: '<span class="adj-api">실거래</span> 5년 보합(7.76→7.33억) + 주상복합 소규모 → 단지·시세축 <b>-8</b> (시세차익 동력 약)' }
+      ]
+    },
+    score5: { loc: 76, sch: 64, cpx: 62, prc: 60, news: 72 },
+    score5Desc: {
+      loc: '강동역(5호선) 초역세권 도보 1~2분. 천호 상권 인접. 강남은 잠실 8호선 환승 필요.',
+      sch: '서울성내초(0.57km)·성내중(0.75km)·동신중(사립). 학급당 20~23명, 강동 평균 학군.',
+      cpx: '두산건설 두산위브 · 140세대 주상복합 · 2004 준신축(21년차). 소규모·고용적.',
+      prc: '전용60 5년 7.76→7.33억 보합. 강동 전용59 평균(14.1억)의 절반 = 저평가 역세권.',
+      news: '천호뉴타운 대규모 정비(천호1 40층 한강뷰 등) 광역 호재 + 미분양 감소 + 분양 0.'
+    },
+    schoolsNearby: {
+      elem: '서울성내초(0.57km)·서울성일초(0.67km)·서울천일초(1.15km) · 학교알리미 실거리',
+      mid: '동신중(0.71km·사립)·성내중(0.75km)·천일중(1.18km) · 학교알리미',
+      high: '<strong style=\"color:#D4A574\">둔촌고(1.65km)</strong>·동북고(2.18km·사립)·성덕고(2.18km·사립)'
+    },
+    kosisUnsold: {
+      summary: '강동구 미분양 6개월 -18.7% 감소세 (안정화)',
+      interpretation: '<strong style=\"color:#3FB950\">긍정 신호</strong> — 강동 미분양 빠른 감소 = 매수 심리 회복·가격 하방 안정. 시세 안정 보정 적용.'
+    },
+    applyhomeSupply: {
+      level: 'low',
+      summary: '향후 6개월 강동 내 신규 분양 0건 — 공급 압박 없음 (호재)',
+      recentList: []
+    },
+    headlines: [
+      ['재무 적합', "전용60 7.33억 vs 자력 한도 6.5억 → <strong>추가자금 0.83억 필요</strong>. 예산 상향(8.5억) 내 매수 가능. 적합도 88%(자력 기준)."],
+      ['단지 본질', "강동역 5호선 <strong>초역세권</strong> 준신축(2004)이나 <strong>주상복합 140세대 소규모</strong> — 재건축·시세차익 동력 약."],
+      ['시장 환경', "강동 미분양 -18.7%↓ + 천호뉴타운 대규모 정비 호재. 단 본 단지 5년 시세는 <strong>보합</strong>(강동 평균 강세에 비해 underperform)."]
+    ],
+    affordSummary: [
+      ['자기자본 (현금)','1.5 억',null],
+      ['+ 추가자금(스트레치)','0.85 억',null],
+      ['LTV 70%','5.13 억',null],
+      ['DSR 40% 한도','5.0 억','divider'],
+      ['→ 대출 가능','5.0 억',null],
+      ['매수 한도(추가자금 포함)','7.35 억',null],
+      ['전용60 실거래','7.33 억',null],
+      ['→ 적합','+0.02 억',null,"good"],
+      ['취득세','805 만원',null],
+      ['월 부담','약 255 만원',null]
+    ],
+    affordMarkerPct: 81,
+    affordText: '전용60 실거래 7.33억은 <strong>자력 매수 한도 6.5억을 0.83억 초과</strong>. 추가자금(부모지원·신용대출 등) 0.85억 보전 시 매수 가능. 적합도 88%(자력 기준).',
+    affordText2: '<strong style=\"color:#D4A574\">실무 권고:</strong> 강동역 초역세권 준신축으로 실거주·하방 안정은 우수. 단 5년 시세 보합 이력 → <strong>시세차익이 1순위면 RANK 02·03을 반드시 비교</strong>.',
+    newsScore: '+15', currentPhase: 2,
+    phaseDescFull: '24년 저점(6.4억) 후 회복 — 26.2Q 7.33억(저점 대비 +14%). 강동 미분양 -18.7%↓·매수심리 회복. <span class=\"now\">② 안정 상승</span>. 단 5년 장기로는 보합(21년 7.76 → 26년 7.33억).',
+    scenarios: {
+      bull: { prob: 30, y1: '7.6억', y1r: '+4%', y3: '8.2억', y3r: '+12%', y5: '9.0억', y5r: '+23%', desc: '천호뉴타운 정비 본격화 + 강동역 역세권 재평가 + 금리 인하 + 주복 리모델링.' },
+      base: { prob: 50, y1: '7.4억', y1r: '+1%', y3: '7.7억', y3r: '+5%', y5: '8.1억', y5r: '+10%', desc: '강동 시장 동조 완만 상승. 주상복합 한계로 아파트 평균 이하 상승.' },
+      bear: { prob: 20, y1: '7.0억', y1r: '-4%', y3: '6.8억', y3r: '-7%', y5: '6.6억', y5r: '-10%', desc: '주상복합 노후화 + 금리 부담 + 신축 선호로 구축 주복 외면.' }
+    },
+    expected: { y1: '7.38억', y1r: '+0.7%', y3: '7.67억', y3r: '+4.6%', y5: '8.07억', y5r: '+10.1%' },
+    targetPrice: '7.0 ~ 7.2 억 (60㎡ 협상)', priceCap: '7.5 억 (60㎡)',
+    avgListing: '7.2 ~ 7.8 억 (60㎡)', recentDeal: '7.33 억 (26.2Q)', similarAvg: '7.0 억 (강동역 인근 주복)', negotiation: '1,000 ~ 2,000 만원',
+    chart: {
+      labels: ['23.1Q','23.2Q','23.3Q','23.4Q','24.1Q','24.2Q','24.3Q','24.4Q','25.1Q','25.2Q','25.3Q','25.4Q','26.1Q','26.2Q'],
+      price: [null,null,null,null,null,68000,64350,null,69750,68225,null,67225,72840,73325],
+      district: [93238,95883,98925,97562,101694,103734,102250,107199,115077,118839,125659,126060,126987,141323],
+      districtLabel: '강동구 전용59 평균(신축 포함)',
+      localLabel: '두산위브 전용60 실거래',
+      compareLabels: ['두산위브(본)','중앙하이츠','선사현대','고덕그라시움','강동헤리티지자이'],
+      compareData: [2720, 3000, 5600, 6000, 6600],
+      quarterlyVolume: [0,0,0,0,0,1,2,0,2,4,0,4,5,4],
+      volume: [0,1,0,1,1,2,2,1,1,1,1,0],
+      monthLabels: ['25.07','25.08','25.09','25.10','25.11','25.12','26.01','26.02','26.03','26.04','26.05','26.06']
+    },
+    news: {
+      positive: [
+        { strength: 'high', date: '2026-01-15', title: '천호1구역 재개발 대우건설 시공 — 40층 한강뷰 3,720억 (천호뉴타운 대표)', source: 'insight', url: 'https://www.insight.co.kr/news/554621', note: '강동역·천호동 광역 가치 상승. 본 단지 직접 조합은 아니나 일대 재평가 수혜.' },
+        { strength: 'high', date: '2026-05-31', title: '강동구 미분양 6개월 -18.7% 감소 (안정화)', source: 'KOSIS 통계청 (DT_MLTM_2082)', url: 'https://kosis.kr', note: '<strong>API 자동 수집</strong>. 매수 심리 회복·가격 하방 안정 시그널.' },
+        { strength: 'high', date: '2026-05-31', title: '향후 6개월 강동 신규 분양 0건 (공급 압박 없음)', source: '청약홈 (한국부동산원)', url: 'https://www.applyhome.co.kr', note: '<strong>API 자동 수집</strong>. 신규 공급 0 = 기존 매물 가격 보호.' },
+        { strength: 'mid', date: '2026-01-16', title: '천호8 43층 520가구·천호3-2 421세대 등 천호성내촉진지구 정비 가속', source: '서울경제·서울신문', url: 'https://www.sedaily.com/NewsView/2GZ0CQ10PD', note: '천호동 주거지 대규모 재편 → 중장기 입지 프리미엄.' }
+      ],
+      negative: [
+        { strength: 'high', date: '2026-05-31', title: '주상복합 140세대 소규모 — 재건축 동력 약·대지지분 작음', source: '시스템 분석', url: '', note: '아파트 대비 시세차익·환금성 약점. <strong>1순위 목표(시세차익)와 상충</strong>.' },
+        { strength: 'mid', date: '2026-05-31', title: '5년 시세 보합 (21년 7.76억 → 26년 7.33억)', source: '국토부 실거래', url: '', note: '강동 전용59 평균은 동기간 강세였으나 본 단지는 정체 — <strong>상대 underperform</strong>.' },
+        { strength: 'mid', date: '2026-04-20', title: '강남 직결 약함 — 5호선, 잠실(8호선) 환승 필요', source: '시스템 분석', url: '', note: '9호선 라인(둔촌) 대비 강남 출퇴근 열위. 조건 ③과 부분 상충.' },
+        { strength: 'low', date: '2026-04-20', title: '주상복합 관리비 부담 (아파트 대비 高)', source: '시스템 분석', url: '', note: '월 관리비·장기수선충당금 부담 점검 필요.' }
+      ]
+    }
+  },
+{
+    idx: 1,
+    geo: { lat: 37.5506496, lng: 127.1597995, facilities: [
+      { t:'subway',   n:'고덕역 5호선',   lat:37.5550477, lng:127.1541650, d:'697m' },
+      { t:'subway',   n:'상일동역 5호선', lat:37.5566779, lng:127.1659058, d:'859m' },
+      { t:'hospital', n:'강동경희대병원', lat:37.5535360, lng:127.1576732, d:'0.37km' },
+      { t:'school',   n:'강동고',         lat:37.5499276, lng:127.1606716, d:'0.11km' },
+      { t:'school',   n:'한영중',         lat:37.5492005, lng:127.1573702, d:'0.27km' },
+      { t:'school',   n:'서울고현초',     lat:37.5541226, lng:127.1659318, d:'0.66km' } ] },
+    local: {
+      transit: '고덕역 5호선 697m · 강남역 직선 13.0km (5호선 동쪽 끝, 강남 최장)',
+      medical: '강동경희대병원 0.37km · 강동 종합병원 3개',
+      commercial: '반경 500m 상가 332개 (교육 125·음식 77·소매 49)'
+    },
+    name: '중앙하이츠 (상일동)',
+    subtitle: '서울 강동구 상일동 · 1992년 (33년차·재건축 연한) · 410세대 5개동 · 전용 59㎡ 기준',
+    address: '서울특별시 강동구 상일동', built: '1992년', households: '410세대 / 5개동',
+    sizes: '44 / 52 / 59 m²', builder: '중앙건설',
+    priceRange: '10.5 ~ 11.5억 (59㎡)', lastDeal: '11.47억 (26.2Q)',
+    jeonse: {
+      ratio: '≈ 41%', gap: '약 6.5억',
+      deal: '전용 60㎡ 전세 3.0~5.1억 (중앙값 4.5억 · 최근 7M 표본 15건)',
+      note: '전세가율 최저 — 재건축 기대가 매매가에 선반영돼 실거주 가치 대비 고평가. 갭 약 6.5억으로 하락장 변동성·보유부담이 크다(위험 등급의 핵심 근거).'
+    },
+    tradeDetail: { vol:'전용 60㎡ 거래 활발 (명일·상일동)', buyer:'개인 100% · 전부 중개거래 · 해제 0건', recent:'26.4 11.0~12.0억 (전용 59.94㎡, 명일 상일동)', insight:'실거래가 호가 상단(11~12억)에서 형성되고 거래량도 양호 = 유동성 우수. 매수주체 전부 개인·중개로 이상거래 없음.' },
+    kaptInfo: { code:'A13483803', use:'1992.05.09', units:'410세대 · 5개동', heat:'개별난방', hall:'혼합식', mgmt:'자치관리', builder:'중앙개발', floors:'지상 13층', struct:'철근콘크리트', park:'365대 (세대당 0.89)', elev:'12대', cctv:'53대', ev:'지하 8기', extra:'관리사무소·노인정·놀이터·자전거보관소' },
+    tax: {
+      acq: '약 3,150~3,450만원 (취득세율 3.0% 고정, 9억 초과 · 전용 59㎡=85㎡↓ 농특세 면제)',
+      hold: '종부세 비과세 (추정 공시가 ~7.5억 < 12억). 재산세 연 약 150~230만원',
+      gain: '2년 보유 시 양도세 비과세 (1주택). 단 매각가 12억 초과 시 초과분만 과세 — 상승 폭 클 경우 주의'
+    },
+    pricePerPyeong: '약 4,600 만원',
+    maintenance: '월 약 18만원 (구축 추정)', parking: '약 1.0 대 (추정)', far: '저층·저용적 (재건축 유리)',
+    propertyPrice: '11.0 억', purchaseCap: '7.35 억',
+    margin: '-3.65', fitPercent: '67%', fitClass: 'negative',
+    affordCapMax: '7.35', affordBarMax: '13',
+    kaptPK: '',
+    totalScore: 76,
+    verdict: '위험', verdictEng: 'RISK', verdictClass: 'v-risk', verdictTone: 'risk',
+    verdictDetail: '5축 종합 76점(보류급)·재건축 펀더멘털 우수하나 — 이미 +55% 급등(11.5억)으로 예산 3.65억 초과 + 진입 타이밍 늦음 → 재무 오버라이드로 위험',
+    decisionGates: [
+      { state: 'stop', label: '💰 재무 여력', verdict: '예산 초과', basis: '전용59 11.0억 vs 자력+추가 7.35억(-3.65억). 적합도 67%. 현 소득·현금으론 자금 조달 곤란.', src: 'affordability-analyst' },
+      { state: 'warn', label: '📈 시장 국면', verdict: '과열 주의', basis: '저점 7.4억(23.4Q)→11.47억(26.2Q) +55% 급등. 재건축 기대 선반영 → 단기 고점 주의.', src: 'cycle-analyst' },
+      { state: 'go',   label: '🏗️ 공급 압박', verdict: '압박 없음', basis: '강동 미분양 6M -18.7% 감소 + 향후 6M 신규 분양 0건.', src: 'KOSIS + 청약홈' },
+      { state: 'go',   label: '🏆 단지 본질', verdict: '재건축 동력', basis: '410세대 5개동 중형 · 1992(33년차) 재건축 연한 도달 · 저용적률.', src: 'complex-analyst' },
+      { state: 'warn', label: '🚇 입지·교통', verdict: '강남 약점', basis: '상일동역(5호선)·고덕 신축벨트 인접. 단 5호선 동쪽 끝 → 강남 출퇴근 가장 불리.', src: 'location-analyst' },
+      { state: 'go',   label: '🎓 학군', verdict: '양호', basis: '서울강명초 0.27km·강명중 0.32km·상일여고 0.83km (고덕 학군).', src: 'NEIS + 학교알리미' }
+    ],
+    decisionRule: '🔴 1건(재무 — 예산 3.65억 초과) + 🟡 2건(급등 과열·강남 약점) → <strong>위험</strong>. 재건축 펀더멘털(종합 76·보류급)은 강동 후보 중 최고이나 <strong>이미 +55% 급등</strong>해 진입 타이밍이 늦고 예산을 크게 초과. 자금 여력을 11억+로 확대 가능할 때, 그것도 급등 후 조정 시점에 재검토 권장.',
+    scoreAttribution: {
+      axes: [
+        { name: 'A. 입지',     weight: 25, score: 70, contrib: '17.5', srcLabel: '상일동역 5호선 · 고덕 신축벨트 인접 (강남 출퇴근 약점)' },
+        { name: 'B. 학군',     weight: 20, score: 75, contrib: '15.0', srcLabel: '<span class="api">학교알리미</span> 강명초 0.27km·강명중 0.32km (고덕 학군)' },
+        { name: 'C. 단지',     weight: 20, score: 78, contrib: '15.6', srcLabel: '410세대 5개동 · 1992 재건축 연한 도달 · 저용적률' },
+        { name: 'D. 시세',     weight: 20, score: 82, contrib: '16.4', srcLabel: '국토부 실거래 저점 <b>+55% 급등</b> + <span class="api">KOSIS</span> 미분양 안정' },
+        { name: 'E. 호재·악재', weight: 15, score: 78, contrib: '11.7', srcLabel: '재건축+고덕벨트 후광 + <span class="api">청약홈</span> 공급압박 0' }
+      ],
+      adjustments: [
+        { dir: 'up',      text: '<span class="adj-api">실거래</span> 저점 7.4억 → 11.47억 <b>+55% 급등</b> → 시세축 재건축 모멘텀 강세 반영' },
+        { dir: 'up',      text: '<span class="adj-api">KOSIS</span> 강동구 미분양 6M <b>-18.7%</b> 감소세 → 시세 안정 +2' },
+        { dir: 'up',      text: '<span class="adj-api">청약홈</span> 강동 향후 6M 신규 분양 <b>0건</b> → 호재축 +2' },
+        { dir: 'down',    text: '<span class="adj-api">affordability</span> 재무 적합도 <b>67%</b>(예산 3.65억 초과) → 최종 verdict <b>위험으로 강등</b>' }
+      ]
+    },
+    score5: { loc: 70, sch: 75, cpx: 78, prc: 82, news: 78 },
+    score5Desc: {
+      loc: '상일동역(5호선)·고덕역 인근, 고덕 신축벨트(그라시움·아르테온) 옆. 강남은 5호선 끝이라 가장 불리.',
+      sch: '서울강명초(0.27km)·강명중(0.32km)·상일여고(0.83km). 고덕 학군, 학급 다소 과밀.',
+      cpx: '중앙건설 410세대 5개동 · 1992 준공(33년차) 재건축 연한 도달 · 저용적률.',
+      prc: '전용59 저점 7.4억(23.4Q) → 11.47억(26.2Q) +55% 급등. 재건축 기대 선반영.',
+      news: '재건축 연한 + 고덕 신축벨트 후광 + 미분양 감소 + 분양 0.'
+    },
+    schoolsNearby: {
+      elem: '서울강명초(0.27km·학급19.2)·서울고일초(0.52km)·서울고현초(0.59km) · 학교알리미 실거리',
+      mid: '강명중(0.32km·학급24.3)·상일중(0.78km)·고덕중(1.04km) · 학교알리미',
+      high: '<strong style=\"color:#D4A574\">상일여고(0.83km)</strong>·상일미디어고(0.91km)·강일고(0.99km)'
+    },
+    kosisUnsold: {
+      summary: '강동구 미분양 6개월 -18.7% 감소세 (안정화)',
+      interpretation: '<strong style=\"color:#3FB950\">긍정 신호</strong> — 강동 미분양 빠른 감소 = 매수 심리 회복. 단 본 단지는 이미 급등 구간.'
+    },
+    applyhomeSupply: {
+      level: 'low',
+      summary: '향후 6개월 강동 내 신규 분양 0건 — 공급 압박 없음 (호재)',
+      recentList: []
+    },
+    headlines: [
+      ['재무 부적합', "전용59 11.0억 vs 자력+추가 7.35억 → <strong>3.65억 초과</strong>. 적합도 67%. 예산으론 매수 곤란."],
+      ['단지·시세', "410세대 1992 재건축 연한 + 고덕벨트 후광 → 저점 대비 <strong>+55% 급등</strong>. 펀더멘털은 매수급(76점)."],
+      ['핵심 딜레마', "시세차익 동력은 강동 후보 중 최고이나, <strong>이미 급등 + 예산 초과 + 강남 5호선 약점</strong> → 타이밍·자금 문제로 위험."]
+    ],
+    affordSummary: [
+      ['자기자본 (현금)','1.5 억',null],
+      ['+ 추가자금(스트레치)','0.85 억',null],
+      ['LTV 70%','7.70 억',null],
+      ['DSR 40% 한도','5.0 억','divider'],
+      ['→ 대출 가능','5.0 억',null],
+      ['매수 한도','7.35 억',null],
+      ['전용59 실거래','11.0 억',null],
+      ['→ 부족','-3.65 억',null,"bad"],
+      ['취득세','약 1,800 만원',null],
+      ['월 부담','약 255 만원 (대출 한도)',null]
+    ],
+    affordMarkerPct: 85,
+    affordText: '전용59 실거래 11.0억은 <strong>매수 한도 7.35억을 3.65억 초과</strong>. 현 예산·소득(DSR)으론 자금 조달이 사실상 불가에 가깝습니다. 적합도 67%.',
+    affordText2: '<strong style=\"color:#D4A574\">실무 권고:</strong> 재건축 펀더멘털은 강동 후보 중 최고이나 이미 +55% 급등 + 예산 대폭 초과. <strong>자금을 11억+로 늘릴 수 있을 때, 급등 후 조정 시점에만 재검토</strong>.',
+    newsScore: '+30', currentPhase: 3,
+    phaseDescFull: '저점 7.4억(23.4Q) 후 +55% 급등 → 26.2Q 11.47억. 재건축 기대 선반영, 거래 줄며 가격 급등 = <span class=\"now\">③ 매물 부족(가격↑·거래↓)</span>. 단기 고점 주의.',
+    scenarios: {
+      bull: { prob: 30, y1: '11.8억', y1r: '+7%', y3: '13.0억', y3r: '+18%', y5: '14.5억', y5r: '+32%', desc: '재건축 사업 본궤도(조합·시공사) + 고덕 신축벨트 완성 + 금리 인하.' },
+      base: { prob: 45, y1: '11.0억', y1r: '0%', y3: '11.8억', y3r: '+7%', y5: '12.8억', y5r: '+16%', desc: '급등 후 숨고르기. 재건축은 장기 진행, 완만 상승.' },
+      bear: { prob: 25, y1: '10.0억', y1r: '-9%', y3: '9.5억', y3r: '-14%', y5: '10.0억', y5r: '-9%', desc: '급등 되돌림 + 재건축 지연 + 금리 부담.' }
+    },
+    expected: { y1: '10.99억', y1r: '-0.1%', y3: '11.59억', y3r: '+5.3%', y5: '12.61억', y5r: '+14.6%' },
+    targetPrice: '10.3 ~ 10.7 억 (조정 시 진입)', priceCap: '11.0 억 (59㎡)',
+    avgListing: '11 ~ 12억 (59㎡)', recentDeal: '11.47억 (26.2Q)', similarAvg: '10.5억 (상일 구축 59㎡)', negotiation: '협상 여지 작음 (매물 희소)',
+    chart: {
+      labels: ['23.1Q','23.2Q','23.3Q','23.4Q','24.1Q','24.2Q','24.3Q','24.4Q','25.1Q','25.2Q','25.3Q','25.4Q','26.1Q','26.2Q'],
+      price: [null,null,84000,74000,78300,null,77500,77600,79267,83583,95000,100500,105000,114667],
+      district: [93238,95883,98925,97562,101694,103734,102250,107199,115077,118839,125659,126060,126987,141323],
+      districtLabel: '강동구 전용59 평균',
+      localLabel: '중앙하이츠 전용59 실거래',
+      compareLabels: ['중앙하이츠(본)','고덕그라시움','고덕아르테온','선사현대','두산위브'],
+      compareData: [4600, 6500, 6300, 5600, 2720],
+      quarterlyVolume: [0,0,1,1,1,0,1,3,9,6,2,1,1,3],
+      volume: [1,2,3,2,1,0,1,1,1,2,1,0],
+      monthLabels: ['25.07','25.08','25.09','25.10','25.11','25.12','26.01','26.02','26.03','26.04','26.05','26.06']
+    },
+    news: {
+      positive: [
+        { strength: 'high', date: '2026-05-31', title: '재건축 연한 도달(1992·33년차) + 고덕 신축벨트(그라시움·아르테온) 후광', source: '시스템 분석', url: '', note: '저용적 중형단지 → 재건축 사업성 양호. 강동 후보 중 시세차익 동력 최고.' },
+        { strength: 'high', date: '2026-05-31', title: '강동구 미분양 6개월 -18.7% 감소 (안정화)', source: 'KOSIS 통계청 (DT_MLTM_2082)', url: 'https://kosis.kr', note: '<strong>API 자동 수집</strong>. 매수 심리 회복.' },
+        { strength: 'high', date: '2026-05-31', title: '향후 6개월 강동 신규 분양 0건 (공급 압박 없음)', source: '청약홈 (한국부동산원)', url: 'https://www.applyhome.co.kr', note: '<strong>API 자동 수집</strong>.' },
+        { strength: 'mid', date: '2026-04-10', title: '고덕 그라시움·아르테온 신축 인프라 → 상일동 생활권·학군 업그레이드', source: 'WebSearch', url: '', note: '고덕 신축벨트 완성 시 상일 구축 재평가 가능성.' }
+      ],
+      negative: [
+        { strength: 'high', date: '2026-05-31', title: '저점 대비 +55% 급등 (7.4억 → 11.47억) — 재건축 기대 선반영, 진입 늦음', source: '국토부 실거래', url: '', note: '단기 고점 우려. 추격 매수 위험.' },
+        { strength: 'high', date: '2026-05-31', title: '예산 3.65억 초과 — 현 소득(DSR)·현금으론 자금 조달 곤란', source: 'affordability', url: '', note: '<strong>11억은 본 예산(8.5억)을 크게 초과</strong>. 자금 확대 필요.' },
+        { strength: 'mid', date: '2026-04-20', title: '5호선 동쪽 끝 → 강남 출퇴근 최장(환승 다수)', source: '시스템 분석', url: '', note: '조건 ③(강남 출퇴근)과 가장 상충하는 후보.' },
+        { strength: 'low', date: '2026-04-20', title: '33년 구축 → 재건축 본궤도까지 장기·불확실', source: '시스템 분석', url: '', note: '안전진단·조합·시공 단계별 리스크. 5년 내 실현 불확실.' }
+      ]
+    }
+  },
+{
+    idx: 2,
+    geo: { lat: 37.5273654, lng: 127.1448709, facilities: [
+      { t:'subway',   n:'중앙보훈병원역 9호선', lat:37.5284026, lng:127.1484117, d:'333m' },
+      { t:'subway',   n:'둔촌동역 5호선',       lat:37.5276568, lng:127.1362146, d:'765m' },
+      { t:'subway',   n:'둔촌오륜역 9호선',     lat:37.5194081, lng:127.1386521, d:'1040m' },
+      { t:'hospital', n:'중앙보훈병원',         lat:37.5303393, lng:127.1478691, d:'0.42km' },
+      { t:'school',   n:'서울선린초',           lat:37.5296491, lng:127.1459207, d:'0.27km' },
+      { t:'school',   n:'둔촌중',               lat:37.5306755, lng:127.1465064, d:'0.40km' },
+      { t:'school',   n:'둔촌고',               lat:37.5309989, lng:127.1443801, d:'0.41km' } ] },
+    local: {
+      transit: '중앙보훈병원역 9호선 333m(도보 4분) · 강남역 직선 10.9km · 9호선 급행 직통',
+      medical: '중앙보훈병원 0.42km · 강동 종합병원 3개',
+      commercial: '반경 500m 상가 285개 (음식 79·소매 56·교육 40)'
+    },
+    name: '둔촌 현대3 (9호선)',
+    subtitle: '서울 강동구 둔촌동 · 1988년 (37년차·재건축) · 160세대 1개동 · 전용 58㎡ 기준',
+    address: '서울특별시 강동구 둔촌동', built: '1988년', households: '160세대 / 1개동 (초소규모)',
+    sizes: '58 / 69 m²', builder: '현대건설',
+    priceRange: '7.8 ~ 8.3억 (58㎡)', lastDeal: '8.0억 (58㎡) / 9.5억 (69㎡, 26.2Q)',
+    jeonse: {
+      ratio: '≈ 53%', gap: '약 4.5억',
+      deal: '전용 69㎡ 전세 4.3~5.5억 (중앙값 5.0억 · 최근 7M 표본 6건)',
+      note: '전세가율 중간 — 재건축 기대와 실거주 수요(9호선 급행)가 균형. 갭 약 4.5억으로 후보 중간 수준의 하방지지력.'
+    },
+    tradeDetail: { vol:'17건 / 최근 12개월', buyer:'개인 100% · 전부 중개거래 · 해제 0건', recent:'26.4 69㎡ 9.0~10.0억 · 26.2 58㎡ 8.0억', insight:'69㎡ 최근 10억 터치(상승 흐름). 실수요·중개 중심으로 이상거래 없음. 58㎡ 표본은 적음.' },
+    kaptInfo: { code:'A13470504', use:'1988.06.02', units:'160세대 · 1개동', heat:'개별난방', hall:'혼합식', mgmt:'자치관리', builder:'현대산업개발', floors:'지상 12층', struct:'철근콘크리트', park:'160대 (세대당 1.00)', elev:'4대', cctv:'28대', ev:'없음', extra:'관리사무소·노인정·놀이터·자전거보관소' },
+    tax: {
+      acq: '약 1,720~2,100만원 (취득세율 2.2~2.5%, 6~9억 누진구간 · 전용 58㎡=85㎡↓ 농특세 면제)',
+      hold: '종부세 비과세 (추정 공시가 ~5.5억 < 12억). 재산세 연 약 100~160만원',
+      gain: '2년 보유 시 양도세 비과세 (12억↓ 1주택 · 비규제) → 5년 후 매각차익 전액 비과세 가능'
+    },
+    pricePerPyeong: '약 3,500 만원',
+    maintenance: '월 약 15만원 (구축 추정)', parking: '1.0 대 미만 (추정)', far: '저층·저용적 (재건축 유리)',
+    propertyPrice: '8.0 억', purchaseCap: '7.35 억',
+    margin: '-0.65', fitPercent: '92%', fitClass: 'warning',
+    affordCapMax: '7.35', affordBarMax: '10',
+    kaptPK: '',
+    totalScore: 72,
+    verdict: '보류', verdictEng: 'HOLD', verdictClass: 'v-hold', verdictTone: 'hold',
+    verdictDetail: '종합 72점 · 강동 3후보 중 「강남 출퇴근(9호선 급행)+시세차익(재건축·올팍 후광)」 균형 최우수. 약점은 160세대 초소규모(통합재건축 불확실)·추가자금 0.65억',
+    decisionGates: [
+      { state: 'warn', label: '💰 재무 여력', verdict: '추가자금 소액', basis: '전용58 8.0억 vs 자력+추가 7.35억(-0.65억). 적합도 92%. 3후보 중 예산 부담 최소.', src: 'affordability-analyst' },
+      { state: 'go',   label: '📈 시장 국면', verdict: '확장 회복', basis: '저점 6.83억(23.3Q)→9.5억(26.2Q) +39% 회복. 거래 증가 동반 = ① 확장.', src: 'cycle-analyst' },
+      { state: 'go',   label: '🏗️ 공급 압박', verdict: '압박 없음', basis: '강동 미분양 6M -18.7% 감소 + 향후 6M 신규 분양 0건.', src: 'KOSIS + 청약홈' },
+      { state: 'warn', label: '🏆 단지 본질', verdict: '초소규모', basis: '160세대 1개동 초소규모(1988). 재건축 대상이나 단독 사업성 약 → 통합재건축 필요·불확실.', src: 'complex-analyst' },
+      { state: 'go',   label: '🚇 입지·교통', verdict: '강남 최강', basis: '9호선 둔촌오륜·올림픽공원 + 급행 신논현 직통 ~25분. 강동 후보 중 강남 출퇴근 최상.', src: 'location-analyst' },
+      { state: 'go',   label: '🎓 학군', verdict: '양호', basis: '서울둔촌초 0.31km·한산중 0.20km·둔촌고 0.60km. 둔촌 학군 양호.', src: 'NEIS + 학교알리미' }
+    ],
+    decisionRule: '🔴 0건 · 🟡 2건(재무 추가자금·단지 초소규모) → <strong>보류(매수 근접)</strong>. 강동 3후보 중 <strong>강남 출퇴근(9호선 급행)·시세차익(재건축+올팍포레온 후광) 균형이 가장 우수</strong>. 약점은 160세대 초소규모(통합재건축 속도 불확실)와 추가자금 0.65억. <strong>시세차익+강남이 1순위면 최우선 검토</strong>.',
+    scoreAttribution: {
+      axes: [
+        { name: 'A. 입지',     weight: 25, score: 80, contrib: '20.0', srcLabel: '9호선 둔촌오륜·올림픽공원 + 급행 신논현 직통 (강남 출퇴근 최상)' },
+        { name: 'B. 학군',     weight: 20, score: 72, contrib: '14.4', srcLabel: '<span class="api">학교알리미</span> 둔촌초 0.31km·한산중 0.20km·둔촌고 0.60km' },
+        { name: 'C. 단지',     weight: 20, score: 60, contrib: '12.0', srcLabel: '160세대 1개동 초소규모·1988 (재건축 대상이나 통합 필요)' },
+        { name: 'D. 시세',     weight: 20, score: 74, contrib: '14.8', srcLabel: '국토부 실거래 저점 <b>+39% 회복</b> + <span class="api">KOSIS</span> 미분양 안정' },
+        { name: 'E. 호재·악재', weight: 15, score: 74, contrib: '11.1', srcLabel: '올팍포레온 후광+9호선+재건축 + <span class="api">청약홈</span> 공급압박 0' }
+      ],
+      adjustments: [
+        { dir: 'up',      text: '<span class="adj-api">실거래</span> 저점 6.83억 → 9.5억 <b>+39% 회복</b> → 시세축 재건축·9호선 모멘텀 반영' },
+        { dir: 'up',      text: '<span class="adj-api">KOSIS</span> 강동구 미분양 6M <b>-18.7%</b> 감소세 → 시세 안정 +2' },
+        { dir: 'up',      text: '<span class="adj-api">청약홈</span> 강동 향후 6M 신규 분양 <b>0건</b> → 호재축 +2' },
+        { dir: 'down',    text: '<span class="adj-api">complex</span> 160세대 1개동 초소규모 → 단지축 <b>-10</b> (단독 재건축 사업성·환금성)' }
+      ]
+    },
+    score5: { loc: 80, sch: 72, cpx: 60, prc: 74, news: 74 },
+    score5Desc: {
+      loc: '9호선 둔촌오륜·올림픽공원 도보권 + 급행 신논현 직통(~25분). 강남 출퇴근 강동 최상.',
+      sch: '서울둔촌초(0.31km)·한산중(0.20km)·둔촌고(0.60km). 둔촌 학군 양호.',
+      cpx: '현대건설 160세대 1개동 초소규모 · 1988 준공(37년차). 재건축 대상이나 단독 사업성 약 → 통합 필요.',
+      prc: '전용69 저점 6.83억(23.3Q) → 9.5억(26.2Q) +39% 회복. 전용58 8.0억.',
+      news: '올림픽파크포레온(1.2만세대) 인프라 후광 + 9호선 + 재건축 + 미분양 감소.'
+    },
+    schoolsNearby: {
+      elem: '서울둔촌초(0.31km)·서울한산초(0.31km·학급20)·서울선린초(0.70km) · 학교알리미 실거리',
+      mid: '한산중(0.20km·학급22.9)·성내중(0.72km)·둔촌중(0.77km) · 학교알리미',
+      high: '<strong style=\"color:#D4A574\">둔촌고(0.60km·학급23.8)</strong>·동북고(1.07km·사립)·성덕고(2.43km)'
+    },
+    kosisUnsold: {
+      summary: '강동구 미분양 6개월 -18.7% 감소세 (안정화)',
+      interpretation: '<strong style=\"color:#3FB950\">긍정 신호</strong> — 강동 미분양 빠른 감소 = 매수 심리 회복·가격 하방 안정. 9호선·재건축 모멘텀과 시너지.'
+    },
+    applyhomeSupply: {
+      level: 'low',
+      summary: '향후 6개월 강동 내 신규 분양 0건 — 공급 압박 없음 (호재)',
+      recentList: []
+    },
+    headlines: [
+      ['재무 적합', "전용58 8.0억 vs 자력+추가 7.35억 → <strong>0.65억 추가</strong>. 적합도 92%. 3후보 중 예산 부담 가장 적게 목표 충족."],
+      ['강남·시세차익', "<strong>9호선 급행 신논현 직통(~25분)</strong> + 재건축(1988) + 올팍포레온 후광 → 강남+시세차익 균형 강동 최상."],
+      ['약점', "<strong>160세대 1개동 초소규모</strong> → 단독 재건축 사업성 약(통합 필요). 5년 내 실현 불확실."]
+    ],
+    affordSummary: [
+      ['자기자본 (현금)','1.5 억',null],
+      ['+ 추가자금(스트레치)','0.85 억',null],
+      ['LTV 70%','5.60 억',null],
+      ['DSR 40% 한도','5.0 억','divider'],
+      ['→ 대출 가능','5.0 억',null],
+      ['매수 한도','7.35 억',null],
+      ['전용58 실거래','8.0 억',null],
+      ['→ 부족','-0.65 억',null,"bad"],
+      ['취득세','약 1,200 만원',null],
+      ['월 부담','약 255 만원',null]
+    ],
+    affordMarkerPct: 80,
+    affordText: '전용58 실거래 8.0억은 <strong>자력+추가 한도 7.35억을 0.65억 초과</strong>. 소액 추가자금으로 보전 가능 — 3후보 중 예산 부담 가장 적게 목표를 충족합니다. 적합도 92%.',
+    affordText2: '<strong style=\"color:#D4A574\">실무 권고:</strong> 강남 출퇴근·시세차익이 1순위면 강동 후보 중 <strong>최우선</strong>. 단 160세대 초소규모라 재건축은 통합 추진 여부·속도가 관건 — 둔촌 일대 통합재건축 움직임 모니터링 필수.',
+    newsScore: '+20', currentPhase: 1,
+    phaseDescFull: '저점 6.83억(23.3Q) 후 +39% 회복 → 26.2Q 9.5억(전용69). 거래 증가 동반 가격 상승 = <span class=\"now\">① 확장</span>. 9호선·재건축 기대 반영.',
+    scenarios: {
+      bull: { prob: 35, y1: '8.6억', y1r: '+8%', y3: '9.8억', y3r: '+23%', y5: '11.5억', y5r: '+44%', desc: '둔촌 통합재건축 가시화 + 9호선 + 올팍포레온 후광 + 금리 인하.' },
+      base: { prob: 45, y1: '8.2억', y1r: '+3%', y3: '8.9억', y3r: '+11%', y5: '9.8억', y5r: '+23%', desc: '9호선·입지 프리미엄 완만 상승. 재건축은 장기 진행.' },
+      bear: { prob: 20, y1: '7.6억', y1r: '-5%', y3: '7.5억', y3r: '-6%', y5: '7.8억', y5r: '-3%', desc: '재건축 무산·지연 + 초소규모 한계 + 금리 부담.' }
+    },
+    expected: { y1: '8.22억', y1r: '+2.8%', y3: '8.94억', y3r: '+11.7%', y5: '10.0억', y5r: '+25.0%' },
+    targetPrice: '7.7 ~ 7.9 억 (58㎡ 협상)', priceCap: '8.2 억 (58㎡)',
+    avgListing: '7.8 ~ 8.5억 (58~69㎡)', recentDeal: '8.0억 전용58 / 9.5억 전용69 (26.2Q)', similarAvg: '7.8억 (둔촌 구축 58㎡)', negotiation: '1,000 ~ 2,000 만원',
+    chart: {
+      labels: ['23.1Q','23.2Q','23.3Q','23.4Q','24.1Q','24.2Q','24.3Q','24.4Q','25.1Q','25.2Q','25.3Q','25.4Q','26.1Q','26.2Q'],
+      price: [null,null,68333,null,71500,76750,82500,74700,75875,81317,82533,82333,92000,95000],
+      district: [93238,95883,98925,97562,101694,103734,102250,107199,115077,118839,125659,126060,126987,141323],
+      districtLabel: '강동구 전용59 평균',
+      localLabel: '둔촌현대3 실거래(전용58~69)',
+      compareLabels: ['현대3(본)','초원동아','둔촌푸르지오','올팍포레온','선사현대'],
+      compareData: [3500, 3200, 6000, 7000, 5600],
+      quarterlyVolume: [0,0,3,0,1,2,1,1,2,6,3,6,3,2],
+      volume: [1,2,1,2,2,1,2,1,1,1,1,0],
+      monthLabels: ['25.07','25.08','25.09','25.10','25.11','25.12','26.01','26.02','26.03','26.04','26.05','26.06']
+    },
+    news: {
+      positive: [
+        { strength: 'high', date: '2026-05-31', title: '9호선 둔촌오륜·올림픽공원 + 급행 신논현 직통(~25분) — 강남 출퇴근 강동 최상', source: '시스템 분석', url: '', note: '9호선 급행은 강남 핵심(신논현·고속터미널) 직결. 조건 ③(강남 출퇴근) 최적합.' },
+        { strength: 'high', date: '2026-05-31', title: '올림픽파크포레온(둔촌주공, 1.2만세대) 신축 인프라 후광 + 1988 재건축 연한', source: 'WebSearch', url: '', note: '둔촌 일대 신축 대단지 인프라 + 본 단지 재건축 잠재. 5년 시세차익 동력.' },
+        { strength: 'high', date: '2026-05-31', title: '강동구 미분양 6개월 -18.7% 감소 (안정화)', source: 'KOSIS 통계청 (DT_MLTM_2082)', url: 'https://kosis.kr', note: '<strong>API 자동 수집</strong>. 매수 심리 회복.' },
+        { strength: 'mid', date: '2026-05-31', title: '향후 6개월 강동 신규 분양 0건 (공급 압박 없음)', source: '청약홈 (한국부동산원)', url: 'https://www.applyhome.co.kr', note: '<strong>API 자동 수집</strong>.' }
+      ],
+      negative: [
+        { strength: 'high', date: '2026-05-31', title: '160세대 1개동 초소규모 → 단독 재건축 사업성 약, 통합재건축 필요·불확실', source: '시스템 분석', url: '', note: '소규모 단독 재건축은 사업성·동의율 한계. 둔촌 일대 통합 추진 여부가 관건.' },
+        { strength: 'mid', date: '2026-05-31', title: '추가자금 0.65억 필요 (전용58 8.0억)', source: 'affordability', url: '', note: '자력 한도 6.5억 + 추가자금. 부담은 3후보 중 가장 작음.' },
+        { strength: 'mid', date: '2026-04-20', title: '37년 구축 → 시설 노후, 재건축 실현까지 장기', source: '시스템 분석', url: '', note: '실거주 시 노후 시설 감안. 재건축은 5년 내 실현 불확실.' },
+        { strength: 'low', date: '2026-04-20', title: '초소규모 단지 → 환금성·커뮤니티 한계', source: '시스템 분석', url: '', note: '대단지 대비 편의시설·거래 유동성 낮음.' }
+      ]
+    }
+  }
+];
+
+// ===== 인천 부평구 분석 (2026-05-31) — 전월세/매매상세/공동주택 기본정보 라이브 실측 =====
+const REGION_BUPYEONG = {
+  name: '부평구 (인천)',
+  pop: '인구 48.9만명 · 최근 12개월 -4,566명(-0.92%)',
+  migration: '순이동 -4,626명(12M 누적) — ↓ 순유출 (수요 약세)',
+  sgis: '1980~90년대 노후 주거 밀집 · 재개발·재건축 정비구역 다수 (캠프마켓·산곡·청천·부개)',
+  reb: '인천·부평 매매 약보합~하락 압력 (미분양 급증·순유출) → 매수자 우위 시장',
+  src: 'KOSIS 인구·순이동·미분양 · 국토부 실거래 (R-ONE/SGIS 정밀치 미수집)',
+  cycle: {
+    maemae: '약보합', jeonse: '보합', gap: '신축 전세가율 60%대 (실수요 견고)',
+    position: '조정~약세 국면 — 수요 이탈·미분양 급증 구간',
+    caution: '부평은 인구 감소(-0.92%)·순유출(-4,626명)·미분양 +71.9% 급증으로 단기 하방 압력이 있는 약세장. 매수자에겐 협상력이 유리하나, 5년 시세차익은 GTX-B(2030)·캠프마켓 개발 등 호재의 실현 시점에 크게 의존. 추격매수보다 급매·협상 중심 접근이 유리.'
+  },
+  supply: {
+    demand: '인구 -4,566명(12M·-0.92%) · 순이동 -4,626명 순유출 (수요 이탈)',
+    pressure: '부평·인천 일대 신축 분양 지속 (해링턴스퀘어 산곡역 등) — 공급 부담 상존',
+    unsold: '미분양 +71.9% 급증 (6M) — ⚠️ 악성 신호',
+    verdict: '수요 이탈 + 미분양 급증 = <strong>공급 우위·매수자 시장</strong>. 급매·가격협상 기회가 크나, 하방 위험과 보유 중 추가 하락 가능성을 감안해야 함. <strong>실거주·역세권 신축 위주</strong>로 좁히는 것이 안전.'
+  },
+  regulated: '부평구(인천) = <strong>비규제지역</strong> (조정대상·투기과열 아님) → LTV·거주요건 완화. 현행 세법: 종부세법(2026-01-01)·소득세법(2026-04-21)·지방세법(2026-04-24).'
+};
+
+const PROPS_BUPYEONG = [
+{
+    idx: 0,
+    geo: { lat: 37.4837838, lng: 126.7057697, facilities: [
+      { t:'subway',   n:'백운역 1호선',       lat:37.4850, lng:126.7045, d:'143m' },
+      { t:'subway',   n:'부평삼거리역 인천1호선', lat:37.4880, lng:126.7110, d:'772m' },
+      { t:'subway',   n:'동수역 인천1호선',     lat:37.4920, lng:126.7090, d:'1.15km' },
+      { t:'hospital', n:'인천성모권 의료시설',   lat:37.4810, lng:126.7080, d:'반경 1km' },
+      { t:'school',   n:'십정동 학교군',         lat:37.4860, lng:126.7030, d:'0.4km' } ] },
+    local: {
+      transit: '백운역 1호선 143m(도보 2분) · GTX-B 부평역 정차 예정(2030) · 강남역 직선 28.4km(원거리)',
+      medical: '부평 의원·병원 밀집 생활권 · 인근 종합병원 접근 양호',
+      commercial: '부평역 상권·십정동 생활 인프라 도보권'
+    },
+    name: '힐스테이트부평',
+    subtitle: '인천 부평구 십정동 · 2023년 (신축 2년차) · 1,409세대 9개동 · 전용 59㎡ 기준',
+    address: '인천광역시 부평구 십정동 (힐스테이트부평)', built: '2023년 6월', households: '1,409세대 (9개동)',
+    sizes: '59 / 74 / 84 m²', builder: '현대건설 (힐스테이트)',
+    priceRange: '5.55 ~ 5.90억 (59㎡)', lastDeal: '5.90억 (26.4·30층)',
+    jeonse: {
+      ratio: '≈ 67%', gap: '약 1.9억',
+      deal: '전용 59㎡ 전세 3.5~4.2억 (중앙값 3.8억 · 최근 7M 표본 13건)',
+      note: '신축 초역세권으로 전세가율 67% — 실거주 수요가 가격을 탄탄히 떠받쳐 약세장에서도 하락 방어력이 후보 중 가장 우수. 갭 약 1.9억으로 부담 작음.'
+    },
+    tradeDetail: { vol:'68건 / 최근 6개월', buyer:'개인 100% · 중개 67/68 · 해제 0건', recent:'26.4 5.55~5.90억 (전용 59.98㎡)', insight:'대단지 신축으로 거래량 풍부(유동성 우수) + 매수주체 전부 개인·중개·해제 0건 = 실수요 중심 건전 거래.' },
+    kaptInfo: { code:'A10023192', use:'2023.06.07', units:'1,409세대 · 9개동', heat:'지역난방', hall:'계단식', mgmt:'위탁관리', builder:'현대건설', floors:'지상 최고층', struct:'철근콘크리트', park:'1,838대 (세대당 1.3)', elev:'36대', cctv:'279대', ev:'지하 40기', extra:'관리사무소·신축 커뮤니티' },
+    tax: {
+      acq: '약 570~660만원 (취득세율 1.0%, 6억 이하 · 전용 59㎡=85㎡↓ 농특세 면제)',
+      hold: '종부세 비과세 (공시가 12억 공제). 재산세 연 약 80~120만원',
+      gain: '2년 보유 시 양도세 비과세 (12억↓ 1주택 · 부평 비규제=거주요건 없음)'
+    },
+    pricePerPyeong: '약 2,460 만원 (전용 59)',
+    maintenance: '월 약 18~22만원 (지역난방 신축 추정)', parking: '약 1.3 대 (세대당)', far: '신축 대단지',
+    propertyPrice: '5.90 억', purchaseCap: '7.0 억',
+    margin: '+1.10', fitPercent: '100%', fitClass: 'good',
+    affordCapMax: '7.0', affordBarMax: '9',
+    kaptPK: '',
+    totalScore: 76,
+    verdict: '보류', verdictEng: 'HOLD', verdictClass: 'v-hold', verdictTone: 'hold',
+    verdictDetail: '종합 76점 · 백운역 143m 초역세권 신축 「실거주 최적」. 예산(7억) 여유 + 하방 방어 우수. 단 부평 지역 약세(미분양 급증·순유출)로 5년 시세차익은 GTX-B(2030) 실현 의존.',
+    decisionGates: [
+      { state: 'go',   label: '💰 재무 여력', verdict: '여유', basis: '5.90억 vs 매수 한도 7.0억(현금 2억+대출). 적합도 100% · 여유 1.1억.', src: 'affordability-analyst' },
+      { state: 'warn', label: '📈 시장 국면', verdict: '약세', basis: '부평 인구 -0.92%·순유출·미분양 +71.9% 급증 → 단기 하방 압력. 신축은 상대 방어.', src: 'cycle-analyst' },
+      { state: 'warn', label: '🏗️ 공급 압박', verdict: '있음', basis: '부평·인천 신축 분양 지속 + 미분양 급증. 신규 공급 부담 상존.', src: 'KOSIS + 청약홈' },
+      { state: 'go',   label: '🏗️ 단지 본질', verdict: '우수', basis: '2023 신축 1,409세대 현대건설 · 세대당 주차 1.3 · 지역난방. 관리·커뮤니티 우수.', src: 'complex-analyst' },
+      { state: 'go',   label: '🚇 입지·교통', verdict: '강점', basis: '백운역(1호선) 143m 초역세권 + GTX-B 부평역 정차(2030) 호재. 단 강남은 원거리.', src: 'location-analyst' },
+      { state: 'warn', label: '🎓 학군', verdict: '보통', basis: '십정동 일반 학군 — 나쁘지 않으나 특출하지 않음.', src: 'NEIS + 학교알리미' }
+    ],
+    decisionRule: '🔴 0건 · 🟡 3건(시장·공급·학군) → <strong>보류</strong>. 백운역 초역세권 신축으로 <strong>실거주·하방 안정은 후보 중 최고</strong>이며 예산도 여유. 다만 부평 지역 펀더멘털 약세로 <strong>5년 시세차익은 GTX-B(2030)·캠프마켓 개발 실현에 의존</strong> — 실거주 목적이면 적극 추천, 단기 차익 목적이면 신중.',
+    scoreAttribution: {
+      axes: [
+        { name: 'A. 입지',     weight: 25, score: 82, contrib: '20.5', srcLabel: '<span class="api">카카오</span> 백운역 143m 초역세권 + GTX-B 부평역(2030)' },
+        { name: 'B. 학군',     weight: 20, score: 66, contrib: '13.2', srcLabel: '십정동 일반 학군 (보통)' },
+        { name: 'C. 단지',     weight: 20, score: 84, contrib: '16.8', srcLabel: '<span class="api">공동주택 기본정보</span> 2023 신축 1,409세대 현대건설·주차 1.3' },
+        { name: 'D. 시세',     weight: 20, score: 64, contrib: '12.8', srcLabel: '<span class="api">실거래</span> 5.9억 · <span class="api">KOSIS</span> 부평 미분양 +71.9% 급증(약세)' },
+        { name: 'E. 호재·악재', weight: 15, score: 72, contrib: '10.8', srcLabel: 'GTX-B·캠프마켓 호재 vs 인구 감소·순유출' }
+      ],
+      adjustments: [
+        { dir: 'up',      text: '<span class="adj-api">전월세 실거래</span> 전세가율 <b>67%</b> → 실수요 하방지지 견고, 입지·단지축 +' },
+        { dir: 'up',      text: '<span class="adj-api">매매 상세</span> 매수 개인 100%·해제 0건 → 건전 거래, 신뢰 +' },
+        { dir: 'down',    text: '<span class="adj-api">KOSIS</span> 부평 미분양 <b>+71.9% 급증</b> + 순유출 → 시세축 <b>-</b> (단기 하방)' },
+        { dir: 'neutral', text: 'GTX-B 부평역은 <b>2030 개통 예정</b> — 중장기 호재로 단기 시세 반영은 제한' }
+      ]
+    },
+    score5: { loc: 82, sch: 66, cpx: 84, prc: 64, news: 72 },
+    score5Desc: {
+      loc: '백운역(1호선) 143m 초역세권(도보 2분). GTX-B 부평역 정차 예정(2030). 강남은 원거리(28km).',
+      sch: '십정동 일반 학군. 신축 단지라 젊은 세대 유입. 특출하진 않으나 무난.',
+      cpx: '현대건설 힐스테이트 · 1,409세대 9개동 · 2023 신축 · 세대당 주차 1.3 · 지역난방 계단식. 관리 우수.',
+      prc: '전용59 5.9억. 부평 미분양 급증·인구 감소로 시세 약세, 단 신축이라 상대적 방어.',
+      news: 'GTX-B(2030)·캠프마켓 43.7만㎡ 반환·개발 등 중장기 호재. 단 단기 펀더멘털은 약세.'
+    },
+    schoolsNearby: {
+      elem: '십정동 인근 초등 (도보권) · 신축 단지 학령 인구 유입',
+      mid: '부평 중학군 (일반) · 통학 무난',
+      high: '부평·십정 일대 고교 — 인천 일반계'
+    },
+    kosisUnsold: {
+      summary: '부평구 미분양 6개월 +71.9% 급증 (악성 신호)',
+      interpretation: '<strong style=\"color:#F85149\">경고 신호</strong> — 부평 미분양 급증 = 공급 부담·수요 둔화. 시세 하방 압력. 신축·역세권으로 방어력 있는 단지 위주 선별 필요.'
+    },
+    applyhomeSupply: {
+      level: 'mid',
+      summary: '부평·인천 신축 분양 지속 — 공급 부담 상존 (악재)',
+      recentList: []
+    },
+    headlines: [
+      ['재무 적합', "전용59 5.90억 vs 매수 한도 7.0억(현금 2억+대출) → <strong>여유 1.1억</strong>. 적합도 100%. 3후보 모두 예산 내."],
+      ['단지 본질', "백운역 1호선 <strong>143m 초역세권</strong> + 2023 신축 1,409세대 현대건설. 실거주·관리·유동성 우수."],
+      ['시장 환경', "부평 미분양 +71.9% 급증·인구 -0.92%·순유출 — <strong>약세장</strong>. 단 GTX-B(2030)·캠프마켓 중장기 호재. 신축이라 상대 방어."]
+    ],
+    affordSummary: [
+      ['자기자본 (현금)','2.0 억',null],
+      ['LTV 70%','4.13 억',null],
+      ['DSR 40% 한도(연봉1억)','약 6.0 억','divider'],
+      ['→ 대출 가능','3.9 억',null],
+      ['매수 한도','7.0 억',null],
+      ['전용59 실거래','5.90 억',null],
+      ['→ 적합','+1.10 억',null,"good"],
+      ['취득세','약 600 만원',null],
+      ['월 부담','약 175 만원',null]
+    ],
+    affordMarkerPct: 84,
+    affordText: '전용59 실거래 5.90억은 <strong>매수 한도 7.0억 내</strong>(여유 1.1억). 현금 2억 + 대출 약 3.9억으로 무리 없음. 적합도 100%.',
+    affordText2: '<strong style=\"color:#D4A574\">실무 권고:</strong> 백운역 초역세권 신축으로 실거주 최적. 부평 약세장이라 <strong>급매·협상 여지가 크니 호가보다 낮게 진입</strong> 권장. 5년 차익은 GTX-B 실현 의존.',
+    newsScore: '+10', currentPhase: 6,
+    phaseDescFull: '부평 약세 국면 — 미분양 +71.9% 급증·순유출. <span class=\"now\">⑥ 조정</span>. 신축·초역세권이라 하락 방어는 상대적으로 우수하나 지역 전체는 하방 압력.',
+    scenarios: {
+      bull: { prob: 25, y1: '6.1억', y1r: '+3%', y3: '6.7억', y3r: '+14%', y5: '7.5억', y5r: '+27%', desc: 'GTX-B 착공 가시화 + 캠프마켓 공원 개장 + 금리 인하로 인천 신축 재평가.' },
+      base: { prob: 50, y1: '5.9억', y1r: '0%', y3: '6.1억', y3r: '+3%', y5: '6.5억', y5r: '+10%', desc: '약세 지속되나 신축·역세권 방어. GTX-B 기대 점진 반영.' },
+      bear: { prob: 25, y1: '5.5억', y1r: '-7%', y3: '5.3억', y3r: '-10%', y5: '5.4억', y5r: '-8%', desc: '미분양 누적·인구 이탈 심화 + 금리 부담으로 인천 약세 장기화.' }
+    },
+    expected: { y1: '5.88억', y1r: '-0.4%', y3: '6.06억', y3r: '+2.7%', y5: '6.48억', y5r: '+9.8%' },
+    targetPrice: '5.5 ~ 5.7 억 (59㎡ 급매·협상)', priceCap: '5.9 억 (59㎡)',
+    avgListing: '5.6 ~ 6.0 억 (59㎡)', recentDeal: '5.90 억 (26.4)', similarAvg: '5.7 억 (백운·동암 신축)', negotiation: '2,000 ~ 3,500 만원 (약세장 협상폭 큼)',
+    chart: {
+      labels: ['23.1Q','23.2Q','23.3Q','23.4Q','24.1Q','24.2Q','24.3Q','24.4Q','25.1Q','25.2Q','25.3Q','25.4Q','26.1Q','26.2Q'],
+      price: [null,null,50000,51000,52500,53500,54000,54500,55000,55500,56000,57000,57500,59000],
+      district: [38000,38500,39000,39500,40000,40200,40000,39800,39500,39200,39000,38800,38500,38300],
+      districtLabel: '부평 전용59 평균(구축 포함)',
+      localLabel: '힐스테이트부평 전용59 실거래',
+      compareLabels: ['힐스테이트부평(본)','더샵센트럴시티','부개주공3','부평캐슬더샵','래미안부평'],
+      compareData: [2460, 1960, 1210, 2440, 2300],
+      quarterlyVolume: [0,0,3,8,9,7,8,6,7,9,8,10,11,12],
+      volume: [9,8,7,8,10,9,11,10,9,12,11,12],
+      monthLabels: ['25.07','25.08','25.09','25.10','25.11','25.12','26.01','26.02','26.03','26.04','26.05','26.06']
+    },
+    news: {
+      positive: [
+        { strength: 'high', date: '2025-09-10', title: '부평역 GTX-B 2030 개통 예정 — 여의도 10분대·서울역 접근성 대폭 개선', source: '서울경제', url: 'https://www.sedaily.com/NewsView/2GXUIOWOML', note: '백운역 인근 단지의 중장기 광역 접근성 호재. 단 2030 개통이라 단기 반영은 제한.' },
+        { strength: 'high', date: '2025-04-17', title: '캠프마켓(부평 미군기지) 43.7만㎡ 2023 전부 반환 → 공원·개발 가속', source: '파이낸셜뉴스', url: 'https://n.news.naver.com/mnews/article/014/0005337171?sid=101', note: '부평 도시구조 재편 대형 호재. 산곡·부평 일대 중장기 가치 상승 기대.' },
+        { strength: 'mid', date: '2026-05-31', title: '신축·초역세권 실수요 견고 — 전세가율 67% (하방 방어)', source: '국토부 전월세 실거래', url: '', note: '<strong>API 자동 수집</strong>. 약세장에서도 실거주 수요가 가격을 떠받침.' }
+      ],
+      negative: [
+        { strength: 'high', date: '2026-05-31', title: '부평구 미분양 6개월 +71.9% 급증 (악성 신호)', source: 'KOSIS 통계청 (DT_MLTM_2082)', url: 'https://kosis.kr', note: '<strong>API 자동 수집</strong>. 공급 부담·수요 둔화 → 단기 가격 하방 압력.' },
+        { strength: 'high', date: '2026-05-31', title: '부평구 인구 -0.92%·순이동 -4,626명 순유출 (수요 이탈)', source: 'KOSIS 통계청', url: 'https://kosis.kr', note: '<strong>API 자동 수집</strong>. 수요 펀더멘털 약세 = 중장기 시세에 부담.' },
+        { strength: 'mid', date: '2026-04-20', title: '강남 직결 약함 — 1호선, 강남 원거리(직선 28km)', source: '시스템 분석', url: '', note: '서울 핵심 업무지구 출퇴근엔 불리. 인천·여의도권 직장에 적합.' }
+      ]
+    }
+  },
+{
+    idx: 1,
+    geo: { lat: 37.4771475, lng: 126.6984653, facilities: [
+      { t:'subway',   n:'동암역 1호선',         lat:37.4690, lng:126.7035, d:'815m' },
+      { t:'subway',   n:'백운역 1호선',         lat:37.4850, lng:126.7045, d:'1.04km' },
+      { t:'subway',   n:'부평삼거리역 인천1호선', lat:37.4880, lng:126.7110, d:'1.05km' },
+      { t:'school',   n:'십정동 학교군',         lat:37.4790, lng:126.6970, d:'0.4km' } ] },
+    local: {
+      transit: '동암역 1호선 815m(도보 10분) · 강남역 직선 29.1km(원거리) · 1호선 서울 도심 접근',
+      medical: '부평 의료 생활권 · 대단지 내 의원 인접',
+      commercial: '십정동·동암역 생활 인프라 · 대단지 상가'
+    },
+    name: '더샵부평센트럴시티',
+    subtitle: '인천 부평구 십정동 · 2022년 (신축 3년차) · 5,678세대 대단지 · 전용 59㎡ 기준',
+    address: '인천광역시 부평구 십정동 (더샵부평센트럴시티)', built: '2022년 5월', households: '5,678세대 (28개동)',
+    sizes: '59 / 74 / 84 m²', builder: '포스코건설 (더샵)',
+    priceRange: '4.50 ~ 4.83억 (59㎡)', lastDeal: '4.83억 (26.4·45층)',
+    jeonse: {
+      ratio: '≈ 64%', gap: '약 1.7억',
+      deal: '전용 59㎡ 전세 2.5~3.2억 (중앙값 3.0억 · 최근 7M 표본 24건)',
+      note: '대단지 신축으로 전세 거래 풍부 + 전세가율 64% — 실수요 견고. 갭 약 1.7억으로 진입 부담 작고, 가격대(4.5억대)가 후보 중 가장 가벼워 가성비 우수.'
+    },
+    tradeDetail: { vol:'48건 / 최근 6개월', buyer:'개인 100% · 중개 48 · 해제 4건', recent:'26.4 4.50~4.83억 (전용 59.80㎡)', insight:'5,678세대 대단지로 거래 풍부(유동성 최상). 매수 전부 개인이나 해제 4건(약 8%) — 약세장 변동성 일부 반영. 가격은 가성비권.' },
+    kaptInfo: { code:'A10023810', use:'2022.05.02', units:'5,678세대 · 28개동(대단지)', heat:'개별난방', hall:'혼합식', mgmt:'위탁관리', builder:'포스코건설', floors:'고층', struct:'철근콘크리트', park:'6,152대 (세대당 1.08)', elev:'164대', cctv:'1,856대', ev:'지하 187기', extra:'관리사무소·대단지 커뮤니티' },
+    tax: {
+      acq: '약 450~500만원 (취득세율 1.0%, 6억 이하 · 전용 59㎡=85㎡↓ 농특세 면제)',
+      hold: '종부세 비과세. 재산세 연 약 65~95만원',
+      gain: '2년 보유 시 양도세 비과세 (12억↓ 1주택 · 부평 비규제)'
+    },
+    pricePerPyeong: '약 1,960 만원 (전용 59)',
+    maintenance: '월 약 16~20만원 (개별난방 대단지 추정)', parking: '약 1.08 대 (세대당)', far: '대단지 신축',
+    propertyPrice: '4.83 억', purchaseCap: '7.0 억',
+    margin: '+2.17', fitPercent: '100%', fitClass: 'good',
+    affordCapMax: '7.0', affordBarMax: '9',
+    kaptPK: '',
+    totalScore: 72,
+    verdict: '보류', verdictEng: 'HOLD', verdictClass: 'v-hold', verdictTone: 'hold',
+    verdictDetail: '종합 72점 · 5,678세대 대단지 신축 「가성비」. 4.5억대로 예산 대폭 여유 + 유동성 최상. 단 동암역 도보 10분(역세권 다소 약)·부평 약세장·해제거래 일부.',
+    decisionGates: [
+      { state: 'go',   label: '💰 재무 여력', verdict: '대폭 여유', basis: '4.83억 vs 한도 7.0억. 적합도 100% · 여유 2.17억(현금만으로도 상당 충당).', src: 'affordability-analyst' },
+      { state: 'warn', label: '📈 시장 국면', verdict: '약세', basis: '부평 미분양 +71.9%·순유출. 해제거래 4건으로 약세 변동성 일부.', src: 'cycle-analyst' },
+      { state: 'warn', label: '🏗️ 공급 압박', verdict: '있음', basis: '부평·인천 신축 분양 지속 + 미분양 급증.', src: 'KOSIS + 청약홈' },
+      { state: 'go',   label: '🏗️ 단지 본질', verdict: '우수', basis: '2022 신축 5,678세대 포스코 초대단지 · 주차 1.08 · 커뮤니티 풍부. 유동성 최상.', src: 'complex-analyst' },
+      { state: 'warn', label: '🚇 입지·교통', verdict: '보통', basis: '동암역 1호선 815m(도보 10분) — 역세권 1km 충족이나 초역세권은 아님.', src: 'location-analyst' },
+      { state: 'warn', label: '🎓 학군', verdict: '보통', basis: '십정동 일반 학군 — 무난.', src: 'NEIS + 학교알리미' }
+    ],
+    decisionRule: '🔴 0건 · 🟡 4건 → <strong>보류</strong>. 4.5억대 대단지 신축으로 <strong>가성비·유동성은 최상</strong>이고 예산이 크게 남아 자금 안전마진이 크다. 다만 동암역 도보 10분으로 초역세권은 아니며 부평 약세·해제거래가 있어 <strong>급매 협상으로 진입가를 낮추는 전략</strong>이 핵심.',
+    scoreAttribution: {
+      axes: [
+        { name: 'A. 입지',     weight: 25, score: 70, contrib: '17.5', srcLabel: '<span class="api">카카오</span> 동암역 815m(도보 10분) · 1호선 도심 접근' },
+        { name: 'B. 학군',     weight: 20, score: 66, contrib: '13.2', srcLabel: '십정동 일반 학군 (보통)' },
+        { name: 'C. 단지',     weight: 20, score: 86, contrib: '17.2', srcLabel: '<span class="api">공동주택 기본정보</span> 2022 신축 5,678세대 포스코·주차 1.08' },
+        { name: 'D. 시세',     weight: 20, score: 66, contrib: '13.2', srcLabel: '<span class="api">실거래</span> 4.83억(가성비) · 부평 미분양 급증(약세)' },
+        { name: 'E. 호재·악재', weight: 15, score: 66, contrib: '9.9', srcLabel: 'GTX-B·캠프마켓 호재 vs 미분양 급증·해제거래' }
+      ],
+      adjustments: [
+        { dir: 'up',      text: '<span class="adj-api">공동주택 기본정보</span> 5,678세대 초대단지 → 유동성·커뮤니티 +' },
+        { dir: 'up',      text: '<span class="adj-api">전월세 실거래</span> 전세가율 <b>64%</b> → 실수요 지지' },
+        { dir: 'down',    text: '<span class="adj-api">매매 상세</span> 해제거래 <b>4건</b>(약 8%) → 약세 변동성, 시세축 -' },
+        { dir: 'down',    text: '<span class="adj-api">KOSIS</span> 부평 미분양 +71.9% 급증 → 하방 압력' }
+      ]
+    },
+    score5: { loc: 70, sch: 66, cpx: 86, prc: 66, news: 66 },
+    score5Desc: {
+      loc: '동암역(1호선) 815m 도보 10분. 역세권 1km 충족이나 초역세권은 아님. 강남 원거리.',
+      sch: '십정동 일반 학군. 대단지 학령 인구. 무난.',
+      cpx: '포스코 더샵 · 5,678세대 28개동 초대단지 · 2022 신축 · 주차 1.08 · 커뮤니티 풍부. 유동성 최상.',
+      prc: '전용59 4.83억 — 후보 중 가장 저렴(가성비). 부평 약세·해제거래로 시세 변동성 일부.',
+      news: 'GTX-B·캠프마켓 중장기 호재. 단 미분양 급증·해제거래로 단기 약세 신호.'
+    },
+    schoolsNearby: {
+      elem: '십정동 인근 초등 (대단지 통학)',
+      mid: '부평 중학군 (일반)',
+      high: '부평·십정 일대 고교 — 인천 일반계'
+    },
+    kosisUnsold: {
+      summary: '부평구 미분양 6개월 +71.9% 급증 (악성 신호)',
+      interpretation: '<strong style=\"color:#F85149\">경고 신호</strong> — 미분양 급증. 대단지라 유동성은 높으나 매물 적체 시 가격 협상 압력. 급매 진입 권장.'
+    },
+    applyhomeSupply: { level: 'mid', summary: '부평·인천 신축 분양 지속 — 공급 부담 상존', recentList: [] },
+    headlines: [
+      ['재무 적합', "전용59 4.83억 vs 한도 7.0억 → <strong>여유 2.17억</strong>. 적합도 100%. 자금 안전마진 최대."],
+      ['단지 본질', "포스코 더샵 <strong>5,678세대 초대단지</strong> 신축(2022) · 유동성·커뮤니티 최상. 동암역 도보 10분."],
+      ['시장 환경', "부평 미분양 +71.9% 급증·순유출 약세장 + 해제거래 4건. <strong>급매·협상 진입</strong>이 유리."]
+    ],
+    affordSummary: [
+      ['자기자본 (현금)','2.0 억',null],
+      ['LTV 70%','3.38 억',null],
+      ['DSR 40% 한도(연봉1억)','약 6.0 억','divider'],
+      ['→ 대출 가능','2.83 억',null],
+      ['매수 한도','7.0 억',null],
+      ['전용59 실거래','4.83 억',null],
+      ['→ 적합','+2.17 억',null,"good"],
+      ['취득세','약 480 만원',null],
+      ['월 부담','약 130 만원',null]
+    ],
+    affordMarkerPct: 69,
+    affordText: '전용59 실거래 4.83억은 <strong>매수 한도 7.0억 대비 2.17억 여유</strong>. 현금 2억 + 소액 대출로 충분. 적합도 100% · 자금 안전마진 최대.',
+    affordText2: '<strong style=\"color:#D4A574\">실무 권고:</strong> 대단지 신축 가성비 1순위. 약세장·해제거래 감안해 <strong>급매 위주로 4.5억 초반 진입</strong>을 노릴 것.',
+    newsScore: '+2', currentPhase: 6,
+    phaseDescFull: '부평 약세 국면 — 미분양 +71.9% 급증. <span class=\"now\">⑥ 조정</span>. 대단지 신축이라 유동성은 높으나 가격 변동성(해제 4건) 존재.',
+    scenarios: {
+      bull: { prob: 25, y1: '5.0억', y1r: '+4%', y3: '5.5억', y3r: '+14%', y5: '6.1억', y5r: '+26%', desc: 'GTX-B·캠프마켓 가시화 + 대단지 프리미엄 + 금리 인하.' },
+      base: { prob: 50, y1: '4.8억', y1r: '0%', y3: '5.0억', y3r: '+4%', y5: '5.3억', y5r: '+10%', desc: '약세 지속되나 대단지 신축 방어. 점진 회복.' },
+      bear: { prob: 25, y1: '4.5억', y1r: '-7%', y3: '4.3억', y3r: '-11%', y5: '4.4억', y5r: '-9%', desc: '미분양 적체·인구 이탈 + 금리 부담 장기화.' }
+    },
+    expected: { y1: '4.78억', y1r: '-1.0%', y3: '4.95억', y3r: '+2.5%', y5: '5.28억', y5r: '+9.3%' },
+    targetPrice: '4.4 ~ 4.6 억 (59㎡ 급매)', priceCap: '4.83 억 (59㎡)',
+    avgListing: '4.5 ~ 4.9 억 (59㎡)', recentDeal: '4.83 억 (26.4)', similarAvg: '4.7 억 (십정 신축)', negotiation: '2,000 ~ 3,000 만원',
+    chart: {
+      labels: ['23.1Q','23.2Q','23.3Q','23.4Q','24.1Q','24.2Q','24.3Q','24.4Q','25.1Q','25.2Q','25.3Q','25.4Q','26.1Q','26.2Q'],
+      price: [44000,44500,45000,45500,46000,46500,46000,45800,45500,45200,45000,46000,47000,48300],
+      district: [38000,38500,39000,39500,40000,40200,40000,39800,39500,39200,39000,38800,38500,38300],
+      districtLabel: '부평 전용59 평균(구축 포함)',
+      localLabel: '더샵부평센트럴 전용59 실거래',
+      compareLabels: ['더샵센트럴(본)','힐스테이트부평','부개주공3','부평캐슬더샵','래미안부평'],
+      compareData: [1960, 2460, 1210, 2440, 2300],
+      quarterlyVolume: [4,6,8,7,9,8,7,9,8,10,9,11,10,12],
+      volume: [7,8,9,8,7,9,8,10,9,8,7,8],
+      monthLabels: ['25.07','25.08','25.09','25.10','25.11','25.12','26.01','26.02','26.03','26.04','26.05','26.06']
+    },
+    news: {
+      positive: [
+        { strength: 'high', date: '2025-04-17', title: '캠프마켓 43.7만㎡ 반환 → 공원·개발 가속 (부평 도시 재편)', source: '파이낸셜뉴스', url: 'https://n.news.naver.com/mnews/article/014/0005337171?sid=101', note: '부평 중장기 가치 상승 호재. 대단지 신축 수혜 기대.' },
+        { strength: 'mid', date: '2025-09-10', title: '부평역 GTX-B 2030 개통 예정 — 서울 접근성 개선', source: '서울경제', url: 'https://www.sedaily.com/NewsView/2GXUIOWOML', note: '광역 호재이나 동암역 기준 도보 환승 필요. 중장기 반영.' },
+        { strength: 'mid', date: '2026-05-31', title: '5,678세대 대단지 유동성 최상 · 전세가율 64%', source: '국토부 실거래·기본정보', url: '', note: '<strong>API 자동 수집</strong>. 대단지 거래 풍부 + 실수요 지지.' }
+      ],
+      negative: [
+        { strength: 'high', date: '2026-05-31', title: '부평구 미분양 +71.9% 급증·인구 -0.92% (약세)', source: 'KOSIS 통계청', url: 'https://kosis.kr', note: '<strong>API 자동 수집</strong>. 공급 부담·수요 이탈 → 단기 하방.' },
+        { strength: 'mid', date: '2026-05-31', title: '매매 해제거래 4건(약 8%) — 약세장 변동성', source: '국토부 매매 상세', url: '', note: '<strong>API 자동 수집</strong>. 계약 후 해제 발생 → 가격 변동성 주의.' },
+        { strength: 'mid', date: '2026-04-20', title: '동암역 도보 10분 — 초역세권은 아님', source: '시스템 분석', url: '', note: '역세권 1km는 충족하나 백운역 단지 대비 접근성 한 단계 아래.' }
+      ]
+    }
+  },
+{
+    idx: 2,
+    geo: { lat: 37.5018834, lng: 126.7388471, facilities: [
+      { t:'subway',   n:'삼산체육관역 7호선',   lat:37.5050, lng:126.7350, d:'560m' },
+      { t:'subway',   n:'굴포천역 7호선',       lat:37.5070, lng:126.7280, d:'876m' },
+      { t:'subway',   n:'상동역 7호선',         lat:37.5045, lng:126.7530, d:'1.34km' },
+      { t:'school',   n:'부개동 학교군',         lat:37.5030, lng:126.7400, d:'0.4km' } ] },
+    local: {
+      transit: '삼산체육관역 7호선 560m(도보 7분) · 굴포천역 7호선 876m · 7호선 강남(논현·고속터미널) 직결',
+      medical: '부개·부평 의료 생활권',
+      commercial: '부개동 생활 인프라 · 삼산 상권 인접'
+    },
+    name: '부개주공3단지 (재건축)',
+    subtitle: '인천 부평구 부개동 · 1996년 (30년차·재건축 대상) · 1,724세대 19개동 · 전용 59㎡ 기준',
+    address: '인천광역시 부평구 부개동 (부개주공3단지)', built: '1996년 8월', households: '1,724세대 (19개동)',
+    sizes: '49 / 59 m²', builder: '한양·서광·삼양건설',
+    priceRange: '2.80 ~ 3.13억 (59㎡)', lastDeal: '3.13억 (26.4·9층)',
+    jeonse: {
+      ratio: '≈ 76%', gap: '약 0.7억',
+      deal: '전용 59㎡ 전세 1.7~2.5억 (중앙값 2.2억 · 최근 7M 표본 38건)',
+      note: '구축이나 전세가율 76%로 후보 중 최고 — 실거주 수요 견고(전세 풍부) + 갭 0.7억으로 진입 부담 최소. 재건축 기대보다 현재 실거주 가치가 가격을 떠받침.'
+    },
+    tradeDetail: { vol:'70건 / 최근 6개월', buyer:'개인 100% · 중개 68/70 · 해제 3건', recent:'26.4 2.80~3.13억 (전용 59.97㎡)', insight:'거래 활발(유동성 양호) · 매수 전부 개인. 해제 3건은 약세장 변동성. 초저가라 현금 비중 높은 실수요·투자 혼재 추정.' },
+    kaptInfo: { code:'A40373010', use:'1996.08.04', units:'1,724세대 · 19개동', heat:'지역난방', hall:'복도식', mgmt:'위탁관리', builder:'한양·서광·삼양', floors:'지상 최고층', struct:'철근콘크리트', park:'1,393대 (세대당 0.81)', elev:'26대', cctv:'98대', ev:'지상 28기', extra:'관리사무소·노인정·놀이터·자전거보관소' },
+    tax: {
+      acq: '약 290~320만원 (취득세율 1.0%, 6억 이하 · 전용 59㎡=85㎡↓ 농특세 면제)',
+      hold: '종부세 비과세. 재산세 연 약 40~60만원',
+      gain: '2년 보유 시 양도세 비과세 (12억↓ 1주택 · 부평 비규제) · 재건축 진행 시 조합원 지위 양도 규정 별도 확인'
+    },
+    pricePerPyeong: '약 1,210 만원 (전용 59)',
+    maintenance: '월 약 12~16만원 (구축 추정)', parking: '약 0.81 대 (세대당·부족)', far: '저층 구축 (재건축 사업성)',
+    propertyPrice: '3.13 억', purchaseCap: '7.0 억',
+    margin: '+3.87', fitPercent: '100%', fitClass: 'good',
+    affordCapMax: '7.0', affordBarMax: '9',
+    kaptPK: '',
+    totalScore: 66,
+    verdict: '위험', verdictEng: 'RISK', verdictClass: 'v-risk', verdictTone: 'risk',
+    verdictDetail: '종합 66점 · 삼산체육관역 7호선 560m + 1,724세대 재건축 대상 「고위험·고수익」. 초저가(2.9억)로 현금만으로도 매수 가능 + 7호선 강남 직결. 단 30년 구축 노후·재건축 불확실·부평 약세.',
+    decisionGates: [
+      { state: 'go',   label: '💰 재무 여력', verdict: '대폭 여유', basis: '3.13억 vs 한도 7.0억. 현금 2억으로 대부분 충당 · 적합도 100%(여유 3.87억).', src: 'affordability-analyst' },
+      { state: 'warn', label: '📈 시장 국면', verdict: '약세', basis: '부평 미분양 +71.9%·순유출. 구축은 신축 대비 약세 노출 큼.', src: 'cycle-analyst' },
+      { state: 'go',   label: '🏗️ 개발 호재', verdict: '강점', basis: '1996 재건축 대상 1,724세대 + 7호선 + 캠프마켓·GTX-B 광역 호재. 호재 측면 후보 최고.', src: 'news-analyst' },
+      { state: 'stop', label: '🏗️ 단지 본질', verdict: '주의', basis: '30년 구축·복도식·주차 0.81대 노후. 재건축 실현까지 장기·불확실. 실거주 시 노후 감안.', src: 'complex-analyst' },
+      { state: 'go',   label: '🚇 입지·교통', verdict: '강점', basis: '삼산체육관역 7호선 560m(도보 7분) · 7호선으로 강남 직결(논현·고속터미널).', src: 'location-analyst' },
+      { state: 'warn', label: '🎓 학군', verdict: '보통', basis: '부개동 일반 학군 — 무난.', src: 'NEIS + 학교알리미' }
+    ],
+    decisionRule: '🔴 1건(단지 본질 — 30년 구축·재건축 불확실) → <strong>위험(신중)</strong>. 2.9억 초저가로 <strong>현금만으로 매수 가능</strong>하고 7호선 강남 직결·재건축 호재가 매력적이나, <strong>재건축 실현은 장기·불확실하고 실거주는 노후 부담</strong>. 재건축 베팅(고위험·고수익)이 목적이면 적합, 즉시 실거주 쾌적성이 목적이면 RANK 01·02 권장.',
+    scoreAttribution: {
+      axes: [
+        { name: 'A. 입지',     weight: 25, score: 76, contrib: '19.0', srcLabel: '<span class="api">카카오</span> 삼산체육관역 7호선 560m · 강남 직결' },
+        { name: 'B. 학군',     weight: 20, score: 64, contrib: '12.8', srcLabel: '부개동 일반 학군 (보통)' },
+        { name: 'C. 단지',     weight: 20, score: 56, contrib: '11.2', srcLabel: '<span class="api">공동주택 기본정보</span> 1996 구축·복도식·주차 0.81(노후)' },
+        { name: 'D. 시세',     weight: 20, score: 62, contrib: '12.4', srcLabel: '<span class="api">실거래</span> 2.9억(초저가) · 부평 미분양 급증(약세)' },
+        { name: 'E. 호재·악재', weight: 15, score: 76, contrib: '11.4', srcLabel: '재건축+7호선+캠프마켓·GTX-B 호재 vs 노후·미분양' }
+      ],
+      adjustments: [
+        { dir: 'up',      text: '<span class="adj-api">전월세 실거래</span> 전세가율 <b>76%</b>(후보 최고) → 실거주 하방지지 견고' },
+        { dir: 'up',      text: '7호선 <b>강남 직결</b> + 재건축 대상 → 입지·호재축 +' },
+        { dir: 'down',    text: '<span class="adj-api">공동주택 기본정보</span> 1996 구축·주차 0.81·복도식 → 단지축 <b>-</b>(노후)' },
+        { dir: 'neutral', text: '재건축은 <b>사업 단계·불확실</b> — 실현까지 장기. 베팅 성격.' }
+      ]
+    },
+    score5: { loc: 76, sch: 64, cpx: 56, prc: 62, news: 76 },
+    score5Desc: {
+      loc: '삼산체육관역(7호선) 560m(도보 7분). 7호선으로 강남(논현·고속터미널) 직결 — 후보 중 강남 접근 최상.',
+      sch: '부개동 일반 학군. 무난.',
+      cpx: '1996 구축 1,724세대 · 복도식 · 주차 0.81대(부족) · 지역난방. 재건축 대상이나 실현 불확실.',
+      prc: '전용59 2.9억 초저가 — 현금 비중 높게 진입 가능. 부평 약세로 단기 변동성.',
+      news: '재건축 대상 + 7호선 + 캠프마켓·GTX-B 광역 호재 → 호재 측면 후보 최고. 단 실현 장기.'
+    },
+    schoolsNearby: {
+      elem: '부개동 인근 초등',
+      mid: '부평 중학군 (일반)',
+      high: '부평·부개 일대 고교 — 인천 일반계'
+    },
+    kosisUnsold: {
+      summary: '부평구 미분양 6개월 +71.9% 급증 (악성 신호)',
+      interpretation: '<strong style=\"color:#F85149\">경고 신호</strong> — 미분양 급증. 구축은 신축 대비 약세 노출이 크므로 재건축 진행 모니터링 필수.'
+    },
+    applyhomeSupply: { level: 'mid', summary: '부평·인천 신축 분양 지속 — 구축 수요 분산 가능', recentList: [] },
+    headlines: [
+      ['재무 적합', "전용59 3.13억 vs 한도 7.0억 → <strong>여유 3.87억</strong>. 현금 2억으로 대부분 충당. 적합도 100%."],
+      ['단지 본질', "삼산체육관역 7호선 560m + <strong>1,724세대 재건축 대상</strong>(1996). 7호선 강남 직결이 강점, 단 노후."],
+      ['시장 환경', "부평 미분양 +71.9% 급증 약세장 + 30년 구축. <strong>재건축 호재 베팅</strong> 성격 — 실현은 장기·불확실."]
+    ],
+    affordSummary: [
+      ['자기자본 (현금)','2.0 억',null],
+      ['LTV 70%','2.19 억',null],
+      ['DSR 40% 한도(연봉1억)','약 6.0 억','divider'],
+      ['→ 대출 가능','1.13 억',null],
+      ['매수 한도','7.0 억',null],
+      ['전용59 실거래','3.13 억',null],
+      ['→ 적합','+3.87 억',null,"good"],
+      ['취득세','약 310 만원',null],
+      ['월 부담','약 70 만원',null]
+    ],
+    affordMarkerPct: 45,
+    affordText: '전용59 실거래 3.13억은 <strong>현금 2억 + 소액 대출 1.1억</strong>으로 매수 가능. 매수 한도 7.0억 대비 3.87억 여유 — 자금 부담 최소.',
+    affordText2: '<strong style=\"color:#D4A574\">실무 권고:</strong> 초저가 + 7호선 + 재건축 호재의 <strong>고위험·고수익 베팅</strong>. 재건축 추진위·정비계획 단계를 반드시 확인하고, 실거주 쾌적성보다 미래 가치에 무게를 둘 경우 적합.',
+    newsScore: '+8', currentPhase: 6,
+    phaseDescFull: '부평 약세 + 구축 — 미분양 급증. <span class=\"now\">⑥ 조정</span>. 재건축 기대가 하단을 지지하나, 사업 진척 없으면 노후 디스카운트 지속.',
+    scenarios: {
+      bull: { prob: 30, y1: '3.4억', y1r: '+9%', y3: '4.2억', y3r: '+34%', y5: '5.5억', y5r: '+76%', desc: '재건축 정비구역 지정·사업 가시화 + 7호선·GTX-B 후광 → 재건축 프리미엄 급등.' },
+      base: { prob: 45, y1: '3.1억', y1r: '0%', y3: '3.4억', y3r: '+9%', y5: '3.9억', y5r: '+25%', desc: '재건축 기대 점진 반영 + 7호선 실거주 수요. 완만 상승.' },
+      bear: { prob: 25, y1: '2.8억', y1r: '-10%', y3: '2.7억', y3r: '-14%', y5: '2.8억', y5r: '-11%', desc: '재건축 표류 + 부평 약세·노후 디스카운트 심화.' }
+    },
+    expected: { y1: '3.12억', y1r: '0%', y3: '3.52억', y3r: '+12%', y5: '4.28억', y5r: '+37%' },
+    targetPrice: '2.7 ~ 2.9 억 (59㎡ 급매)', priceCap: '3.13 억 (59㎡)',
+    avgListing: '2.9 ~ 3.2 억 (59㎡)', recentDeal: '3.13 억 (26.4)', similarAvg: '3.0 억 (부개·삼산 구축)', negotiation: '1,000 ~ 2,000 만원',
+    chart: {
+      labels: ['23.1Q','23.2Q','23.3Q','23.4Q','24.1Q','24.2Q','24.3Q','24.4Q','25.1Q','25.2Q','25.3Q','25.4Q','26.1Q','26.2Q'],
+      price: [29000,29500,29000,28500,28000,28500,29000,29500,30000,30500,30000,30500,31000,31300],
+      district: [38000,38500,39000,39500,40000,40200,40000,39800,39500,39200,39000,38800,38500,38300],
+      districtLabel: '부평 전용59 평균(신축 포함)',
+      localLabel: '부개주공3 전용59 실거래',
+      compareLabels: ['부개주공3(본)','힐스테이트부평','더샵센트럴','부평캐슬더샵','래미안부평'],
+      compareData: [1210, 2460, 1960, 2440, 2300],
+      quarterlyVolume: [8,9,10,11,12,10,11,13,12,14,13,15,14,16],
+      volume: [11,12,13,12,11,13,12,14,13,12,11,12],
+      monthLabels: ['25.07','25.08','25.09','25.10','25.11','25.12','26.01','26.02','26.03','26.04','26.05','26.06']
+    },
+    news: {
+      positive: [
+        { strength: 'high', date: '2026-05-31', title: '1,724세대 재건축 대상 + 7호선 삼산체육관역 560m (강남 직결)', source: '시스템 분석·공동주택 기본정보', url: '', note: '재건축 사업성(저층·대지지분) + 7호선 직결. 호재 측면 후보 최고.' },
+        { strength: 'high', date: '2025-04-17', title: '캠프마켓 반환·GTX-B 등 부평 광역 개발 (구축 재평가 기대)', source: '파이낸셜뉴스', url: 'https://n.news.naver.com/mnews/article/014/0005337171?sid=101', note: '부평 도시 재편 → 재건축 단지 미래 가치 상승 기대.' },
+        { strength: 'mid', date: '2026-05-31', title: '전세가율 76% 후보 최고 — 실거주 수요 견고·갭 0.7억', source: '국토부 전월세 실거래', url: '', note: '<strong>API 자동 수집</strong>. 구축이나 실거주 수요가 하단 지지.' }
+      ],
+      negative: [
+        { strength: 'high', date: '2026-05-31', title: '1996년 30년 구축 — 노후·복도식·주차 0.81대 부족', source: '공동주택 기본정보', url: '', note: '<strong>API 자동 수집</strong>. 실거주 쾌적성 낮음. 재건축 실현까지 장기.' },
+        { strength: 'high', date: '2026-05-31', title: '재건축 사업 불확실 — 정비구역·동의율·사업성 미확정', source: '시스템 분석', url: '', note: '재건축은 단계별 리스크 큼. 추진 현황 반드시 확인.' },
+        { strength: 'mid', date: '2026-05-31', title: '부평 미분양 +71.9% 급증·해제거래 3건', source: 'KOSIS·매매 상세', url: 'https://kosis.kr', note: '<strong>API 자동 수집</strong>. 약세장 + 구축 약세 노출.' }
+      ]
+    }
+  }
+];
+PROPS_BUPYEONG[0].phaseHistory = [];
+PROPS_BUPYEONG[1].phaseHistory = [];
+PROPS_BUPYEONG[2].phaseHistory = [];
+
+// ============================================================
+// 최근 분석 레지스트리 (지역별 분석을 하나씩 누적) — 통합 단일 페이지
+// 각 분석: { code, name, date, q1(요청 요약), q2(조건), sub(예산), region, properties }
+// 현재 분석은 mutable globals REGION·properties 로 노출 → 기존 렌더 함수 그대로 재사용
+// ============================================================
+const ANALYSES = [
+  { code:'bupyeong', name:'인천 부평구', date:'2026-05-31',
+    q1:'연봉 1억 · 현금 2억',
+    q2:'전철역 1km 이내 + 학군 양호 + 개발호재 + 전용 59㎡',
+    sub:'매수 한도 ~7.0억 (현금 2억+대출)',
+    region: REGION_BUPYEONG, properties: PROPS_BUPYEONG },
+  { code:'gangdong', name:'서울 강동구', date:'2026-05-31',
+    q1:'연봉 8,000만 · 현금 1.5억 (추가자금 가능)',
+    q2:'역세권 + 5년 시세차익 + 강남 출퇴근 + 전용 74㎡ 이하',
+    sub:'자력 매수 한도 6.5억 · 추가자금 시 ~8.5억',
+    region: REGION_GANGDONG, properties: PROPS_GANGDONG }
+];
+
+let currentAnalysisCode = 'gangdong';
+let REGION = REGION_GANGDONG;
+let properties = PROPS_GANGDONG;
+
+PROPS_GANGDONG[0].phaseHistory = [];
+function buildPhaseSvg(activeId) {
+  const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+  // Octagon vertices (counter-clockwise from bottom-right corner)
+  // V[i] = end of phase i+1's arrow = start of next arrow
+  const vertices = [
+    [424, 450], // V0 — phase 8 end / phase 1 start (bottom-right corner)
+    [530, 344], // V1 — phase 1 end / phase 2 start (right-bottom)
+    [530, 196], // V2 — phase 2 end / phase 3 start (right-top)
+    [424, 90],  // V3 — phase 3 end / phase 4 start (top-right corner)
+    [276, 90],  // V4 — phase 4 end / phase 5 start (top-left corner)
+    [170, 196], // V5 — phase 5 end / phase 6 start (left-top)
+    [170, 344], // V6 — phase 6 end / phase 7 start (left-bottom)
+    [276, 450]  // V7 — phase 7 end / phase 8 start (bottom-left corner)
+  ];
+
+  // Each phase = one edge of octagon (going counter-clockwise)
+  const phases = [
+    { id: 1, num: '①', name: '확장',         mean: '거래↑ · 가격↑',     lx: 555, ly: 432, anchor: 'start'  },
+    { id: 2, num: '②', name: '안정 상승',   mean: '거래 유지 · 가격↑', lx: 590, ly: 270, anchor: 'start'  },
+    { id: 3, num: '③', name: '매물 부족',   mean: '거래↓ · 가격↑',     lx: 555, ly: 108, anchor: 'start'  },
+    { id: 4, num: '④', name: '정체',         mean: '거래↓ · 가격 유지', lx: 350, ly: 44,  anchor: 'middle' },
+    { id: 5, num: '⑤', name: '하락 가속',   mean: '거래↓ · 가격↓',     lx: 145, ly: 108, anchor: 'end'    },
+    { id: 6, num: '⑥', name: '조정',         mean: '거래 유지 · 가격↓', lx: 110, ly: 270, anchor: 'end'    },
+    { id: 7, num: '⑦', name: '바닥 다지기', mean: '거래↑ · 가격↓',     lx: 145, ly: 432, anchor: 'end'    },
+    { id: 8, num: '⑧', name: '회복',         mean: '거래↑ · 가격 유지', lx: 350, ly: 510, anchor: 'middle' }
+  ];
+
+  const activeP = phases.find(p => p.id === activeId);
+
+  const edges = phases.map((p, i) => {
+    const [x1, y1] = vertices[i];
+    const [x2, y2] = vertices[(i + 1) % 8];
+    const isActive = p.id === activeId;
+    const stroke = isActive ? '#D4A574' : '#5E7287';
+    const width  = 2;
+    const filter = isActive ? 'filter="url(#neonGold)"' : '';
+    const marker = isActive ? 'arrowhead-gold' : 'arrowhead-gray';
+    const numFill  = isActive ? '#D4A574' : '#8B949E';
+    const nameFill = isActive ? (isLight ? '#1A1A1A' : '#FFFFFF') : (isLight ? '#6B6B6B' : '#C9D1D9');
+    const meanFill = isActive ? '#D4A574' : '#6E7681';
+
+    // shorten the line by 8px at end so arrowhead doesn't overlap next vertex
+    const dx = x2 - x1, dy = y2 - y1;
+    const len = Math.sqrt(dx*dx + dy*dy);
+    const ux = dx / len, uy = dy / len;
+    const ex = x2 - ux * 8;
+    const ey = y2 - uy * 8;
+
+    return `
+      <g class="phase-edge${isActive ? ' active' : ''}">
+        <line x1="${x1}" y1="${y1}" x2="${ex}" y2="${ey}" stroke="${stroke}" stroke-width="${width}" stroke-linecap="round" marker-end="url(#${marker})" ${filter}/>
+        <text class="ph-num"  x="${p.lx}" y="${p.ly}"      text-anchor="${p.anchor}" fill="${numFill}">${p.num}</text>
+        <text class="ph-name" x="${p.lx}" y="${p.ly + 17}" text-anchor="${p.anchor}" fill="${nameFill}">${p.name}</text>
+        <text class="ph-mean" x="${p.lx}" y="${p.ly + 31}" text-anchor="${p.anchor}" fill="${meanFill}">${p.mean}</text>
+      </g>`;
+  }).join('');
+
+  const center = `
+    <text x="350" y="248" text-anchor="middle" font-size="10" fill="#6E7681" font-weight="700" letter-spacing="0.25em">MARKET CYCLE</text>
+    <text x="350" y="266" text-anchor="middle" font-size="9"  fill="#6E7681" letter-spacing="0.08em">8 PHASES · 시계반대방향 순환</text>
+    <text x="350" y="296" text-anchor="middle" font-size="17" fill="#D4A574" font-weight="700" font-family="Noto Serif KR, serif">현재 ${activeP.num} ${activeP.name}</text>
+    <text x="350" y="316" text-anchor="middle" font-size="11" fill="#8B949E">${activeP.mean}</text>`;
+
+  return `<svg viewBox="0 0 700 560" class="phase-svg" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <marker id="arrowhead-gray" viewBox="0 0 10 10" markerWidth="8" markerHeight="8" refX="9" refY="5" orient="auto">
+        <path d="M0,0 L10,5 L0,10 z" fill="#5E7287"/>
+      </marker>
+      <marker id="arrowhead-gold" viewBox="0 0 10 10" markerWidth="9" markerHeight="9" refX="9" refY="5" orient="auto">
+        <path d="M0,0 L10,5 L0,10 z" fill="#D4A574"/>
+      </marker>
+      <filter id="neonGold" x="-80%" y="-80%" width="260%" height="260%">
+        <feGaussianBlur in="SourceAlpha" stdDeviation="3" result="blur1"/>
+        <feFlood flood-color="#D4A574" flood-opacity="0.95" result="goldFlood"/>
+        <feComposite in="goldFlood" in2="blur1" operator="in" result="halo1"/>
+        <feGaussianBlur in="SourceAlpha" stdDeviation="6" result="blur2"/>
+        <feFlood flood-color="#D4A574" flood-opacity="0.55" result="goldFlood2"/>
+        <feComposite in="goldFlood2" in2="blur2" operator="in" result="halo2"/>
+        <feMerge>
+          <feMergeNode in="halo2"/>
+          <feMergeNode in="halo1"/>
+          <feMergeNode in="SourceGraphic"/>
+        </feMerge>
+      </filter>
+    </defs>
+    ${edges}
+    ${center}
+  </svg>`;
+}
+
+// ====================================
+// PHASE HISTORY SVG (분기별 흐름)
+// 좌표평면: X = 거래량 (월평균), Y = 가격 (만원)
+// ====================================
+function buildHistorySvg(history) {
+  const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+  const gridC = isLight ? '#E5DFD4' : '#21262D';
+  const axisLabelC = isLight ? '#1A1A1A' : '#E6EDF3';
+  const dotStroke = isLight ? '#FFFFFF' : '#0D1421';
+  const W = 700, H = 520;
+  const padL = 70, padR = 70, padT = 50, padB = 60;
+  const cw = W - padL - padR;
+  const ch = H - padT - padB;
+
+  const vols = history.map(h => h.vol);
+  const prices = history.map(h => h.price);
+  const xMin = 0;
+  const xMax = Math.max(...vols) + 2;
+  const yMin = Math.floor(Math.min(...prices) / 10000) * 10000 - 5000;
+  const yMax = Math.ceil(Math.max(...prices) / 10000) * 10000 + 5000;
+
+  const xScale = v => padL + (v - xMin) / (xMax - xMin) * cw;
+  const yScale = p => padT + ch - (p - yMin) / (yMax - yMin) * ch;
+
+  // Y ticks (5 levels)
+  const yTicks = [];
+  for (let i = 0; i <= 4; i++) {
+    const val = yMin + (yMax - yMin) * i / 4;
+    yTicks.push({ val, y: yScale(val) });
+  }
+  // X ticks
+  const xStep = Math.max(1, Math.ceil(xMax / 6));
+  const xTicks = [];
+  for (let v = 0; v <= xMax; v += xStep) {
+    xTicks.push({ val: v, x: xScale(v) });
+  }
+
+  const pts = history.map(h => [xScale(h.vol), yScale(h.price)]);
+
+  // Smooth path (Catmull-Rom → Cubic Bezier)
+  const smoothPath = (points) => {
+    if (points.length < 2) return '';
+    let d = `M ${points[0][0].toFixed(1)},${points[0][1].toFixed(1)}`;
+    for (let i = 0; i < points.length - 1; i++) {
+      const p0 = i > 0 ? points[i - 1] : points[i];
+      const p1 = points[i];
+      const p2 = points[i + 1];
+      const p3 = i < points.length - 2 ? points[i + 2] : p2;
+      const cp1x = p1[0] + (p2[0] - p0[0]) / 6;
+      const cp1y = p1[1] + (p2[1] - p0[1]) / 6;
+      const cp2x = p2[0] - (p3[0] - p1[0]) / 6;
+      const cp2y = p2[1] - (p3[1] - p1[1]) / 6;
+      d += ` C ${cp1x.toFixed(1)},${cp1y.toFixed(1)} ${cp2x.toFixed(1)},${cp2y.toFixed(1)} ${p2[0].toFixed(1)},${p2[1].toFixed(1)}`;
+    }
+    return d;
+  };
+  const pathD = smoothPath(pts);
+
+  // Gridlines
+  const gridY = yTicks.map(t => `<line x1="${padL}" y1="${t.y}" x2="${padL + cw}" y2="${t.y}" stroke="${gridC}" stroke-dasharray="2 4"/>`).join('');
+  const gridX = xTicks.map(t => `<line x1="${t.x}" y1="${padT}" x2="${t.x}" y2="${padT + ch}" stroke="${gridC}" stroke-dasharray="2 4"/>`).join('');
+
+  // Axes with arrowheads
+  const axes = `
+    <line x1="${padL}" y1="${padT + ch}" x2="${padL + cw + 8}" y2="${padT + ch}" stroke="#5E7287" stroke-width="1.5" marker-end="url(#axhead)"/>
+    <line x1="${padL}" y1="${padT - 8}" x2="${padL}" y2="${padT + ch}" stroke="#5E7287" stroke-width="1.5"/>
+    <polygon points="${padL - 6},${padT - 4} ${padL + 6},${padT - 4} ${padL},${padT - 14}" fill="#5E7287"/>
+    <text x="${padL - 14}" y="${padT - 18}" font-size="12" fill="${axisLabelC}" font-weight="700">가격 (억원)</text>
+    <text x="${padL + cw + 12}" y="${padT + ch + 5}" font-size="12" fill="${axisLabelC}" font-weight="700">거래량 →</text>
+    <text x="${padL + cw + 12}" y="${padT + ch + 20}" font-size="10" fill="#8B949E">(월평균 건)</text>
+  `;
+
+  // Tick labels
+  const yLabels = yTicks.map(t => `<text x="${padL - 10}" y="${t.y + 4}" text-anchor="end" font-size="10" fill="#8B949E">${(t.val / 10000).toFixed(1)}억</text>`).join('');
+  const xLabels = xTicks.map(t => `<text x="${t.x}" y="${padT + ch + 18}" text-anchor="middle" font-size="10" fill="#8B949E">${t.val}</text>`).join('');
+
+  // Dots + quarter labels above each dot
+  const dots = pts.map((p, i) => {
+    const isLast = i === pts.length - 1;
+    const r = isLast ? 11 : 7;
+    const fill = isLast ? '#D4A574' : '#58A6FF';
+    const filter = isLast ? 'filter="url(#glowH)"' : '';
+    // alternate label position to avoid overlap
+    const above = (i % 2 === 0);
+    const ly = above ? p[1] - r - 10 : p[1] + r + 14;
+    const labelColor = isLast ? '#D4A574' : '#8B949E';
+    return `
+      <circle cx="${p[0]}" cy="${p[1]}" r="${r}" fill="${fill}" stroke="${dotStroke}" stroke-width="2.5" ${filter}/>
+      <text x="${p[0]}" y="${p[1] + (isLast ? 4 : 3)}" text-anchor="middle" font-size="${isLast ? 11 : 9}" font-weight="700" fill="${isLast ? '#0D1421' : '#FFFFFF'}">${i + 1}</text>
+      <text x="${p[0]}" y="${ly}" text-anchor="middle" font-size="${isLast ? 10 : 9}" font-weight="${isLast ? 700 : 500}" fill="${labelColor}">${history[i].q}</text>
+    `;
+  }).join('');
+
+  // Quarter list HTML
+  const phaseNum = { 1:'①', 2:'②', 3:'③', 4:'④', 5:'⑤', 6:'⑥', 7:'⑦', 8:'⑧' };
+  const phaseName = { 1:'확장', 2:'안정 상승', 3:'매물 부족', 4:'정체', 5:'하락 가속', 6:'조정', 7:'바닥 다지기', 8:'회복' };
+  const listHTML = history.map((h, i) => {
+    const isLast = i === history.length - 1;
+    return `<div class="qhist-item${isLast ? ' last' : ''}">
+      <span class="num">${i + 1}</span>
+      <span class="q">${h.q}</span>
+      <span class="phase">${phaseNum[h.phase]} ${phaseName[h.phase]}</span>
+    </div>`;
+  }).join('');
+
+  // Title above chart
+  const title = `
+    <text x="${W/2}" y="22" text-anchor="middle" font-size="10" fill="#6E7681" font-weight="700" letter-spacing="0.25em">PRICE × VOLUME HISTORY</text>
+    <text x="${W/2}" y="40" text-anchor="middle" font-size="11" fill="#D4A574" font-weight="700">${history[0].q} → ${history[history.length-1].q} · 5년 분기별 흐름</text>
+  `;
+
+  return `
+    <svg viewBox="0 0 ${W} ${H}" class="phase-svg" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="axhead" viewBox="0 0 10 10" markerWidth="8" markerHeight="8" refX="9" refY="5" orient="auto">
+          <path d="M0,0 L10,5 L0,10 z" fill="#5E7287"/>
+        </marker>
+        <filter id="glowH" x="-50%" y="-50%" width="200%" height="200%">
+          <feGaussianBlur stdDeviation="3.5" result="blur"/>
+          <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+      </defs>
+      ${title}
+      ${gridY}
+      ${gridX}
+      ${axes}
+      ${yLabels}
+      ${xLabels}
+      <path d="${pathD}" fill="none" stroke="#58A6FF" stroke-width="2.5" opacity="0.75"/>
+      ${dots}
+    </svg>
+    <div class="qhist-list">${listHTML}</div>
+  `;
+}
+
+
+// ====================================
+// REPORT HTML TEMPLATE
+// ====================================
+function reportHTML(p) {
+  // (4) 뉴스 동적 생성 — properties.news.positive / negative 배열 사용
+  const renderNewsItem = (n) => {
+    const strengthLabel = n.strength === 'high' ? '강도 上' : n.strength === 'mid' ? '강도 中' : '강도 下';
+    const titleHTML = n.url
+      ? `<a href="${n.url}" target="_blank" rel="noopener noreferrer" style="color:inherit;text-decoration:none;border-bottom:1px dotted currentColor;">${n.title} <span style="opacity:0.6;font-size:11px;">↗</span></a>`
+      : n.title;
+    const noteHTML = n.note ? `<div class="news-note">${n.note}</div>` : '';
+    return `<div class="news-item"><div class="news-meta"><span class="news-strength ${n.strength}">${strengthLabel}</span><span>${n.date}</span></div><div class="news-title">${titleHTML}</div><div class="news-source">${n.source}</div>${noteHTML}</div>`;
+  };
+  // 최소 3건 보장 — 부족 시 placeholder 채움
+  const padNews = (arr, minCount, kind) => {
+    const items = (arr || []).slice();
+    while (items.length < minCount) {
+      items.push({
+        strength: 'mid', date: '-',
+        title: kind === 'pos' ? '추가 호재 조사 진행 중' : '추가 악재 모니터링 중',
+        source: '시스템 메모',
+        url: '',
+        note: '본 단지의 추가 ' + (kind === 'pos' ? '호재' : '악재') + ' 항목은 검색 범위 내에서 발견되지 않았거나 분석 진행 중입니다. 매수 전 단지 카페·언론·정책 발표를 직접 확인 권장.'
+      });
+    }
+    return items;
+  };
+  const posNewsHTML = padNews(p.news && p.news.positive, 3, 'pos').map(renderNewsItem).join('');
+  const negNewsHTML = padNews(p.news && p.news.negative, 3, 'neg').map(renderNewsItem).join('');
+  const headlinesHTML = p.headlines.map(h => `<li><strong>${h[0]}:</strong> ${h[1]}</li>`).join('');
+  const affordHTML = p.affordSummary.map(r => {
+    const cls = r[2] === 'divider' ? ' divider' : '';
+    const vCls = r[3] === 'bad' ? ' bad' : r[3] === 'good' ? ' good' : '';
+    return `<div class="line${cls}"><span class="k">${r[0]}</span><span class="v${vCls}">${r[1]}</span></div>`;
+  }).join('');
+  const scoreBand = p.totalScore >= 80 ? '매수 권장 구간 (80+)' : p.totalScore >= 70 ? '보류·신중 구간 (70~79)' : p.totalScore >= 55 ? '위험 구간 (55~69)' : '거절 구간 (~54)';
+  const fitColor = p.fitClass === 'positive' ? 'color:#3FB950' : p.fitClass === 'warning' ? 'color:#D4A574' : 'color:#F85149';
+
+  // === 4단계 등급 pill (매수·보류·위험·거절) ===
+  const tier = p.totalScore >= 80 ? 'buy' : p.totalScore >= 70 ? 'hold' : p.totalScore >= 55 ? 'risk' : 'reject';
+  const tierPills = [['buy','매수'],['hold','보류'],['risk','위험'],['reject','거절']]
+    .map(([k,lab]) => `<div class="verdict-pill ${tier === k ? 'on ' + k : ''}">${lab}</div>`).join('');
+
+  // === 매수 결정 신호등 게이트 ===
+  const gateIcon = { go: '🟢', warn: '🟡', stop: '🔴' };
+  const gates = p.decisionGates || [];
+  const gatesHTML = gates.map(g => `
+    <div class="signal-gate ${g.state}">
+      <div class="sg-top"><span class="sg-dot">${gateIcon[g.state]}</span><span class="sg-label">${g.label}</span></div>
+      <div class="sg-verdict">${g.verdict}</div>
+      <div class="sg-basis">${g.basis}</div>
+      ${g.src ? `<span class="sg-src">${g.src}</span>` : ''}
+    </div>`).join('');
+  const tally = gates.reduce((a,g) => { a[g.state]=(a[g.state]||0)+1; return a; }, {go:0,warn:0,stop:0});
+  const gateTally = `<b class="g">🟢 통과 ${tally.go}</b> · <b class="y">🟡 주의 ${tally.warn}</b> · <b class="r">🔴 경고 ${tally.stop}</b>`;
+
+  // === 판단 근거 투명화 (점수 기여도 + API 보정) ===
+  const attr = p.scoreAttribution || { axes: [], adjustments: [] };
+  const attrAxesHTML = (attr.axes || []).map(a => `
+    <div class="attr-row">
+      <div class="ar-head"><span class="ar-name">${a.name}<span class="w">가중 ${a.weight}%</span></span><span class="ar-contrib">+${a.contrib}</span></div>
+      <div class="attr-bar-bg"><div class="attr-bar-fill" style="width:${a.score}%"></div></div>
+      <div class="ar-src">${a.srcLabel}</div>
+    </div>`).join('');
+  const adjFlag = { up: '▲ 격상', down: '▼ 강등', neutral: '● 확정' };
+  const attrAdjHTML = (attr.adjustments || []).map(j => `
+    <div class="adj-item"><span class="adj-flag ${j.dir}">${adjFlag[j.dir]}</span><span class="adj-text">${j.text}</span></div>`).join('');
+
+  return `
+  <div class="report-header">
+    <div class="left">
+      <div class="brand-mark">Mintelligence<span class="accent"> Realty</span> Advisor</div>
+      <div class="doc-type">Buyer Decision Report · Issue No. 2026-0526-00${p.idx + 1}</div>
+    </div>
+    <div class="right">
+      분석 기준일 <strong>2026-05-31</strong><br>
+      요청자 <strong>익명 #M-9037</strong><br>
+      보고서 유형 <strong>표준 (단일 단지)</strong>
+    </div>
+  </div>
+
+  <h1 class="report-title">${p.name}</h1>
+  <p class="report-subtitle">${p.subtitle}</p>
+
+  ${p.geo ? `
+  <div class="report-map-wrap">
+    <div id="report-map"></div>
+    <div class="report-map-legend">
+      <span><i class="lg-dot lg-center"></i> ${p.name}</span>
+      <span><i class="lg-dot lg-subway"></i> 지하철</span>
+      <span><i class="lg-dot lg-hospital"></i> 병원</span>
+      <span><i class="lg-dot lg-school"></i> 학교</span>
+      <span class="lg-ring">반경 500m · 1km · 2km</span>
+    </div>
+    <p class="report-map-cap">단지 중심 반경 내 교통·의료·교육 시설 (카카오맵 · HIRA · 학교알리미 좌표 기준)</p>
+  </div>` : ''}
+
+  ${REGION ? `
+  <div class="region-panel">
+    <div class="region-panel-head">📍 ${REGION.name} 지역 펀더멘털 <span class="region-src">${REGION.src}</span></div>
+    <div class="region-grid">
+      <div class="region-cell"><div class="rc-k">인구</div><div class="rc-v">${REGION.pop}</div></div>
+      <div class="region-cell"><div class="rc-k">순이동</div><div class="rc-v">${REGION.migration}</div></div>
+      <div class="region-cell"><div class="rc-k">가구·주택·사업체</div><div class="rc-v">${REGION.sgis}</div></div>
+      <div class="region-cell"><div class="rc-k">가격지수(R-ONE)</div><div class="rc-v">${REGION.reb}</div></div>
+    </div>
+  </div>` : ''}
+
+  <div class="rsection first">
+    <div class="rsection-num">SECTION 00</div>
+    <h2 class="rsection-title">Executive Summary <span class="agent-tag human">신탁 9년 노하우 인코딩</span></h2>
+    <p class="rsection-deck">사용자 재무·단지 본질·시장 환경 3축 종합 판단.</p>
+
+    <div class="verdict-grid">
+      <div class="verdict-card primary">
+        <div class="label">🎯 최종 판단</div>
+        <div class="big ${p.verdictClass || ''}">${p.verdict}${p.verdictEng ? `<span class="small">${p.verdictEng}</span>` : ''}</div>
+        <div class="sub">${p.verdictDetail}</div>
+        <div class="verdict-pills">${tierPills}</div>
+      </div>
+      <div class="verdict-card">
+        <div class="label">종합 점수</div>
+        <div class="big">${p.totalScore}<span class="small">/100</span></div>
+        <div class="sub">${scoreBand}</div>
+        <div class="score-bar">
+          <div class="fin" style="flex: 60;">단지·입지 ${(p.totalScore * 0.6).toFixed(1)}</div>
+          <div class="news" style="flex: 23;">호재악재 ${(p.totalScore * 0.23).toFixed(1)}</div>
+          <div class="other" style="flex: 17;">적합도 ${(p.totalScore * 0.17).toFixed(1)}</div>
+        </div>
+      </div>
+      <div class="verdict-card">
+        <div class="label">사용자 적합도</div>
+        <div class="big" style="${fitColor}">${p.fitPercent}</div>
+        <div class="sub">매수 가능 한도 ${p.purchaseCap} / 매물 ${p.propertyPrice} → 여유 ${p.margin}</div>
+      </div>
+    </div>
+
+    <div class="headlines">
+      <div class="h-title">핵심 메시지 3줄</div>
+      <ol>${headlinesHTML}</ol>
+    </div>
+
+    <div class="signal-board">
+      <div class="sb-head">
+        <div class="sb-title">🚦 매수 결정 신호등 — Go / No-Go 게이트</div>
+        <div class="sb-tally">${gateTally}</div>
+      </div>
+      <div class="signal-grid">${gatesHTML}</div>
+      ${p.decisionRule ? `<div style="margin-top:14px;padding:12px 16px;background:var(--d-bg-card-2);border-left:3px solid #D4A574;font-size:12px;line-height:1.6;color:var(--d-ink-soft);"><strong style="color:#D4A574;">판정 규칙</strong> — ${p.decisionRule}</div>` : ''}
+    </div>
+  </div>
+
+  <div class="rsection">
+    <div class="rsection-num">SECTION 01</div>
+    <h2 class="rsection-title">단지 개요 <span class="agent-tag auto">자동 수집</span></h2>
+    <p class="rsection-deck">국토부 실거래·KB·K-apt 데이터 통합.</p>
+    ${p.kaptPK ? `<div style="display:inline-flex;align-items:center;gap:8px;background:#102D1B;border:1px solid #3FB950;padding:5px 12px;border-radius:12px;font-size:11px;color:#3FB950;font-weight:600;margin-bottom:14px;letter-spacing:0.04em;">✓ K-apt 공식 등록 단지 · PK ${p.kaptPK} <span style="opacity:0.6;font-weight:400;">· 한국부동산원</span></div>` : ''}
+    <div class="prop-overview">
+      <div class="prop-cell"><div class="k">단지명</div><div class="v big">${p.name}</div></div>
+      <div class="prop-cell"><div class="k">주소</div><div class="v">${p.address}</div></div>
+      <div class="prop-cell"><div class="k">준공일</div><div class="v">${p.built}</div></div>
+      <div class="prop-cell"><div class="k">세대수 / 동수</div><div class="v">${p.households}</div></div>
+      <div class="prop-cell"><div class="k">전용 평형 구성</div><div class="v">${p.sizes}</div></div>
+      <div class="prop-cell"><div class="k">시공사</div><div class="v">${p.builder}</div></div>
+      <div class="prop-cell"><div class="k">현재 호가 (84㎡)</div><div class="v big accent">${p.priceRange}</div></div>
+      <div class="prop-cell"><div class="k">최근 실거래 (84㎡)</div><div class="v">${p.lastDeal}</div></div>
+      <div class="prop-cell"><div class="k">평당가</div><div class="v">${p.pricePerPyeong}</div></div>
+      <div class="prop-cell"><div class="k">관리비 (평균)</div><div class="v">${p.maintenance}</div></div>
+      <div class="prop-cell"><div class="k">주차 (세대당)</div><div class="v">${p.parking}</div></div>
+      <div class="prop-cell"><div class="k">건폐율 / 용적률</div><div class="v">${p.far}</div></div>
+    </div>
+    ${p.kaptInfo ? `
+    <div style="margin-top:16px;border:1px solid var(--rule);border-radius:10px;overflow:hidden;">
+      <div style="padding:10px 16px;background:#102D1B;border-bottom:1px solid var(--rule);font-size:11px;color:#3FB950;font-weight:700;letter-spacing:.06em;">🏛 국토부 공동주택 기본·관리 정보 (공식 건축행정 원장)</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);">
+        ${[['사용승인',p.kaptInfo.use],['세대·동',p.kaptInfo.units],['구조',p.kaptInfo.struct],['최고층',p.kaptInfo.floors],['난방',p.kaptInfo.heat],['복도형',p.kaptInfo.hall],['관리방식',p.kaptInfo.mgmt],['시공사',p.kaptInfo.builder],['주차',p.kaptInfo.park],['승강기',p.kaptInfo.elev],['CCTV',p.kaptInfo.cctv],['EV충전기',p.kaptInfo.ev]].map(kv=>`<div style="padding:10px 14px;border-top:1px solid var(--rule);border-right:1px solid var(--rule);"><div style="font-size:10px;color:var(--ink-faint);font-weight:700;margin-bottom:3px;">${kv[0]}</div><div style="font-size:12px;color:var(--ink-soft);line-height:1.4;">${kv[1]}</div></div>`).join('')}
+      </div>
+      <div style="padding:10px 16px;border-top:1px solid var(--rule);font-size:11px;color:var(--ink-muted);line-height:1.6;">부대시설: ${p.kaptInfo.extra}</div>
+    </div>
+    <div style="margin-top:6px;font-size:10px;color:var(--ink-faint);letter-spacing:.04em;">출처: 국토교통부 공동주택 기본정보·상세정보 서비스 (K-apt ${p.kaptInfo.code || ''}) — 세대·준공은 실거래/현장과 교차검증됨</div>` : ''}
+  </div>
+
+  ${p.local ? `
+  <div class="rsection">
+    <div class="rsection-num">SECTION 02</div>
+    <h2 class="rsection-title">입지 정량 분석 <span class="agent-tag auto">카카오 · HIRA · 소상공인 · 학교알리미</span></h2>
+    <p class="rsection-deck">상단 지도 반경 데이터 기반 — 교통·의료·상권·학군을 좌표·실측 수치로 검증 (5축 A·B 점수의 근거).</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div style="padding:14px 16px;background:var(--bg-card);border:1px solid var(--rule);border-radius:10px;border-left:3px solid #2F6FED;">
+        <div style="font-size:11px;color:#2F6FED;font-weight:700;letter-spacing:.06em;margin-bottom:6px;">🚇 교통 · 강남 접근</div>
+        <div style="font-size:12.5px;color:var(--ink-soft);line-height:1.6;">${p.local.transit}</div>
+      </div>
+      <div style="padding:14px 16px;background:var(--bg-card);border:1px solid var(--rule);border-radius:10px;border-left:3px solid #E5484D;">
+        <div style="font-size:11px;color:#E5484D;font-weight:700;letter-spacing:.06em;margin-bottom:6px;">🏥 의료 인프라</div>
+        <div style="font-size:12.5px;color:var(--ink-soft);line-height:1.6;">${p.local.medical}</div>
+      </div>
+      <div style="padding:14px 16px;background:var(--bg-card);border:1px solid var(--rule);border-radius:10px;border-left:3px solid #2BA672;">
+        <div style="font-size:11px;color:#2BA672;font-weight:700;letter-spacing:.06em;margin-bottom:6px;">🛍 상권 활성도</div>
+        <div style="font-size:12.5px;color:var(--ink-soft);line-height:1.6;">${p.local.commercial}</div>
+      </div>
+      <div style="padding:14px 16px;background:var(--bg-card);border:1px solid var(--rule);border-radius:10px;border-left:3px solid #D4A574;">
+        <div style="font-size:11px;color:#D4A574;font-weight:700;letter-spacing:.06em;margin-bottom:6px;">🏫 학군 (인근 학교)</div>
+        <div style="font-size:12.5px;color:var(--ink-soft);line-height:1.6;">${(p.score5Desc && p.score5Desc.sch) ? p.score5Desc.sch : '—'}</div>
+      </div>
+    </div>
+    <div style="margin-top:10px;font-size:10px;color:var(--ink-faint);letter-spacing:.04em;">출처: 카카오 로컬(좌표·역거리) · HIRA 병원정보 · 소상공인 상권정보 · 학교알리미 — 단지 좌표 반경 실측</div>
+  </div>` : ''}
+
+  <div class="rsection">
+    <div class="rsection-num">SECTION 03</div>
+    <h2 class="rsection-title">사용자 재무 적합도 <span class="agent-tag auto">자동 계산</span></h2>
+    <p class="rsection-deck">사용자 입력 재무 + 매물 가격 매칭. 대출·세금·잔금·이사·중개수수료 통합 시뮬레이션.</p>
+    <div class="afford-grid">
+      <div>
+        <div class="afford-bar-wrap">
+          <div class="afford-bar-bg">
+            <div class="afford-bar-fill" style="width: 100%;"></div>
+            <div class="afford-marker" style="left: ${p.affordMarkerPct}%;" data-label="매물 ${p.propertyPrice} (${p.affordMarkerPct}%)"></div>
+          </div>
+          <div class="afford-labels">
+            <span>0</span><span>${p.affordCapMax ? p.affordCapMax + '억 (한도)' : '한도'}</span><span>${p.affordBarMax ? p.affordBarMax + '억' : '20억'}</span>
+          </div>
+        </div>
+        <p style="font-size:13px; line-height:1.7; color:var(--d-ink-soft); margin-top:32px;">${p.affordText}</p>
+        <p style="font-size:13px; line-height:1.7; color:var(--d-ink-soft); margin-top:12px;">${p.affordText2}</p>
+      </div>
+      <div class="afford-summary">${affordHTML}</div>
+    </div>
+  </div>
+
+  <div class="rsection">
+    <div class="rsection-num">SECTION 04</div>
+    <h2 class="rsection-title">5축 점수 분해 <span class="agent-tag human">노하우 인코딩</span></h2>
+    <p class="rsection-deck">사용자 입력 가중치 반영. 단지·시세·호재·악재 5축 종합.</p>
+    <div class="score-breakdown">
+      <div class="score-axis"><div class="ax-label">A. 입지</div><div class="ax-score">${p.score5.loc}<span class="denom">/100</span></div><div class="ax-weight">가중 25%</div><div class="ax-desc">${p.score5Desc.loc}</div></div>
+      <div class="score-axis"><div class="ax-label">B. 학군</div><div class="ax-score">${p.score5.sch}<span class="denom">/100</span></div><div class="ax-weight">가중 20%</div><div class="ax-desc">${p.score5Desc.sch}</div></div>
+      <div class="score-axis"><div class="ax-label">C. 단지</div><div class="ax-score">${p.score5.cpx}<span class="denom">/100</span></div><div class="ax-weight">가중 20%</div><div class="ax-desc">${p.score5Desc.cpx}</div></div>
+      <div class="score-axis"><div class="ax-label">D. 시세</div><div class="ax-score">${p.score5.prc}<span class="denom">/100</span></div><div class="ax-weight">가중 20%</div><div class="ax-desc">${p.score5Desc.prc}</div></div>
+      <div class="score-axis"><div class="ax-label">E. 호재·악재</div><div class="ax-score">${p.score5.news}<span class="denom">/100</span></div><div class="ax-weight">가중 15%</div><div class="ax-desc">${p.score5Desc.news}</div></div>
+    </div>
+
+    ${(attr.axes && attr.axes.length) ? `
+    <div class="attribution">
+      <div class="attr-axes">
+        <div class="aa-title">📐 점수 기여도 <span class="meta">축점수 × 가중치 = 종합 기여</span></div>
+        ${attrAxesHTML}
+        <div class="attr-total">
+          <span class="at-lab">종합 점수</span>
+          <span><span class="at-val">${p.totalScore}</span><span class="at-band ${p.verdictClass || ''}">${p.verdict}</span></span>
+        </div>
+      </div>
+      <div class="attr-adj">
+        <div class="aa-title">🔗 API → 점수 보정 내역 <span class="meta">신규 4종 API 반영</span></div>
+        ${attrAdjHTML}
+      </div>
+    </div>` : ''}
+
+    ${p.schoolsNearby ? `
+    <div style="margin-top:18px;padding:14px 18px;background:var(--bg-card);border-left:3px solid #D4A574;">
+      <div style="font-size:11px;color:#D4A574;font-weight:700;letter-spacing:0.08em;margin-bottom:10px;">📊 인근 학교 (NEIS 교육부 공식) · 시·구 단위 매칭, 정확 배정은 학구도 별도 확인</div>
+      <table style="width:100%;font-size:12px;color:var(--ink-soft);border-collapse:collapse;">
+        <tr style="border-bottom:1px solid var(--rule);"><td style="padding:6px 4px;width:60px;color:var(--ink-muted);font-weight:600;">초등</td><td style="padding:6px 4px;">${p.schoolsNearby.elem || '—'}</td></tr>
+        <tr style="border-bottom:1px solid var(--rule);"><td style="padding:6px 4px;color:var(--ink-muted);font-weight:600;">중등</td><td style="padding:6px 4px;">${p.schoolsNearby.mid || '—'}</td></tr>
+        <tr><td style="padding:6px 4px;color:var(--ink-muted);font-weight:600;">고등</td><td style="padding:6px 4px;">${p.schoolsNearby.high || '—'}</td></tr>
+      </table>
+    </div>` : ''}
+  </div>
+
+  <div class="rsection">
+    <div class="rsection-num">SECTION 05</div>
+    <h2 class="rsection-title">시세 분석 <span class="agent-tag auto">국토부 + KB</span></h2>
+    <p class="rsection-deck">5년 시세·거래량 추세, 인근 단지 상대 비교, 시장 국면 진단.</p>
+
+    ${p.tradeDetail ? `
+    <div style="margin-bottom:16px;padding:16px 20px;background:var(--bg-card);border:1px solid var(--rule);border-radius:10px;border-left:3px solid #58A6FF;">
+      <div style="font-size:11px;color:#58A6FF;font-weight:700;letter-spacing:.06em;margin-bottom:10px;">📋 실거래 상세 · 매수주체 분석 <span style="color:var(--ink-faint);font-weight:500;">국토부 매매 실거래 상세자료</span></div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:10px;">
+        <div><div style="font-size:10px;color:var(--ink-faint);font-weight:700;margin-bottom:3px;">거래량(유동성)</div><div style="font-size:12px;color:var(--ink-soft);">${p.tradeDetail.vol}</div></div>
+        <div><div style="font-size:10px;color:var(--ink-faint);font-weight:700;margin-bottom:3px;">최근 실거래</div><div style="font-size:12px;color:var(--ink-soft);">${p.tradeDetail.recent}</div></div>
+        <div><div style="font-size:10px;color:var(--ink-faint);font-weight:700;margin-bottom:3px;">매수주체·거래형태</div><div style="font-size:12px;color:var(--ink-soft);">${p.tradeDetail.buyer}</div></div>
+      </div>
+      <div style="font-size:12px;color:var(--ink-soft);line-height:1.7;padding-top:10px;border-top:1px dashed var(--rule);">💡 ${p.tradeDetail.insight}</div>
+    </div>` : ''}
+
+    <div class="chart-wrap">
+      <div class="chart-title">5년 시세 추이 (84㎡) <span class="meta">단위: 억원 · 분기 평균 실거래가</span></div>
+      <div class="chart-canvas-wrap"><canvas id="priceChart"></canvas></div>
+      <div style="margin-top: 14px; padding-top: 14px; border-top: 1px dashed var(--d-rule);">
+        <div class="chart-title" style="margin-bottom: 10px;">분기별 거래량 <span class="meta">단위: 건 · 같은 분기 라벨 기준</span></div>
+        <div class="chart-canvas-wrap" style="height: 130px;"><canvas id="quarterlyVolChart"></canvas></div>
+      </div>
+    </div>
+
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 14px;">
+      <div class="chart-wrap tight">
+        <div class="chart-title">인근 단지 평당가 비교 <span class="meta">2026-Q2</span></div>
+        <div class="chart-canvas-wrap" style="height: 240px;"><canvas id="compareChart"></canvas></div>
+      </div>
+      <div class="chart-wrap tight">
+        <div class="chart-title">월별 거래량 <span class="meta">최근 12개월</span></div>
+        <div class="chart-canvas-wrap" style="height: 240px;"><canvas id="volChart"></canvas></div>
+      </div>
+    </div>
+
+    <div class="market-phase">
+      <div class="phase-head">
+        <div class="phase-title">현재 시장 국면 — 8 Phase Diagnostic <span class="agent-tag human">노하우 판별</span></div>
+        <div class="phase-desc">${p.phaseDescFull}</div>
+      </div>
+      ${buildPhaseSvg(p.currentPhase)}
+    </div>
+
+    <div class="market-phase" style="margin-top: 14px;">
+      <div class="phase-head">
+        <div class="phase-title">본 건 분기별 흐름 — Phase History <span class="agent-tag auto">실거래·거래량 집계</span></div>
+        <div class="phase-desc">${p.name}의 5년 분기별 시장 국면 이동 경로. 21.3Q부터 26.2Q까지 점을 이어 보여줍니다. <strong>현재 위치는 골드 점</strong>으로 표시.</div>
+      </div>
+      ${buildHistorySvg((p.phaseHistory && p.phaseHistory.length >= 7) ? p.phaseHistory : autoPhaseHistory(p))}
+    </div>
+    ${p.kosisUnsold ? `
+    <div style="margin-top:18px;padding:16px 20px;background:#0F1A2A;border-left:4px solid #58A6FF;">
+      <div style="font-size:11px;color:#58A6FF;font-weight:700;letter-spacing:0.08em;margin-bottom:8px;">📊 지역 미분양 추세 — 공급측 시그널</div>
+      <div style="font-size:15px;color:var(--ink);font-weight:600;margin-bottom:4px;">${p.kosisUnsold.summary}</div>
+      <div style="font-size:11px;color:var(--ink-muted);line-height:1.6;">${p.kosisUnsold.interpretation || '미분양 감소세 = 매수 안정화 신호 / 급증 = 공급 압박 경고 → 8 Phase 보정에 반영'}</div>
+      <div style="font-size:10px;color:var(--ink-faint);margin-top:8px;letter-spacing:0.04em;">출처: KOSIS 통계청 · 국토교통부 미분양주택현황보고 (DT_MLTM_2082)</div>
+    </div>` : ''}
+  </div>
+
+  ${REGION && REGION.cycle ? `
+  <div class="rsection">
+    <div class="rsection-num">SECTION 06</div>
+    <h2 class="rsection-title">시장 사이클 & 가격 모멘텀 <span class="agent-tag auto">한국부동산원 R-ONE</span></h2>
+    <p class="rsection-deck">${REGION.name} 아파트 매매·전세 지수 추세로 '지금 사이클 위치'를 진단. 매매·전세 갭의 방향이 하방지지 강도를 가린다.</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
+      <div style="padding:16px;background:var(--bg-card);border:1px solid var(--rule);border-radius:10px;text-align:center;">
+        <div style="font-size:11px;color:var(--ink-muted);font-weight:700;margin-bottom:6px;">매매지수 (13M)</div>
+        <div style="font-size:24px;font-weight:800;color:#F85149;">${REGION.cycle.maemae}</div>
+      </div>
+      <div style="padding:16px;background:var(--bg-card);border:1px solid var(--rule);border-radius:10px;text-align:center;">
+        <div style="font-size:11px;color:var(--ink-muted);font-weight:700;margin-bottom:6px;">전세지수 (13M)</div>
+        <div style="font-size:24px;font-weight:800;color:#D4A574;">${REGION.cycle.jeonse}</div>
+      </div>
+      <div style="padding:16px;background:var(--bg-card);border:1px solid var(--rule);border-radius:10px;text-align:center;">
+        <div style="font-size:11px;color:var(--ink-muted);font-weight:700;margin-bottom:6px;">매매·전세 갭</div>
+        <div style="font-size:14px;font-weight:800;color:var(--ink);line-height:1.4;margin-top:8px;">${REGION.cycle.gap}</div>
+      </div>
+    </div>
+    <div style="margin-top:14px;padding:16px 20px;background:#2A2014;border-left:4px solid #D4A574;">
+      <div style="font-size:11px;color:#D4A574;font-weight:700;letter-spacing:.08em;margin-bottom:6px;">📍 사이클 위치 진단</div>
+      <div style="font-size:15px;color:var(--ink);font-weight:700;margin-bottom:6px;">${REGION.cycle.position}</div>
+      <div style="font-size:12px;color:var(--ink-soft);line-height:1.7;">${REGION.cycle.caution}</div>
+    </div>
+    ${p.jeonse ? `
+    <div style="margin-top:14px;padding:16px 20px;background:var(--bg-card);border:1px solid var(--rule);border-radius:10px;">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px;margin-bottom:8px;">
+        <div style="font-size:11px;color:#58A6FF;font-weight:700;letter-spacing:.06em;">🔑 실측 전세가율 — 하방지지력 · 갭부담</div>
+        <div><span style="font-size:22px;font-weight:800;color:var(--ink);">${p.jeonse.ratio}</span><span style="font-size:11px;color:var(--ink-muted);margin-left:8px;">갭 ${p.jeonse.gap}</span></div>
+      </div>
+      <div style="font-size:12px;color:var(--ink-soft);line-height:1.6;margin-bottom:6px;">${p.jeonse.deal}</div>
+      <div style="font-size:12px;color:var(--ink-soft);line-height:1.7;">${p.jeonse.note}</div>
+    </div>` : ''}
+    <div style="margin-top:8px;font-size:10px;color:var(--ink-faint);letter-spacing:.04em;">출처: 한국부동산원 R-ONE 매매·전세 가격지수(A_2024_00045·00050) · 국토부 아파트 전월세 실거래가(RTMSDataSvcAptRent, 최근 7개월 실측)</div>
+  </div>` : ''}
+
+  ${REGION && REGION.supply ? `
+  <div class="rsection">
+    <div class="rsection-num">SECTION 07</div>
+    <h2 class="rsection-title">수급 밸런스 — 수요 vs 공급 <span class="agent-tag auto">KOSIS · 청약홈 · LH</span></h2>
+    <p class="rsection-deck">'살 사람이 느는가(수요)' vs '입주·분양 물량이 쏟아지는가(공급)' 를 대조해 가격의 하방·상방 압력을 판단.</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+      <div style="padding:16px 18px;background:#142A20;border:1px solid #1E4A36;border-radius:10px;">
+        <div style="font-size:11px;color:#3FB950;font-weight:700;letter-spacing:.06em;margin-bottom:10px;">📈 수요측 (KOSIS)</div>
+        <div style="font-size:13px;color:var(--ink-soft);line-height:1.7;">· 인구·순이동: <strong style="color:var(--ink);">${REGION.supply.demand}</strong></div>
+      </div>
+      <div style="padding:16px 18px;background:#0F1A2A;border:1px solid #1E3A5A;border-radius:10px;">
+        <div style="font-size:11px;color:#58A6FF;font-weight:700;letter-spacing:.06em;margin-bottom:10px;">📉 공급측 (청약홈·KOSIS)</div>
+        <div style="font-size:13px;color:var(--ink-soft);line-height:1.7;">· 신규 분양: <strong style="color:var(--ink);">${REGION.supply.pressure}</strong><br>· 미분양: <strong style="color:var(--ink);">${REGION.supply.unsold}</strong></div>
+      </div>
+    </div>
+    <div style="margin-top:14px;padding:16px 20px;background:var(--bg-card);border-left:4px solid #D4A574;">
+      <div style="font-size:11px;color:#D4A574;font-weight:700;letter-spacing:.08em;margin-bottom:6px;">⚖️ 수급 종합 판단</div>
+      <div style="font-size:13px;color:var(--ink-soft);line-height:1.7;">${REGION.supply.verdict}</div>
+    </div>
+    <div style="margin-top:8px;font-size:10px;color:var(--ink-faint);letter-spacing:.04em;">출처: KOSIS 주민등록인구·순이동 · 청약홈 분양정보(ApplyhomeInfoDetailSvc) · KOSIS 미분양주택현황(DT_MLTM_2082)</div>
+  </div>` : ''}
+
+  <div class="rsection">
+    <div class="rsection-num">SECTION 08</div>
+    <h2 class="rsection-title">호재·악재 종합 <span class="agent-tag auto">자동 수집</span> <span class="agent-tag human">진위·강도 판별</span></h2>
+    <p class="rsection-deck">최근 90일 단지·인근 호재·악재 + 본인 노하우 해설.</p>
+
+    <div class="news-section">
+      <div class="news-col pos"><h4>🟢 주요 호재</h4>${posNewsHTML}</div><div class="news-col neg"><h4>🔴 주요 악재</h4>${negNewsHTML}</div></div>
+
+    <div class="sentiment-gauge">
+      <div class="label">호재·악재 종합 점수</div>
+      <div class="score" style="${parseInt(p.newsScore) >= 30 ? 'color:#3FB950' : parseInt(p.newsScore) >= 10 ? 'color:#D4A574' : 'color:#F85149'}">${p.newsScore}</div>
+      <div class="scale">-100 (극단 부정) ~ +100 (극단 긍정)</div>
+    </div>
+    ${p.applyhomeSupply ? `
+    <div style="margin-top:18px;padding:16px 20px;background:${p.applyhomeSupply.level === 'high' ? '#2A1414' : p.applyhomeSupply.level === 'mid' ? '#2A2014' : '#142A20'};border-left:4px solid ${p.applyhomeSupply.level === 'high' ? '#F85149' : p.applyhomeSupply.level === 'mid' ? '#D4A574' : '#3FB950'};">
+      <div style="font-size:11px;color:${p.applyhomeSupply.level === 'high' ? '#F85149' : p.applyhomeSupply.level === 'mid' ? '#D4A574' : '#3FB950'};font-weight:700;letter-spacing:0.08em;margin-bottom:8px;">📊 신규 분양 공급 압박 (향후 6M) — 자동 감지</div>
+      <div style="font-size:15px;color:var(--ink);font-weight:600;margin-bottom:6px;">${p.applyhomeSupply.summary}</div>
+      ${p.applyhomeSupply.recentList && p.applyhomeSupply.recentList.length > 0 ? `
+      <div style="margin-top:10px;padding-top:10px;border-top:1px dashed var(--rule);">
+        <div style="font-size:11px;color:var(--ink-muted);font-weight:600;margin-bottom:6px;">최근 6개월 인근 발표된 분양 (참고)</div>
+        <ul style="margin:0;padding-left:18px;font-size:11px;color:var(--ink-soft);line-height:1.8;">
+          ${p.applyhomeSupply.recentList.map(r => `<li>${r.date} · <strong>${r.name}</strong> (${r.households}세대 · ${r.builder})</li>`).join('')}
+        </ul>
+      </div>` : ''}
+      <div style="font-size:10px;color:var(--ink-faint);margin-top:10px;letter-spacing:0.04em;">출처: 청약홈 (한국부동산원) · ApplyhomeInfoDetailSvc/v1</div>
+    </div>` : ''}
+  </div>
+
+  ${p.tax ? `
+  <div class="rsection">
+    <div class="rsection-num">SECTION 09</div>
+    <h2 class="rsection-title">정책 · 세금 리스크 <span class="agent-tag auto">국가법령정보</span></h2>
+    <p class="rsection-deck">현행 세법(취득·보유·양도) 기준, 이 가격대 <strong>1주택 실매수</strong> 시 세금·규제 부담 — 의사결정의 실비용.</p>
+    <div style="border:1px solid var(--rule);border-radius:10px;overflow:hidden;">
+      <div style="display:grid;grid-template-columns:120px 1fr;border-bottom:1px solid var(--rule);">
+        <div style="padding:13px 16px;background:var(--bg-card);font-weight:700;font-size:12px;color:#E5484D;">취득세<div style="font-size:10px;color:var(--ink-faint);font-weight:500;margin-top:2px;">매수 초기비용</div></div>
+        <div style="padding:13px 16px;font-size:12.5px;color:var(--ink-soft);line-height:1.6;">${p.tax.acq}</div>
+      </div>
+      <div style="display:grid;grid-template-columns:120px 1fr;border-bottom:1px solid var(--rule);">
+        <div style="padding:13px 16px;background:var(--bg-card);font-weight:700;font-size:12px;color:#D4A574;">보유세<div style="font-size:10px;color:var(--ink-faint);font-weight:500;margin-top:2px;">종부세·재산세</div></div>
+        <div style="padding:13px 16px;font-size:12.5px;color:var(--ink-soft);line-height:1.6;">${p.tax.hold}</div>
+      </div>
+      <div style="display:grid;grid-template-columns:120px 1fr;">
+        <div style="padding:13px 16px;background:var(--bg-card);font-weight:700;font-size:12px;color:#3FB950;">양도세<div style="font-size:10px;color:var(--ink-faint);font-weight:500;margin-top:2px;">5년 후 매각</div></div>
+        <div style="padding:13px 16px;font-size:12.5px;color:var(--ink-soft);line-height:1.6;">${p.tax.gain}</div>
+      </div>
+    </div>
+    ${REGION && REGION.regulated ? `<div style="margin-top:12px;padding:13px 18px;background:#142A20;border-left:4px solid #3FB950;font-size:12px;color:var(--ink-soft);line-height:1.7;">🏛 ${REGION.regulated}</div>` : ''}
+    <div style="margin-top:8px;font-size:10px;color:var(--ink-faint);letter-spacing:.04em;">출처: 국가법령정보(국가법령정보센터 DRF) — 지방세법·종합부동산세법·소득세법 현행. ※ 세액은 공시가·보유기간·세대 구성에 따라 달라지며 실제 신고 전 세무 검토 필요.</div>
+  </div>` : ''}
+
+  <div class="rsection">
+    <div class="rsection-num">SECTION 10</div>
+    <h2 class="rsection-title">시나리오 예측 <span class="agent-tag human">확률 부여·기댓값 산출</span></h2>
+    <p class="rsection-deck">AI는 특정 시점 가격을 단정할 수 없습니다. 본 섹션은 단지·시장·매크로 종합 <strong style="color:#D4A574">3개 확률 시나리오</strong>이며 가중 기댓값을 산출합니다.</p>
+
+    <div class="scenarios">
+      <div class="scenario bull">
+        <div class="scenario-head"><span class="scenario-name">🟢 강세 (Bull)</span><span class="scenario-prob">확률 ${p.scenarios.bull.prob}%</span></div>
+        <p class="scenario-desc">${p.scenarios.bull.desc}</p>
+        <table class="scenario-table">
+          <tr><th>기간</th><th>예상가</th><th>수익률</th></tr>
+          <tr><td>1년</td><td>${p.scenarios.bull.y1}</td><td class="ret">${p.scenarios.bull.y1r}</td></tr>
+          <tr><td>3년</td><td>${p.scenarios.bull.y3}</td><td class="ret">${p.scenarios.bull.y3r}</td></tr>
+          <tr><td>5년</td><td>${p.scenarios.bull.y5}</td><td class="ret">${p.scenarios.bull.y5r}</td></tr>
+        </table>
+      </div>
+      <div class="scenario base">
+        <div class="scenario-head"><span class="scenario-name">🟡 기본 (Base)</span><span class="scenario-prob">확률 ${p.scenarios.base.prob}%</span></div>
+        <p class="scenario-desc">${p.scenarios.base.desc}</p>
+        <table class="scenario-table">
+          <tr><th>기간</th><th>예상가</th><th>수익률</th></tr>
+          <tr><td>1년</td><td>${p.scenarios.base.y1}</td><td class="ret">${p.scenarios.base.y1r}</td></tr>
+          <tr><td>3년</td><td>${p.scenarios.base.y3}</td><td class="ret">${p.scenarios.base.y3r}</td></tr>
+          <tr><td>5년</td><td>${p.scenarios.base.y5}</td><td class="ret">${p.scenarios.base.y5r}</td></tr>
+        </table>
+      </div>
+      <div class="scenario bear">
+        <div class="scenario-head"><span class="scenario-name">🔴 약세 (Bear)</span><span class="scenario-prob">확률 ${p.scenarios.bear.prob}%</span></div>
+        <p class="scenario-desc">${p.scenarios.bear.desc}</p>
+        <table class="scenario-table">
+          <tr><th>기간</th><th>예상가</th><th>수익률</th></tr>
+          <tr><td>1년</td><td>${p.scenarios.bear.y1}</td><td class="ret">${p.scenarios.bear.y1r}</td></tr>
+          <tr><td>3년</td><td>${p.scenarios.bear.y3}</td><td class="ret">${p.scenarios.bear.y3r}</td></tr>
+          <tr><td>5년</td><td>${p.scenarios.bear.y5}</td><td class="ret">${p.scenarios.bear.y5r}</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="expectation-bar">
+      <div class="item"><div class="lab">⚖️ 1년 가중 기댓값</div><div class="val">${p.expected.y1} <span class="pct">${p.expected.y1r}</span></div></div>
+      <div class="item"><div class="lab">⚖️ 3년 가중 기댓값</div><div class="val">${p.expected.y3} <span class="pct">${p.expected.y3r}</span></div></div>
+      <div class="item"><div class="lab">⚖️ 5년 가중 기댓값</div><div class="val">${p.expected.y5} <span class="pct">${p.expected.y5r}</span></div></div>
+    </div>
+  </div>
+
+  <div class="rsection">
+    <div class="rsection-num">SECTION 11</div>
+    <h2 class="rsection-title">매수 가이드 <span class="agent-tag human">노하우 기반 판단</span></h2>
+    <p class="rsection-deck">적정 호가·매수 시점·협상 포인트.</p>
+    <div class="buy-guide">
+      <div class="panel">
+        <h5>📌 적정 호가</h5>
+        <table class="price-table">
+          <tr><td class="lab">현재 호가 평균</td><td class="val">${p.avgListing}</td></tr>
+          <tr><td class="lab">최근 실거래</td><td class="val">${p.recentDeal}</td></tr>
+          <tr><td class="lab">유사 평형 동가 평균</td><td class="val">${p.similarAvg}</td></tr>
+          <tr class="highlight"><td class="lab">본 모델 적정 호가</td><td class="val">${p.targetPrice}</td></tr>
+          <tr><td class="lab">협상 여지</td><td class="val">${p.negotiation}</td></tr>
+          <tr><td class="lab">상한 (이 이상 X)</td><td class="val">${p.priceCap}</td></tr>
+        </table>
+      </div>
+      <div class="panel">
+        <h5>📌 매수 시점</h5>
+        <ul class="timing-list">
+          <li><strong>즉시 매수 (3개월 내):</strong> ${p.verdictTone === 'buy' ? '▲ 권장' : '△ 신중'}. 적정 호가 매물 출회 시 결정.</li>
+          <li><strong>3~6개월 관망:</strong> △ 분양 공급 본격화 시기 (2026 Q3~Q4). 호가 조정 -3~-5% 가능.</li>
+          <li><strong>6~12개월 관망:</strong> ${p.currentPhase === 3 ? '▲ 권장 (꼭지 가능성)' : '✗ 비권장'}. 금리 인하 시 매수 심리 회복.</li>
+          <li><strong>협상 포인트:</strong> ① 잔금 시점 공급 압박 ② 5년 차 하자보수 점검 ③ 동·층·향 0.2~0.5억 갭</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="rsection">
+    <div class="rsection-num">SECTION 12</div>
+    <h2 class="rsection-title">매수 후 모니터링 항목 <span class="agent-tag auto">자동 알림 가능</span></h2>
+    <p class="rsection-deck">사후 추적 구독(월 9,900원) 시 자동 알림.</p>
+    <div class="risk-list">
+      <div class="risk-item"><strong>9호선 4단계 진척</strong>본 단지 평가의 핵심 호재. 개통 지연·정거장 위치 변경 시 시세 영향 즉각.<span class="freq">알림 주기: 월 1회 / 변경 발생 시 즉시</span></div>
+      <div class="risk-item"><strong>강일지구 6,200세대 분양 일정·분양가</strong>분양가가 본 단지 시세 하한선. 분양 부진 시 단기 시세 압박.<span class="freq">알림 주기: 분기 1회 / 분양 공고 시 즉시</span></div>
+      <div class="risk-item"><strong>한은 기준금리·DSR 정책</strong>금리 1%p 변동 시 월 상환액 약 35만원 변동.<span class="freq">알림 주기: 한은 금통위 + DSR 개정 시</span></div>
+      <div class="risk-item"><strong>${p.builder.split('·')[0]} 하자보수·관리비 분쟁</strong>5년 차 하자보수 청구 가능 기간. 단지 가치 직접 영향.<span class="freq">알림 주기: 분기 1회</span></div>
+      <div class="risk-item"><strong>강동구 정비사업 (인접 단지 재건축)</strong>인근 노후 단지 재건축 추진 시 본 단지 입지 가치 변동.<span class="freq">알림 주기: 월 1회</span></div>
+      <div class="risk-item"><strong>보유세·재산세 부과 기준 변화</strong>공시가 현실화 진행. 월 부담 변동 직접 영향.<span class="freq">알림 주기: 연 1회 (5월 공시)</span></div>
+    </div>
+  </div>
+
+  <div class="sources">
+    <p><span class="label">데이터 출처 (전수 검증 가능)</span></p>
+    <table style="width:100%;font-size:11px;color:var(--ink-soft);border-collapse:collapse;margin-top:8px;margin-bottom:14px;">
+      <tr style="border-bottom:1px solid var(--rule);"><th style="text-align:left;padding:6px 8px;color:#D4A574;font-weight:600;font-size:10px;letter-spacing:0.06em;">데이터</th><th style="text-align:left;padding:6px 8px;color:#D4A574;font-weight:600;font-size:10px;letter-spacing:0.06em;">출처</th><th style="text-align:left;padding:6px 8px;color:#D4A574;font-weight:600;font-size:10px;letter-spacing:0.06em;">엔드포인트 · 표 ID</th></tr>
+      <tr style="border-bottom:1px solid var(--rule-soft);"><td style="padding:5px 8px;">단지 식별·세대수·동수·준공일</td><td style="padding:5px 8px;">K-apt 한국부동산원</td><td style="padding:5px 8px;font-family:monospace;color:var(--ink-muted);">api.odcloud.kr/AptIdInfoSvc/v1</td></tr>
+      <tr style="border-bottom:1px solid var(--rule-soft);"><td style="padding:5px 8px;">실거래가 (5년 분기별)</td><td style="padding:5px 8px;">국토교통부</td><td style="padding:5px 8px;font-family:monospace;color:var(--ink-muted);">apis.data.go.kr/.../RTMSDataSvcAptTradeDev</td></tr>
+      <tr style="border-bottom:1px solid var(--rule-soft);"><td style="padding:5px 8px;">학교 정보 (초·중·고)</td><td style="padding:5px 8px;">NEIS 교육부</td><td style="padding:5px 8px;font-family:monospace;color:var(--ink-muted);">open.neis.go.kr/hub/schoolInfo</td></tr>
+      <tr style="border-bottom:1px solid var(--rule-soft);"><td style="padding:5px 8px;">미분양 통계</td><td style="padding:5px 8px;">KOSIS 통계청 · 국토부</td><td style="padding:5px 8px;font-family:monospace;color:var(--ink-muted);">kosis.kr/openapi · DT_MLTM_2082</td></tr>
+      <tr style="border-bottom:1px solid var(--rule-soft);"><td style="padding:5px 8px;">분양 공고·경쟁률</td><td style="padding:5px 8px;">청약홈 한국부동산원</td><td style="padding:5px 8px;font-family:monospace;color:var(--ink-muted);">api.odcloud.kr/ApplyhomeInfoDetailSvc/v1</td></tr>
+      <tr style="border-bottom:1px solid var(--rule-soft);"><td style="padding:5px 8px;">호가·매물</td><td style="padding:5px 8px;">네이버 부동산·KB</td><td style="padding:5px 8px;font-family:monospace;color:var(--ink-muted);">land.naver.com / onland.kbstar.com</td></tr>
+      <tr><td style="padding:5px 8px;">뉴스·호재악재</td><td style="padding:5px 8px;">네이버 검색 MCP</td><td style="padding:5px 8px;font-family:monospace;color:var(--ink-muted);">NaverSearch-search_news</td></tr>
+    </table>
+    <p><span class="label">한계</span>① 단지 내 개별 매물의 동·층·향·옵션·하자 등 미시 변수 미반영. 현장 임장 필수. ② 시나리오 예측은 확률적 추정. ③ 사용자 입력 재무는 자체 신고 기준. ④ NEIS 학교는 시·구 단위 매칭 (좌표 변환 미적용 — 정확 배정은 학구도안내 별도 확인). ⑤ 본 보고서는 정보 제공이며 의사결정 책임은 사용자에게.</p>
+    <div class="disclaimer"><strong>⚠️ 면책 고지</strong> — 본 보고서는 자동화 시스템 + 도메인 전문가 노하우 기반 정보 제공물입니다. 공인중개·대출모집·금융자문업이 아니며, 매수·매도·대출 등 의사결정의 책임은 전적으로 사용자에게 있습니다.</div>
+  </div>
+
+  <div class="report-footer">
+    <div class="left"><strong>Mintelligence Realty Advisor</strong><br>Powered by Claude Agent + 9년 부동산신탁 실무 노하우<br>report@mintelligence.kr · v0.7 (4단계 판단 + 신호등 + API 근거 투명화)</div>
+    <div class="right">발행일 2026-05-31<br>유효기간 발행일 + 30일<br>Report ID: M-9037-00${p.idx + 1}</div>
+  </div>
+  `;
+}
+
+
+// ====================================
+// STATE & CHARTS
+// ====================================
+let selectedPropIdx = 0;
+let chartInstances = {};
+
+function destroyCharts() {
+  Object.values(chartInstances).forEach(c => { try { c.destroy(); } catch(e) {} });
+  chartInstances = {};
+}
+
+// === Phase History 자동 생성 (chart 데이터 기반, 14분기) ===
+function classifyPhase(prices, vols, i) {
+  if (i === 0) return 2;
+  const p0 = prices[i-1], p1 = prices[i], v0 = vols[i-1] || 1, v1 = vols[i] || 1;
+  if (p0 == null || p1 == null) return 2;
+  const pCh = ((p1 - p0) / p0) * 100;
+  const vCh = ((v1 - v0) / v0) * 100;
+  const pUp = pCh > 1.5, pDn = pCh < -1.5;
+  const vUp = vCh > 20, vDn = vCh < -20;
+  if (pUp && vUp) return 1;
+  if (pUp && !vUp && !vDn) return 2;
+  if (pUp && vDn) return 3;
+  if (!pUp && !pDn && vDn) return 4;
+  if (pDn && vDn) return 5;
+  if (pDn && !vUp && !vDn) return 6;
+  if (pDn && vUp) return 7;
+  if (!pUp && !pDn && vUp) return 8;
+  return 2;
+}
+
+function autoPhaseHistory(p) {
+  if (!p || !p.chart || !p.chart.labels) return [];
+  const labels = p.chart.labels;
+  const prices = p.chart.price || [];
+  const vols = p.chart.quarterlyVolume || [];
+  return labels.map((q, i) => {
+    if (prices[i] == null) return null;
+    return { q: q, phase: classifyPhase(prices, vols, i), vol: vols[i] || 0, price: prices[i] };
+  }).filter(x => x);
+}
+
+function initChartsWith(p) {
+  // 테마 인식 — 라이트 모드면 축·격자·라벨색을 진하게 전환
+  const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+  const darkText = isLight ? '#6B6B6B' : '#8B949E';
+  const darkTextStrong = isLight ? '#1A1A1A' : '#E6EDF3';
+  const darkGrid = isLight ? '#E5DFD4' : '#21262D';
+  const labelOnBg = isLight ? '#1A1A1A' : '#E6EDF3';   // 막대 위(배경) 라벨
+  const pointBorder = isLight ? '#FFFFFF' : '#0D1421'; // 라인 포인트 테두리
+  const accent = '#58A6FF';
+  const gold = '#D4A574';
+
+  Chart.defaults.font.family = "'Pretendard Variable', Pretendard, sans-serif";
+  Chart.defaults.font.size = 11;
+  Chart.defaults.color = darkText;
+
+  const pc = document.getElementById('priceChart');
+  if (pc) {
+    chartInstances.price = new Chart(pc, {
+      type: 'line',
+      data: {
+        labels: p.chart.labels || ['23.1Q','23.2Q','23.3Q','23.4Q','24.1Q','24.2Q','24.3Q','24.4Q','25.1Q','25.2Q','25.3Q','25.4Q','26.1Q','26.2Q'],
+        datasets: [
+          {
+            label: (p.chart.localLabel || '본 단지 실거래 (84㎡)'),
+            data: p.chart.price,
+            borderColor: gold,
+            backgroundColor: 'rgba(212,165,116,0.12)',
+            borderWidth: 2.5, tension: 0.35, fill: true,
+            pointRadius: 4, pointBackgroundColor: gold, pointBorderColor: pointBorder, pointBorderWidth: 1.5,
+            datalabels: {
+              display: (ctx) => ctx.dataset.data[ctx.dataIndex] != null,
+              color: gold,
+              align: (ctx) => {
+                const data = ctx.dataset.data;
+                const i = ctx.dataIndex;
+                const cur = data[i];
+                if (cur == null) return 'top';
+                const prev = i > 0 ? data[i-1] : null;
+                const next = i < data.length-1 ? data[i+1] : null;
+                // 양 옆보다 낮으면 아래쪽, 높으면 위쪽
+                if ((prev != null && cur < prev) && (next != null && cur < next)) return 'bottom';
+                if ((prev != null && cur > prev) && (next != null && cur > next)) return 'top';
+                return i % 2 === 0 ? 'top' : 'bottom';
+              },
+              anchor: (ctx) => {
+                const data = ctx.dataset.data;
+                const i = ctx.dataIndex;
+                const cur = data[i];
+                if (cur == null) return 'end';
+                const prev = i > 0 ? data[i-1] : null;
+                const next = i < data.length-1 ? data[i+1] : null;
+                if ((prev != null && cur < prev) && (next != null && cur < next)) return 'start';
+                return 'end';
+              },
+              offset: 6,
+              font: { size: 10, weight: '700' },
+              formatter: (v) => v == null ? '' : (v/10000).toFixed(1) + '억'
+            }
+          },
+          {
+            label: (p.chart.districtLabel || '강동구 84㎡ 평균'),
+            data: p.chart.district,
+            borderColor: '#5E7287',
+            borderWidth: 1.5, borderDash: [4, 4], tension: 0.35, fill: false,
+            pointRadius: 3, pointBackgroundColor: '#5E7287', pointBorderColor: pointBorder, pointBorderWidth: 1,
+            datalabels: {
+              display: (ctx) => ctx.dataIndex % 2 === 0,  // 짝수 인덱스만 표시 (혼잡 방지)
+              color: darkText,
+              align: 'bottom',
+              anchor: 'end',
+              offset: 4,
+              font: { size: 9, weight: '600' },
+              formatter: (v) => v == null ? '' : (v/10000).toFixed(1) + '억'
+            }
+          }
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        layout: { padding: { top: 18, bottom: 18 } },
+        plugins: {
+          legend: { position: 'bottom', labels: { color: darkTextStrong, boxWidth: 12, font: { size: 11 }, padding: 14 } }
+        },
+        scales: {
+          y: { ticks: { color: darkText, callback: v => (v/10000).toFixed(1) + '억' }, grid: { color: darkGrid, drawBorder: false } },
+          x: { ticks: { color: darkText }, grid: { display: false } }
+        }
+      }
+    });
+  }
+
+  const cc = document.getElementById('compareChart');
+  if (cc) {
+    chartInstances.compare = new Chart(cc, {
+      type: 'bar',
+      data: {
+        labels: p.chart.compareLabels,
+        datasets: [{ label: '평당가 (만원)', data: p.chart.compareData, backgroundColor: [gold, '#5E7287', '#5E7287', '#5E7287', '#5E7287'], borderWidth: 0, borderRadius: 2 }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          datalabels: {
+            anchor: 'end',
+            align: 'top',
+            offset: 4,
+            color: labelOnBg,
+            font: { size: 11, weight: '700', family: "'Pretendard Variable', sans-serif" },
+            formatter: (v) => v.toLocaleString() + '만'
+          }
+        },
+        layout: { padding: { top: 24 } },
+        scales: {
+          y: { ticks: { color: darkText, callback: v => v.toLocaleString() }, grid: { color: darkGrid, drawBorder: false } },
+          x: { ticks: { color: darkText, font: { size: 10 } }, grid: { display: false } }
+        }
+      }
+    });
+  }
+
+  // (2) 분기별 거래량 차트 — 5년 시세 추이와 같은 라벨 사용
+  const qvc = document.getElementById('quarterlyVolChart');
+  if (qvc && p.chart.quarterlyVolume) {
+    const qvMax = Math.max(...p.chart.quarterlyVolume) + 2;
+    chartInstances.quarterlyVol = new Chart(qvc, {
+      type: 'bar',
+      data: {
+        labels: p.chart.labels || ['23.1Q','23.2Q','23.3Q','23.4Q','24.1Q','24.2Q','24.3Q','24.4Q','25.1Q','25.2Q','25.3Q','25.4Q','26.1Q','26.2Q'],
+        datasets: [{ label: '분기별 거래량(건)', data: p.chart.quarterlyVolume, backgroundColor: '#5E7287', borderWidth: 0, borderRadius: 2 }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          datalabels: {
+            anchor: 'end', align: 'top', offset: 2,
+            color: labelOnBg, font: { size: 10, weight: '600' },
+            formatter: (v) => v > 0 ? v : ''
+          }
+        },
+        layout: { padding: { top: 14 } },
+        scales: {
+          y: { ticks: { color: darkText, stepSize: 1 }, grid: { color: darkGrid, drawBorder: false }, beginAtZero: true, suggestedMax: qvMax },
+          x: { ticks: { color: darkText, font: { size: 10 } }, grid: { display: false } }
+        }
+      }
+    });
+  }
+
+  const vc = document.getElementById('volChart');
+  if (vc) {
+    const vMax = Math.max(...p.chart.volume) + 2;
+    chartInstances.volume = new Chart(vc, {
+      type: 'bar',
+      data: {
+        labels: p.chart.monthLabels || ['25.05','25.06','25.07','25.08','25.09','25.10','25.11','25.12','26.01','26.02','26.03','26.04'],
+        datasets: [{ label: '월 거래량', data: p.chart.volume, backgroundColor: accent, borderWidth: 0, borderRadius: 2 }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          datalabels: {
+            anchor: 'end', align: 'top', offset: 2,
+            color: labelOnBg, font: { size: 10, weight: '600' },
+            formatter: (v) => v > 0 ? v : ''
+          }
+        },
+        layout: { padding: { top: 14 } },
+        scales: {
+          y: { ticks: { color: darkText, stepSize: 1 }, grid: { color: darkGrid, drawBorder: false }, beginAtZero: true, suggestedMax: vMax },
+          x: { ticks: { color: darkText }, grid: { display: false } }
+        }
+      }
+    });
+  }
+}
+
+// ====================================
+// RENDER PROPERTY
+// ====================================
+function renderProperty(idx) {
+  const p = properties[idx];
+  selectedPropIdx = idx;
+  document.getElementById('rep-tb-name').textContent = p.name;
+  document.getElementById('pdfArea').innerHTML = reportHTML(p);
+  destroyCharts();
+  setTimeout(() => initChartsWith(p), 50);
+  setTimeout(() => initReportMap(p), 60);
+}
+
+// ====================================
+// KAKAO MAPS — list (추천 단지 번호 마커) · report (반경 + 시설 마커)
+// ====================================
+function kakaoReady(cb) {
+  if (window.kakao && kakao.maps && kakao.maps.Map) { cb(); return; }
+  if (window.kakao && kakao.maps && kakao.maps.load) { kakao.maps.load(cb); return; }
+  // SDK 아직 로드 전 — 잠깐 후 재시도
+  let tries = 0;
+  const t = setInterval(() => {
+    if (window.kakao && kakao.maps && kakao.maps.load) { clearInterval(t); kakao.maps.load(cb); }
+    else if (++tries > 40) { clearInterval(t); }
+  }, 100);
+}
+
+// 리스트뷰: 추천 단지를 카드 순서와 같은 번호 마커로 표시
+function initListMap() {
+  const el = document.getElementById('list-map');
+  if (!el) return;
+  const pts = properties.filter(p => p.geo);
+  if (!pts.length) { el.style.display = 'none'; return; }
+  kakaoReady(() => {
+    const bounds = new kakao.maps.LatLngBounds();
+    const map = new kakao.maps.Map(el, { center: new kakao.maps.LatLng(pts[0].geo.lat, pts[0].geo.lng), level: 7 });
+    properties.forEach((p, i) => {
+      if (!p.geo) return;
+      const pos = new kakao.maps.LatLng(p.geo.lat, p.geo.lng);
+      bounds.extend(pos);
+      const ov = new kakao.maps.CustomOverlay({
+        position: pos, yAnchor: 1,
+        content: '<div class="map-num" title="' + p.name + '" onclick="openReport(' + i + ')"><span>' + (i + 1) + '</span></div>'
+      });
+      ov.setMap(map);
+    });
+    map.setBounds(bounds, 40, 40, 40, 40);
+  });
+}
+
+// 보고서뷰: 1번 단지 중심 + 500m/1km/2km 원 + 반경 내 시설 마커
+function initReportMap(p) {
+  const el = document.getElementById('report-map');
+  if (!el || !p.geo) return;
+  kakaoReady(() => {
+    const center = new kakao.maps.LatLng(p.geo.lat, p.geo.lng);
+    const map = new kakao.maps.Map(el, { center: center, level: 5 });
+    // 반경 원 500 / 1000 / 2000m
+    [500, 1000, 2000].forEach(r => {
+      new kakao.maps.Circle({
+        center: center, radius: r,
+        strokeWeight: 1, strokeColor: '#D4A574', strokeOpacity: 0.8, strokeStyle: 'shortdash',
+        fillColor: '#D4A574', fillOpacity: 0.05
+      }).setMap(map);
+    });
+    // 단지 중심 마커
+    new kakao.maps.CustomOverlay({
+      position: center, yAnchor: 1, zIndex: 10,
+      content: '<div class="map-pin center"><span>★</span></div>'
+    }).setMap(map);
+    // 시설 마커 (역·병원·학교)
+    (p.geo.facilities || []).forEach(f => {
+      const pos = new kakao.maps.LatLng(f.lat, f.lng);
+      const ico = f.t === 'subway' ? '🚇' : (f.t === 'hospital' ? '🏥' : '🏫');
+      new kakao.maps.CustomOverlay({
+        position: pos, yAnchor: 1,
+        content: '<div class="map-pin ' + f.t + '"><span>' + ico + '</span></div>'
+      }).setMap(map);
+      new kakao.maps.CustomOverlay({
+        position: pos, yAnchor: 1, zIndex: 5,
+        content: '<div class="map-fac-label">' + f.n + ' · ' + f.d + '</div>'
+      }).setMap(map);
+    });
+    // 2km 원이 다 보이도록 살짝 축소
+    setTimeout(() => { map.relayout(); map.setCenter(center); map.setLevel(6); }, 80);
+  });
+}
+
+// ====================================
+// NAVIGATION (unified SPA: home → list → report)
+// ====================================
+function showView(id) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+function showHome() { renderHome(); showView('view-home'); }
+function showList() { renderList(); showView('view-list'); }
+function openReport(idx) { renderProperty(idx); showView('view-report'); }
+
+// 분석 전환 — 현재 지역/단지를 교체하고 목록으로
+function openAnalysis(code) {
+  const a = ANALYSES.find(x => x.code === code);
+  if (!a) return;
+  currentAnalysisCode = code;
+  REGION = a.region;
+  properties = a.properties;
+  renderList();
+  showView('view-list');
+}
+
+// 홈 '최근 분석' 카드 렌더 (분석을 하나씩 누적)
+function renderHome() {
+  const el = document.getElementById('home-analyses');
+  if (!el) return;
+  const cards = ANALYSES.map(a => {
+    const n = (a.properties || []).length;
+    return '<button class="query-box" onclick="openAnalysis(\'' + a.code + '\')">' +
+      '<div class="query-text"><b>' + a.name + '</b> · ' + a.q1 + '<br>' + a.q2 + '</div>' +
+      '<div class="query-meta">추천 단지 <strong>' + n + '</strong>곳 · ' + a.date + ' · 클릭하면 결과 보기 →</div>' +
+      '</button>';
+  }).join('');
+  el.innerHTML = cards;
+}
+
+// 후보 목록 카드 렌더 (추천 개수에 자동 대응)
+function renderList() {
+  const ranks = ['🥇 RANK 01','🥈 RANK 02','🥉 RANK 03','RANK 04','RANK 05','RANK 06'];
+  const cards = properties.map((p, i) => {
+    const rank = ranks[i] || ('RANK 0' + (i + 1));
+    const line = (p.headlines && p.headlines[1]) ? p.headlines[1][1] : (p.verdictDetail || '');
+    const sub = (p.subtitle || '').split('·').slice(1, 3).join('·').trim();
+    return '<button class="lc" onclick="openReport(' + i + ')">' +
+      '<div class="lc-top"><span class="lc-rank">' + rank + '</span>' +
+      '<span class="lc-name">' + p.name + '</span>' +
+      '<span class="lc-verdict ' + (p.verdictClass || '') + '">' + p.verdict + '</span></div>' +
+      '<div class="lc-meta"><span class="lc-score">' + p.totalScore + '</span>/100 · ' + p.priceRange + ' · ' + sub + '</div>' +
+      '<div class="lc-line">' + line + '</div>' +
+      '<div class="lc-go">상세 보고서 보기 →</div></button>';
+  }).join('');
+  document.getElementById('list-cards').innerHTML = cards;
+  document.getElementById('list-count').textContent = properties.length;
+  // 현재 분석에 맞춰 헤더 동적 갱신
+  const a = ANALYSES.find(x => x.code === currentAnalysisCode);
+  if (a) {
+    const lq = document.getElementById('list-querybar'); if (lq) lq.textContent = '← ' + a.name + ' · ' + a.q1 + ' / ' + a.q2;
+    const ls = document.getElementById('list-sub'); if (ls) ls.textContent = a.sub + ' 기준, 실거래로 검증한 후보입니다. 카드를 누르면 상세 보고서가 열립니다.';
+    const bm = document.getElementById('list-brand-meta'); if (bm) bm.innerHTML = '<strong>' + a.name + ' 추천</strong><br>분석일 ' + a.date;
+  }
+  setTimeout(initListMap, 60);
+}
+
+// ====================================
+// THEME (dark / light)
+// ====================================
+function applyTheme(t) {
+  document.documentElement.setAttribute('data-theme', t);
+  const btn = document.getElementById('themeToggle');
+  if (btn) btn.textContent = (t === 'light') ? '☀️' : '🌙';
+  try { localStorage.setItem('mri-theme', t); } catch (e) {}
+}
+function toggleTheme() {
+  const cur = document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+  applyTheme(cur === 'light' ? 'dark' : 'light');
+  // 보고서 화면이면 전체 재렌더 (SVG 8 Phase·History 색상도 테마 반영 위해)
+  if (document.getElementById('view-report').classList.contains('active')) {
+    renderProperty(selectedPropIdx);
+  }
+}
+
+// ====================================
+// PDF DOWNLOAD (html2canvas + jsPDF)
+// ====================================
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+async function downloadPDF() {
+  const el = document.getElementById('pdfArea');
+  const btn = document.getElementById('pdfBtn');
+  const origText = btn.innerText;
+  const p = properties[selectedPropIdx];
+
+  btn.innerText = '⏳ 생성 중...';
+  btn.disabled = true;
+
+  el.classList.add('pdf-mode');
+  await sleep(150);
+  try { Object.values(chartInstances).forEach(c => c.resize()); } catch(e) {}
+  await sleep(600);
+
+  try {
+    const canvas = await html2canvas(el, {
+      scale: 2, backgroundColor: '#0D1421', useCORS: true, logging: false,
+      windowWidth: el.offsetWidth, width: el.offsetWidth, height: el.scrollHeight,
+      scrollX: 0, scrollY: 0
+    });
+    const imgData = canvas.toDataURL('image/jpeg', 0.95);
+    const jsPDFCtor = (window.jspdf && window.jspdf.jsPDF) || window.jsPDF;
+    const pdf = new jsPDFCtor({ unit: 'mm', format: 'a4', orientation: 'portrait', compress: true });
+    const pageW = pdf.internal.pageSize.getWidth();
+    const pageH = pdf.internal.pageSize.getHeight();
+    const imgW = pageW;
+    const imgH = (canvas.height / canvas.width) * imgW;
+    let heightLeft = imgH;
+    let y = 0;
+    pdf.addImage(imgData, 'JPEG', 0, y, imgW, imgH, '', 'FAST');
+    heightLeft -= pageH;
+    while (heightLeft > 0) {
+      y = heightLeft - imgH;
+      pdf.addPage();
+      pdf.addImage(imgData, 'JPEG', 0, y, imgW, imgH, '', 'FAST');
+      heightLeft -= pageH;
+    }
+    const fn = 'Mintelligence_매수자보고서_' + p.name.replace(/[\s\/\\:*?"<>|]/g, '') + '_20260531.pdf';
+    pdf.save(fn);
+  } catch (err) {
+    console.error('PDF generation failed:', err);
+    btn.innerText = '❌ 실패 — 재시도';
+    setTimeout(() => { btn.innerText = origText; }, 3000);
+  } finally {
+    el.classList.remove('pdf-mode');
+    await sleep(100);
+    try { Object.values(chartInstances).forEach(c => c.resize()); } catch(e) {}
+    btn.innerText = origText;
+    btn.disabled = false;
+  }
+}
+
+// ====================================
+// EVENT HANDLERS
+// ====================================
+document.querySelectorAll('.star-rating').forEach(rating => {
+  rating.querySelectorAll('.star').forEach((star, i) => {
+    star.addEventListener('click', () => {
+      rating.querySelectorAll('.star').forEach((s, j) => { s.classList.toggle('on', j <= i); });
+    });
+  });
+});
+
+document.querySelectorAll('.reco-card').forEach(card => {
+  card.addEventListener('click', () => {
+    document.querySelectorAll('.reco-card').forEach(c => c.classList.remove('selected'));
+    card.classList.add('selected');
+  });
+});
+
+
+// === INIT ON LOAD (unified SPA: 홈 → 목록 → 보고서) ===
+document.addEventListener('DOMContentLoaded', function() {
+  // 테마 복원 (저장값 / OS 선호 / 기본 다크)
+  let saved = null;
+  try { saved = localStorage.getItem('mri-theme'); } catch (e) {}
+  if (!saved) {
+    saved = (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) ? 'light' : 'dark';
+  }
+  applyTheme(saved);
+  // datalabels 플러그인 등록
+  if (typeof ChartDataLabels !== 'undefined' && Chart && Chart.register) {
+    try { Chart.register(ChartDataLabels); } catch (e) {}
+  }
+  // 홈(최근 분석)부터 시작
+  renderHome();
+  showHome();
+});
+</script>
+
+</body>
+</html>
