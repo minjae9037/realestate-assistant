@@ -1701,6 +1701,44 @@
   html[data-theme="light"] .verdict-card.primary { background: linear-gradient(135deg,#FBF7F0 0%,#FFFFFF 100%); }
   html[data-theme="light"] .score-bar, html[data-theme="light"] .afford-bar-bg, html[data-theme="light"] .attr-bar-bg { background: #E5DFD4; }
   html[data-theme="light"] .score-bar .other { background: #8A99A8; }
+
+  /* ===== 백데이터 드릴다운 — 우측 슬라이드 드로어 (2026-06-01) ===== */
+  .drillable { cursor: pointer; transition: box-shadow .15s, border-color .15s, background .15s; }
+  .drillable:hover { box-shadow: 0 0 0 1px var(--accent,#D4A574) inset, 0 4px 18px rgba(0,0,0,.25); }
+  .drill-cue { font-size: 9.5px; font-weight: 700; color: var(--accent,#D4A574); background: rgba(212,165,116,.14);
+    padding: 1px 6px; border-radius: 999px; margin-left: 6px; white-space: nowrap; }
+  .drill-inline { font-size: 11px; color: var(--accent,#D4A574); background: rgba(212,165,116,.12);
+    padding: 1px 8px; border-radius: 999px; margin-left: 8px; font-weight: 700; }
+  .drill-inline:hover { background: rgba(212,165,116,.24); }
+  #detailBackdrop { position: fixed; inset: 0; background: rgba(0,0,0,.5); opacity: 0; visibility: hidden;
+    transition: opacity .25s, visibility .25s; z-index: 998; }
+  #detailBackdrop.open { opacity: 1; visibility: visible; }
+  .detail-drawer { position: fixed; top: 0; right: 0; height: 100vh; width: min(500px, 94vw);
+    background: var(--bg-card,#161B22); border-left: 1px solid var(--rule,#30363D);
+    box-shadow: -10px 0 40px rgba(0,0,0,.45); transform: translateX(100%); transition: transform .28s cubic-bezier(.4,0,.2,1);
+    z-index: 999; display: flex; flex-direction: column; }
+  .detail-drawer.open { transform: translateX(0); }
+  .detail-drawer .dd-head { display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    padding: 16px 20px; border-bottom: 1px solid var(--rule,#30363D); flex-shrink: 0; }
+  .detail-drawer .dd-title { font-size: 15px; font-weight: 800; color: var(--ink,#E6EDF3); }
+  .detail-drawer .dd-sub { font-size: 10.5px; color: var(--ink-faint,#6E7681); margin-top: 2px; }
+  .detail-drawer .dd-close { background: none; border: 1px solid var(--rule,#30363D); color: var(--ink-soft,#B0B8C0);
+    width: 30px; height: 30px; border-radius: 8px; cursor: pointer; font-size: 16px; line-height: 1; flex-shrink: 0; }
+  .detail-drawer .dd-close:hover { background: rgba(255,255,255,.06); }
+  .detail-drawer .dd-body { padding: 18px 20px; overflow-y: auto; flex: 1; }
+  .dd-body table { width: 100%; border-collapse: collapse; font-size: 12px; color: var(--ink-soft,#B0B8C0); margin: 6px 0 14px; }
+  .dd-body th { text-align: left; font-size: 10px; color: var(--ink-faint,#6E7681); font-weight: 700;
+    padding: 6px 8px; border-bottom: 1px solid var(--rule,#30363D); }
+  .dd-body td { padding: 6px 8px; border-bottom: 1px solid var(--rule,#30363D); }
+  .dd-body .dd-k { font-size: 11px; color: var(--ink-faint,#6E7681); font-weight: 700; }
+  .dd-sec-h { font-size: 11px; font-weight: 700; color: var(--accent,#D4A574); letter-spacing: .06em; margin: 14px 0 6px; }
+  .dd-note { font-size: 12px; color: var(--ink-soft,#B0B8C0); line-height: 1.7; background: rgba(212,165,116,.08);
+    border-left: 3px solid var(--accent,#D4A574); padding: 10px 12px; border-radius: 0 8px 8px 0; margin-top: 8px; }
+  .dd-src { font-size: 10px; color: var(--ink-faint,#6E7681); margin-top: 14px; padding-top: 10px; border-top: 1px dashed var(--rule,#30363D); }
+  /* PDF 출력 시 드로어·드릴 큐 숨김 */
+  .report-pdf-area.pdf-mode .drill-cue, .report-pdf-area.pdf-mode .drill-inline { display: none !important; }
+  body.pdf-printing #detailDrawer, body.pdf-printing #detailBackdrop { display: none !important; }
+  @media print { #detailDrawer, #detailBackdrop, .drill-cue, .drill-inline { display: none !important; } }
 </style>
 </head>
 <body>
@@ -1782,7 +1820,28 @@ const REGION_GANGDONG = {
     demand: '인구 +3,126명(12M·+0.63%) · 순이동 +2,411명 순유입',
     pressure: '향후 6개월 신규 분양 공고 0건 (청약홈)',
     unsold: '미분양 379→308호 (6M, −18.7% 감소세)',
-    verdict: '수요 유입 ↑ + 신규 공급 가뭄 + 미분양 소화 → <strong>수급 타이트</strong>. 가격 급락 위험은 낮으나, 대안 신규 단지가 없어 기존 매물 가격을 떠받침 — <strong>매수자 협상력은 불리</strong>.'
+    verdict: '수요 유입 ↑ + 신규 공급 가뭄 + 미분양 소화 → <strong>수급 타이트</strong>. 가격 급락 위험은 낮으나, 대안 신규 단지가 없어 기존 매물 가격을 떠받침 — <strong>매수자 협상력은 불리</strong>.',
+    // 규모별 미분양 (전국 민간, KOSIS DT_MLTM_2080, 202603) — 시군구 단위 미제공이라 전국 컨텍스트
+    unsoldByScale: {
+      period: '202603', total: 65283, src: 'KOSIS 규모별 미분양(DT_MLTM_2080) · 전국 민간부문',
+      rows: [
+        { label: '40㎡이하', val: 1853, pct: 2.8 },
+        { label: '40~60㎡', val: 5968, pct: 9.1 },
+        { label: '60~85㎡', val: 45483, pct: 69.7 },
+        { label: '85㎡초과', val: 11979, pct: 18.4 }
+      ],
+      note: '전국 미분양의 <strong>69.7%가 60~85㎡</strong>에 집중 — 본 단지 전용60(=60~85㎡ 구간)은 전국적으로 <strong>환금성 경쟁이 가장 치열한 평형</strong>. 단 강동 자체 미분양은 −18.7% 감소세라 지역 수급은 양호(전국 평형 구조는 매도 시 참고).'
+    }
+  },
+  // 금리 사이클 (한국은행 ECOS) — SECTION 06, 2026-06-01 라이브
+  rates: {
+    base: 2.5, basePeriod: '202604', baseTrend: '동결', baseDelta12M: 0,
+    mortgage: 4.31, mortgagePeriod: '202604', mortgageTrend: '상승', mortgageDelta12M: 0.44,
+    src: '한국은행 ECOS — 기준금리 722Y001 · 주택담보대출(신규취급액) 121Y006',
+    note: '기준금리는 12개월 <strong>2.5% 동결</strong>이나 예금은행 주담대 금리는 <strong>3.96%→4.31%(+0.44%p)</strong> 완만 상승 — 가산금리·대출규제 영향. 월 상환 부담은 affordability에 4.31% 실측 반영. 금리 인하 전환 시 매수심리·기댓값 상향 요인.',
+    baseSeries: [2.5,2.5,2.5,2.5,2.5,2.5,2.5,2.5],
+    mortgageSeries: [3.96,3.98,4.17,4.23,4.29,4.32,4.34,4.31],
+    seriesLabels: ['25.09','25.10','25.11','25.12','26.01','26.02','26.03','26.04']
   },
   // 정책·규제 — SECTION 09
   regulated: '강동구 = <strong>비규제지역</strong> (조정대상·투기과열지구 아님) → LTV·전매·거주요건 완화. 현행 세법: 종부세법(시행 2026-01-01)·소득세법(2026-04-21)·지방세법(2026-04-24).'
@@ -1866,6 +1925,41 @@ const PROPS_GANGDONG = [
       elem: '서울성내초(0.57km)·서울성일초(0.67km)·서울천일초(1.15km) · 학교알리미 실거리',
       mid: '동신중(0.71km·사립)·성내중(0.75km)·천일중(1.18km) · 학교알리미',
       high: '<strong style=\"color:#D4A574\">둔촌고(1.65km)</strong>·동북고(2.18km·사립)·성덕고(2.18km·사립)'
+    },
+    // ★교통 토폴로지 (KRIC 레일포털, 2026-06-01 라이브) — SECTION 02 + 드릴다운
+    transit: {
+      nearest: '강동역', line: '5호선', walkM: 256, walkMin: 3, grade: '단일역',
+      gangnamKm: 10.4,
+      lines: ['5호선'],
+      hubStops: [
+        { hub: '여의도', stops: 22, line: '5호선', direct: true },
+        { hub: '강남', stops: null, line: '5→2 환승(잠실)', direct: false },
+        { hub: '시청', stops: null, line: '5→1/2 환승', direct: false },
+        { hub: '잠실', stops: null, line: '5→8 환승', direct: false }
+      ],
+      summary: '강동역 5호선 <strong>단일역</strong>(환승 없음) · 도보 3분(256m) · 여의도 22정거장 직통, 강남은 잠실 8호선 환승 필요',
+      // 드릴다운용: 5호선 강동역 인근 정차 순서(일부)
+      stationPath: ['굽은다리','명일','고덕','상일동 ↔','길동','굽은다리','강동(본)','천호','강동구청','몽촌토성','잠실'],
+      adj: 'KRIC 강동역 단일역(5호선)·강남 무환승 직통 없음 → 교통 토폴로지 보정 −2 (환승 부담, 거리는 우수)',
+      src: 'KRIC 레일포털 trainUseInfo/subwayRouteInfo · 카카오 로컬'
+    },
+    // ★학군 심화 (학교알리미 학교현황, 2026-06-01 라이브) — SECTION 04 표 확장 + 드릴다운
+    schoolDepth: {
+      src: '학교알리미 OpenAPI 학교현황(AVG_FGR_SUM·FOND_SC_CODE) · 진학률은 WebSearch',
+      elem: [
+        { name: '서울성내초', dist: '0.57km', found: '공립', classSize: 20.0, students: 781, classes: 39 },
+        { name: '서울성일초', dist: '0.67km', found: '공립', classSize: 20.3, students: 993, classes: 49 },
+        { name: '서울천일초', dist: '1.15km', found: '공립', classSize: 14.2, students: 256, classes: 18 }
+      ],
+      mid: [
+        { name: '성내중', dist: '0.75km', found: '공립', classSize: 22.9, students: 481, classes: 21 },
+        { name: '동신중', dist: '0.71km', found: '사립', classSize: 18.9, students: 435, classes: 23 }
+      ],
+      high: [
+        { name: '둔촌고', dist: '1.65km', found: '공립', type: '일반고', note: '진학 실적 강동 중상위(WebSearch)' },
+        { name: '동북고', dist: '2.18km', found: '사립', type: '일반고', note: '사립 일반고' }
+      ],
+      note: '인근 초등 학급당 14~20명(과밀 아님)·전부 공립 → 배정 양호. 중학 성내중(공립 22.9)·동신중(사립 18.9). 사립중은 배정 제한·추첨 변수.'
     },
     kosisUnsold: {
       summary: '강동구 미분양 6개월 -18.7% 감소세 (안정화)',
@@ -3094,9 +3188,12 @@ function reportHTML(p) {
     <h2 class="rsection-title">입지 정량 분석 <span class="agent-tag auto">카카오 · HIRA · 소상공인 · 학교알리미</span></h2>
     <p class="rsection-deck">상단 지도 반경 데이터 기반 — 교통·의료·상권·학군을 좌표·실측 수치로 검증 (5축 A·B 점수의 근거).</p>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-      <div style="padding:14px 16px;background:var(--bg-card);border:1px solid var(--rule);border-radius:10px;border-left:3px solid #2F6FED;">
-        <div style="font-size:11px;color:#2F6FED;font-weight:700;letter-spacing:.06em;margin-bottom:6px;">🚇 교통 · 강남 접근</div>
+      <div class="${p.transit ? 'drillable' : ''}" ${p.transit ? `onclick="openDetail('transit')"` : ''} style="padding:14px 16px;background:var(--bg-card);border:1px solid var(--rule);border-radius:10px;border-left:3px solid #2F6FED;">
+        <div style="font-size:11px;color:#2F6FED;font-weight:700;letter-spacing:.06em;margin-bottom:6px;">🚇 교통 · 강남 접근 ${p.transit ? '<span class="drill-cue">🔍 노선 상세</span>' : ''}</div>
         <div style="font-size:12.5px;color:var(--ink-soft);line-height:1.6;">${p.local.transit}</div>
+        ${p.transit ? `<div style="margin-top:8px;padding-top:8px;border-top:1px dashed var(--rule);font-size:12px;color:var(--ink-soft);line-height:1.6;">
+          <span style="display:inline-block;padding:1px 7px;border-radius:4px;font-size:10px;font-weight:700;background:${p.transit.grade==='단일역'?'#3A2A1A':'#14331f'};color:${p.transit.grade==='단일역'?'#D4A574':'#3FB950'};">${p.transit.grade}</span>
+          ${p.transit.summary}</div>` : ''}
       </div>
       <div style="padding:14px 16px;background:var(--bg-card);border:1px solid var(--rule);border-radius:10px;border-left:3px solid #E5484D;">
         <div style="font-size:11px;color:#E5484D;font-weight:700;letter-spacing:.06em;margin-bottom:6px;">🏥 의료 인프라</div>
@@ -3106,8 +3203,8 @@ function reportHTML(p) {
         <div style="font-size:11px;color:#2BA672;font-weight:700;letter-spacing:.06em;margin-bottom:6px;">🛍 상권 활성도</div>
         <div style="font-size:12.5px;color:var(--ink-soft);line-height:1.6;">${p.local.commercial}</div>
       </div>
-      <div style="padding:14px 16px;background:var(--bg-card);border:1px solid var(--rule);border-radius:10px;border-left:3px solid #D4A574;">
-        <div style="font-size:11px;color:#D4A574;font-weight:700;letter-spacing:.06em;margin-bottom:6px;">🏫 학군 (인근 학교)</div>
+      <div class="${p.schoolDepth ? 'drillable' : ''}" ${p.schoolDepth ? `onclick="openDetail('school')"` : ''} style="padding:14px 16px;background:var(--bg-card);border:1px solid var(--rule);border-radius:10px;border-left:3px solid #D4A574;">
+        <div style="font-size:11px;color:#D4A574;font-weight:700;letter-spacing:.06em;margin-bottom:6px;">🏫 학군 (인근 학교) ${p.schoolDepth ? '<span class="drill-cue">🔍 학교별 상세</span>' : ''}</div>
         <div style="font-size:12.5px;color:var(--ink-soft);line-height:1.6;">${(p.score5Desc && p.score5Desc.sch) ? p.score5Desc.sch : '—'}</div>
       </div>
     </div>
@@ -3139,7 +3236,7 @@ function reportHTML(p) {
   <div class="rsection">
     <div class="rsection-num">SECTION 04</div>
     <h2 class="rsection-title">5축 점수 분해 <span class="agent-tag human">노하우 인코딩</span></h2>
-    <p class="rsection-deck">사용자 입력 가중치 반영. 단지·시세·호재·악재 5축 종합.</p>
+    <p class="rsection-deck">사용자 입력 가중치 반영. 단지·시세·호재·악재 5축 종합. <span class="drillable drill-inline" onclick="openDetail('score')">🔍 산출 방법·원본 근거 보기</span></p>
     <div class="score-breakdown">
       <div class="score-axis"><div class="ax-label">A. 입지</div><div class="ax-score">${p.score5.loc}<span class="denom">/100</span></div><div class="ax-weight">가중 25%</div><div class="ax-desc">${p.score5Desc.loc}</div></div>
       <div class="score-axis"><div class="ax-label">B. 학군</div><div class="ax-score">${p.score5.sch}<span class="denom">/100</span></div><div class="ax-weight">가중 20%</div><div class="ax-desc">${p.score5Desc.sch}</div></div>
@@ -3165,8 +3262,8 @@ function reportHTML(p) {
     </div>` : ''}
 
     ${p.schoolsNearby ? `
-    <div style="margin-top:18px;padding:14px 18px;background:var(--bg-card);border-left:3px solid #D4A574;">
-      <div style="font-size:11px;color:#D4A574;font-weight:700;letter-spacing:0.08em;margin-bottom:10px;">📊 인근 학교 (NEIS 교육부 공식) · 시·구 단위 매칭, 정확 배정은 학구도 별도 확인</div>
+    <div class="${p.schoolDepth ? 'drillable' : ''}" ${p.schoolDepth ? `onclick="openDetail('school')"` : ''} style="margin-top:18px;padding:14px 18px;background:var(--bg-card);border-left:3px solid #D4A574;">
+      <div style="font-size:11px;color:#D4A574;font-weight:700;letter-spacing:0.08em;margin-bottom:10px;">📊 인근 학교 (NEIS 교육부 공식) · 시·구 단위 매칭, 정확 배정은 학구도 별도 확인 ${p.schoolDepth ? '<span class="drill-cue">🔍 학급당·공사립 상세</span>' : ''}</div>
       <table style="width:100%;font-size:12px;color:var(--ink-soft);border-collapse:collapse;">
         <tr style="border-bottom:1px solid var(--rule);"><td style="padding:6px 4px;width:60px;color:var(--ink-muted);font-weight:600;">초등</td><td style="padding:6px 4px;">${p.schoolsNearby.elem || '—'}</td></tr>
         <tr style="border-bottom:1px solid var(--rule);"><td style="padding:6px 4px;color:var(--ink-muted);font-weight:600;">중등</td><td style="padding:6px 4px;">${p.schoolsNearby.mid || '—'}</td></tr>
@@ -3192,7 +3289,7 @@ function reportHTML(p) {
     </div>` : ''}
 
     <div class="chart-wrap">
-      <div class="chart-title">5년 시세 추이 (84㎡) <span class="meta">단위: 억원 · 분기 평균 실거래가</span></div>
+      <div class="chart-title">5년 시세 추이 (84㎡) <span class="meta">단위: 억원 · 분기 평균 실거래가</span> <span class="drillable drill-inline" onclick="openDetail('price')">🔍 분기별 원본 실거래</span></div>
       <div class="chart-canvas-wrap"><canvas id="priceChart"></canvas></div>
       <div style="margin-top: 14px; padding-top: 14px; border-top: 1px dashed var(--d-rule);">
         <div class="chart-title" style="margin-bottom: 10px;">분기별 거래량 <span class="meta">단위: 건 · 같은 분기 라벨 기준</span></div>
@@ -3259,6 +3356,26 @@ function reportHTML(p) {
       <div style="font-size:15px;color:var(--ink);font-weight:700;margin-bottom:6px;">${REGION.cycle.position}</div>
       <div style="font-size:12px;color:var(--ink-soft);line-height:1.7;">${REGION.cycle.caution}</div>
     </div>
+    ${REGION.rates ? `
+    <div class="drillable" onclick="openDetail('rates')" style="margin-top:14px;padding:16px 20px;background:var(--bg-card);border:1px solid var(--rule);border-radius:10px;border-left:4px solid #BC8CFF;">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
+        <div style="font-size:11px;color:#BC8CFF;font-weight:700;letter-spacing:.06em;">🏦 금리 사이클 — 매수 부담·심리 (한국은행 ECOS) <span class="drill-cue">🔍 추세 보기</span></div>
+        <div style="font-size:10px;color:var(--ink-faint);">${REGION.rates.basePeriod} 기준</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div style="text-align:center;padding:10px;background:var(--bg-deep,rgba(0,0,0,.15));border-radius:8px;">
+          <div style="font-size:10px;color:var(--ink-muted);font-weight:700;margin-bottom:4px;">한국은행 기준금리</div>
+          <div style="font-size:22px;font-weight:800;color:var(--ink);">${REGION.rates.base}%</div>
+          <div style="font-size:10px;color:#3FB950;margin-top:2px;">12M ${REGION.rates.baseTrend}(${REGION.rates.baseDelta12M>0?'+':''}${REGION.rates.baseDelta12M}%p)</div>
+        </div>
+        <div style="text-align:center;padding:10px;background:var(--bg-deep,rgba(0,0,0,.15));border-radius:8px;">
+          <div style="font-size:10px;color:var(--ink-muted);font-weight:700;margin-bottom:4px;">예금은행 주택담보대출</div>
+          <div style="font-size:22px;font-weight:800;color:var(--ink);">${REGION.rates.mortgage}%</div>
+          <div style="font-size:10px;color:#E8833A;margin-top:2px;">12M ${REGION.rates.mortgageTrend}(+${REGION.rates.mortgageDelta12M}%p)</div>
+        </div>
+      </div>
+      <div style="font-size:12px;color:var(--ink-soft);line-height:1.7;margin-top:10px;">${REGION.rates.note}</div>
+    </div>` : ''}
     ${p.jeonse ? `
     <div style="margin-top:14px;padding:16px 20px;background:var(--bg-card);border:1px solid var(--rule);border-radius:10px;">
       <div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px;margin-bottom:8px;">
@@ -3286,11 +3403,19 @@ function reportHTML(p) {
         <div style="font-size:13px;color:var(--ink-soft);line-height:1.7;">· 신규 분양: <strong style="color:var(--ink);">${REGION.supply.pressure}</strong><br>· 미분양: <strong style="color:var(--ink);">${REGION.supply.unsold}</strong></div>
       </div>
     </div>
+    ${REGION.supply.unsoldByScale ? `
+    <div class="drillable" onclick="openDetail('supply')" style="margin-top:14px;padding:16px 20px;background:var(--bg-card);border:1px solid var(--rule);border-radius:10px;border-left:4px solid #58A6FF;">
+      <div style="font-size:11px;color:#58A6FF;font-weight:700;letter-spacing:.06em;margin-bottom:10px;">📐 규모별 미분양 구성 — 환금성 평형 점검 (전국 민간 ${REGION.supply.unsoldByScale.period}) <span class="drill-cue">🔍 평형별 상세</span></div>
+      <div style="display:flex;height:22px;border-radius:5px;overflow:hidden;margin-bottom:8px;">
+        ${REGION.supply.unsoldByScale.rows.map((r,i)=>`<div title="${r.label} ${r.pct}%" style="width:${r.pct}%;background:${['#2D3748','#3B5BA5','#E8833A','#7C5CBF'][i]};display:flex;align-items:center;justify-content:center;font-size:9px;color:#fff;font-weight:700;">${r.pct>=8?r.label.replace('㎡','')+' '+r.pct+'%':''}</div>`).join('')}
+      </div>
+      <div style="font-size:12px;color:var(--ink-soft);line-height:1.7;">${REGION.supply.unsoldByScale.note}</div>
+    </div>` : ''}
     <div style="margin-top:14px;padding:16px 20px;background:var(--bg-card);border-left:4px solid #D4A574;">
       <div style="font-size:11px;color:#D4A574;font-weight:700;letter-spacing:.08em;margin-bottom:6px;">⚖️ 수급 종합 판단</div>
       <div style="font-size:13px;color:var(--ink-soft);line-height:1.7;">${REGION.supply.verdict}</div>
     </div>
-    <div style="margin-top:8px;font-size:10px;color:var(--ink-faint);letter-spacing:.04em;">출처: KOSIS 주민등록인구·순이동 · 청약홈 분양정보(ApplyhomeInfoDetailSvc) · KOSIS 미분양주택현황(DT_MLTM_2082)</div>
+    <div style="margin-top:8px;font-size:10px;color:var(--ink-faint);letter-spacing:.04em;">출처: KOSIS 주민등록인구·순이동 · 청약홈 분양정보(ApplyhomeInfoDetailSvc) · KOSIS 미분양주택현황(DT_MLTM_2082·규모별 2080)</div>
   </div>` : ''}
 
   <div class="rsection">
@@ -3939,7 +4064,157 @@ document.addEventListener('DOMContentLoaded', function() {
   renderHome();
   showHome();
 });
+
+// ====================================
+// 백데이터 드릴다운 — 우측 슬라이드 드로어 (2026-06-01)
+// ====================================
+function escD(s){ return (s==null?'':String(s)); }
+function openDetail(key) {
+  const p = (typeof selectedPropIdx === 'number' && properties[selectedPropIdx]) ? properties[selectedPropIdx] : (properties && properties[0]);
+  const R = (typeof REGION !== 'undefined') ? REGION : {};
+  const d = buildDetail(key, p, R);
+  if (!d) return;
+  document.getElementById('ddTitle').innerHTML = d.title;
+  document.getElementById('ddSub').textContent = d.sub || '';
+  document.getElementById('ddBody').innerHTML = d.body;
+  document.getElementById('detailDrawer').classList.add('open');
+  document.getElementById('detailBackdrop').classList.add('open');
+}
+function closeDetail() {
+  document.getElementById('detailDrawer').classList.remove('open');
+  document.getElementById('detailBackdrop').classList.remove('open');
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDetail(); });
+
+function buildDetail(key, p, R) {
+  const NA = '<div class="dd-note">원본 데이터가 준비되지 않은 단지입니다. 대표 단지(강동 두산위브)에서 상세 데이터를 확인하세요.</div>';
+  // ── 교통 토폴로지 (KRIC)
+  if (key === 'transit') {
+    if (!p || !p.transit) return { title: '🚇 교통 토폴로지', body: NA };
+    const t = p.transit;
+    const hubs = (t.hubStops||[]).map(h => `<tr><td>${escD(h.hub)}</td><td>${h.direct ? '<strong style="color:#3FB950">'+h.stops+'정거장 직통</strong>' : '<span style="color:#E8833A">환승 필요</span>'}</td><td>${escD(h.line)}</td></tr>`).join('');
+    const path = (t.stationPath||[]).map(s => s.indexOf('(본)')>-1 ? '<strong style="color:#D4A574">'+s.replace('(본)','')+'</strong>' : s).join(' — ');
+    return {
+      title: '🚇 교통 토폴로지 — ' + escD(t.nearest),
+      sub: t.src,
+      body: `
+        <div class="dd-sec-h">핵심 지표</div>
+        <table>
+          <tr><td class="dd-k">최근접역</td><td>${escD(t.nearest)} ${escD(t.line)} · 도보 ${t.walkMin}분(${t.walkM}m)</td></tr>
+          <tr><td class="dd-k">환승 등급</td><td><strong>${escD(t.grade)}</strong> (${(t.lines||[]).join('·')})</td></tr>
+          <tr><td class="dd-k">강남역 직선</td><td>${escD(t.gangnamKm)}km</td></tr>
+        </table>
+        <div class="dd-sec-h">도심 허브 접근 (KRIC 정차역 수)</div>
+        <table><thead><tr><th>허브</th><th>접근</th><th>경로</th></tr></thead><tbody>${hubs}</tbody></table>
+        <div class="dd-sec-h">노선 정차 순서 (5호선 인근)</div>
+        <div style="font-size:11.5px;color:var(--ink-soft);line-height:1.9;">${path}</div>
+        <div class="dd-note">${escD(t.summary)}</div>
+        <div class="dd-src">출처: ${escD(t.src)}</div>` };
+  }
+  // ── 학군 심화 (학교알리미)
+  if (key === 'school') {
+    if (!p || !p.schoolDepth) return { title: '🏫 학군 심화', body: NA };
+    const s = p.schoolDepth;
+    const rowEM = arr => (arr||[]).map(x => `<tr><td>${escD(x.name)}</td><td>${escD(x.dist)}</td><td>${escD(x.found)}</td><td>${x.classSize!=null?x.classSize+'명':'—'}</td><td>${x.students!=null?x.students+'명/'+x.classes+'반':'—'}</td></tr>`).join('');
+    const rowHI = (s.high||[]).map(x => `<tr><td>${escD(x.name)}</td><td>${escD(x.dist)}</td><td>${escD(x.found)}</td><td>${escD(x.type)}</td><td>${escD(x.note)}</td></tr>`).join('');
+    return {
+      title: '🏫 학군 심화 — 학교별 상세',
+      sub: s.src,
+      body: `
+        <div class="dd-sec-h">초등학교 (학교알리미 실거리)</div>
+        <table><thead><tr><th>학교</th><th>거리</th><th>설립</th><th>학급당</th><th>규모</th></tr></thead><tbody>${rowEM(s.elem)}</tbody></table>
+        <div class="dd-sec-h">중학교</div>
+        <table><thead><tr><th>학교</th><th>거리</th><th>설립</th><th>학급당</th><th>규모</th></tr></thead><tbody>${rowEM(s.mid)}</tbody></table>
+        <div class="dd-sec-h">고등학교</div>
+        <table><thead><tr><th>학교</th><th>거리</th><th>설립</th><th>유형</th><th>비고</th></tr></thead><tbody>${rowHI}</tbody></table>
+        <div class="dd-note">${escD(s.note)}</div>
+        <div class="dd-src">출처: ${escD(s.src)} · ⚠️ 교사1인당 학생수는 학교현황 시트 미제공(학급당 학생수로 밀집도 판단)</div>` };
+  }
+  // ── 금리 사이클 (ECOS)
+  if (key === 'rates') {
+    if (!R || !R.rates) return { title: '🏦 금리 사이클', body: NA };
+    const r = R.rates;
+    const rows = (r.seriesLabels||[]).map((lab,i) => `<tr><td>${escD(lab)}</td><td>${r.baseSeries[i]}%</td><td>${r.mortgageSeries[i]}%</td></tr>`).join('');
+    return {
+      title: '🏦 금리 사이클 — ECOS 시계열',
+      sub: r.src,
+      body: `
+        <div class="dd-sec-h">현재 수준 (${escD(r.basePeriod)})</div>
+        <table>
+          <tr><td class="dd-k">기준금리</td><td><strong>${r.base}%</strong> · 12M ${escD(r.baseTrend)} (${r.baseDelta12M>0?'+':''}${r.baseDelta12M}%p)</td></tr>
+          <tr><td class="dd-k">주택담보대출</td><td><strong>${r.mortgage}%</strong> · 12M ${escD(r.mortgageTrend)} (+${r.mortgageDelta12M}%p)</td></tr>
+        </table>
+        <div class="dd-sec-h">최근 8개월 추이</div>
+        <table><thead><tr><th>월</th><th>기준금리</th><th>주담대</th></tr></thead><tbody>${rows}</tbody></table>
+        <div class="dd-note">${escD(r.note)}</div>
+        <div class="dd-src">출처: ${escD(r.src)}</div>` };
+  }
+  // ── 규모별 미분양 (KOSIS)
+  if (key === 'supply') {
+    if (!R || !R.supply || !R.supply.unsoldByScale) return { title: '📐 규모별 미분양', body: NA };
+    const u = R.supply.unsoldByScale;
+    const rows = (u.rows||[]).map(x => `<tr><td>${escD(x.label)}</td><td>${x.val.toLocaleString()}호</td><td>${x.pct}%</td></tr>`).join('');
+    return {
+      title: '📐 규모별 미분양 구성',
+      sub: u.src,
+      body: `
+        <div class="dd-sec-h">전국 민간부문 미분양 (${escD(u.period)}, 총 ${u.total.toLocaleString()}호)</div>
+        <table><thead><tr><th>평형</th><th>미분양</th><th>비중</th></tr></thead><tbody>${rows}</tbody></table>
+        <div class="dd-note">${escD(u.note)}</div>
+        <div class="dd-src">출처: ${escD(u.src)} · ⚠️ 시·군·구 단위는 KOSIS 미제공(전국 컨텍스트)</div>` };
+  }
+  // ── 시세 분기별 원본 실거래 (국토부)
+  if (key === 'price') {
+    if (!p || !p.chart) return { title: '📋 분기별 실거래', body: NA };
+    const c = p.chart;
+    const rows = (c.labels||[]).map((lab,i) => {
+      const pr = c.price ? c.price[i] : null;
+      const vol = c.quarterlyVolume ? c.quarterlyVolume[i] : null;
+      if (pr==null && (vol==null||vol===0)) return '';
+      return `<tr><td>${escD(lab)}</td><td>${pr!=null?(pr/10000).toFixed(2)+'억':'—'}</td><td>${vol!=null?vol+'건':'—'}</td></tr>`;
+    }).filter(Boolean).join('');
+    return {
+      title: '📋 분기별 원본 실거래 — ' + escD(p.name),
+      sub: '국토부 실거래가 (분기 평균) · ' + escD(c.localLabel||''),
+      body: `
+        <div class="dd-sec-h">분기별 실거래 (가격·거래량)</div>
+        <table><thead><tr><th>분기</th><th>실거래가</th><th>거래량</th></tr></thead><tbody>${rows}</tbody></table>
+        <div class="dd-note">차트는 분기 평균이며, 결측 분기(거래 0건)는 제외했습니다. 거래량이 적은 분기의 평균가는 변동성이 큽니다.</div>
+        <div class="dd-src">출처: 국토부 아파트 매매 실거래가 (RTMSDataSvcAptTradeDev)</div>` };
+  }
+  // ── 5축 점수 산출 근거
+  if (key === 'score') {
+    if (!p || !p.scoreAttribution) return { title: '📐 5축 산출 근거', body: NA };
+    const a = p.scoreAttribution;
+    const axes = (a.axes||[]).map(x => `<tr><td>${escD(x.name)}</td><td>${x.score}/100</td><td>${x.weight}%</td><td>${escD(x.contrib)}</td></tr>`).join('');
+    const adj = (a.adjustments||[]).map(j => `<li style="margin-bottom:7px;font-size:11.5px;line-height:1.6;color:var(--ink-soft);">${j.dir==='up'?'▲':(j.dir==='down'?'▼':'●')} ${escD(j.text)}</li>`).join('');
+    return {
+      title: '📐 5축 점수 — 산출 근거',
+      sub: '축점수 × 가중치 = 종합 기여 · API 보정 추적',
+      body: `
+        <div class="dd-sec-h">축별 기여도</div>
+        <table><thead><tr><th>축</th><th>점수</th><th>가중</th><th>기여</th></tr></thead><tbody>${axes}
+          <tr style="font-weight:800;color:var(--ink);"><td>종합</td><td colspan="2">${escD(p.totalScore)}/100</td><td>${escD(p.verdict)}</td></tr></tbody></table>
+        <div class="dd-sec-h">🔗 API → 점수 보정 내역</div>
+        <ul style="margin:0;padding-left:4px;list-style:none;">${adj}</ul>
+        <div class="dd-src">5축 가중치: A입지25·B학군20·C단지20·D시세20·E호재악재15. A = location(인프라)+transit(교통) 합산.</div>` };
+  }
+  return null;
+}
 </script>
+
+<!-- 백데이터 드릴다운 드로어 -->
+<div id="detailBackdrop" onclick="closeDetail()"></div>
+<aside id="detailDrawer" class="detail-drawer" aria-hidden="true">
+  <div class="dd-head">
+    <div>
+      <div class="dd-title" id="ddTitle">상세</div>
+      <div class="dd-sub" id="ddSub"></div>
+    </div>
+    <button class="dd-close" onclick="closeDetail()" aria-label="닫기">✕</button>
+  </div>
+  <div class="dd-body" id="ddBody"></div>
+</aside>
 
 </body>
 </html>
