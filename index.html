@@ -395,16 +395,22 @@
   .report-toolbar {
     background: #050810;
     color: #E6EDF3;
-    padding: 16px 24px;
-    margin: -40px -32px 0;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    margin: 0;
     position: sticky;
     top: 0;
     z-index: 100;
     border-bottom: 1px solid #21262D;
   }
+  .report-toolbar .tb-inner {
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 14px 60px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+  }
+  @media (max-width: 780px) { .report-toolbar .tb-inner { padding: 12px 20px; } }
   .report-toolbar .left { font-size: 13px; }
   .report-toolbar .left strong { font-weight: 600; color: #FFFFFF; }
   .report-toolbar .left .meta { opacity: 0.55; }
@@ -1698,6 +1704,22 @@
   html[data-theme="light"] .report-header .right strong,
   html[data-theme="light"] .report-footer .left strong { color: #1A1A1A; }
   html[data-theme="light"] .verdict-card .big { color: #1A1A1A; }
+  /* 라이트 모드: 다크 배경 강조 박스(수요·공급·사이클·정책 등)는 배경을 유지하되
+     내부 본문이 var(--ink-*)로 어두워져 안 보이는 문제 → 박스 안에서만 ink 변수를 밝게 재정의.
+     (강조 헤더의 고정 컬러 #3FB950/#58A6FF/#D4A574 등은 그대로 유지) */
+  html[data-theme="light"] [style*="background:#142A20"],
+  html[data-theme="light"] [style*="background:#102D1B"],
+  html[data-theme="light"] [style*="background:#0F1A2A"],
+  html[data-theme="light"] [style*="background:#2A2014"],
+  html[data-theme="light"] [style*="background:#3A2414"] {
+    --ink: #F0F3F7; --ink-soft: #D6DDE5; --ink-muted: #AEB7C2; --ink-faint: #828B97;
+    color: #F0F3F7;
+  }
+  html[data-theme="light"] [style*="background:#142A20"] strong,
+  html[data-theme="light"] [style*="background:#102D1B"] strong,
+  html[data-theme="light"] [style*="background:#0F1A2A"] strong,
+  html[data-theme="light"] [style*="background:#2A2014"] strong,
+  html[data-theme="light"] [style*="background:#3A2414"] strong { color: #FFFFFF; }
   html[data-theme="light"] .verdict-card.primary { background: linear-gradient(135deg,#FBF7F0 0%,#FFFFFF 100%); }
   html[data-theme="light"] .score-bar, html[data-theme="light"] .afford-bar-bg, html[data-theme="light"] .attr-bar-bg { background: #E5DFD4; }
   html[data-theme="light"] .score-bar .other { background: #8A99A8; }
@@ -1785,11 +1807,12 @@
 <!-- VIEW 3: REPORT -->
 <section id="view-report" class="view">
   <div class="report-toolbar">
-    <div class="left"><strong id="rep-tb-name">강동역두산위브센티움</strong> · 매수자 의사결정 보고서 <span class="meta">— 2026-05-31</span></div>
-    <div style="display:flex; gap:10px; align-items:center;">
-      <button class="btn-round" onclick="showList()" title="목록으로">◀</button>
-      <span class="tb-hint">목록</span>
-      <button class="btn btn-primary" id="pdfBtn" onclick="downloadPDF()" style="margin-left:8px;">📄 PDF 저장</button>
+    <div class="tb-inner">
+      <div class="left"><strong id="rep-tb-name">강동역두산위브센티움</strong> · 매수자 의사결정 보고서 <span class="meta">— 2026-05-31</span></div>
+      <div style="display:flex; gap:10px; align-items:center; flex-shrink:0;">
+        <button class="btn btn-secondary" onclick="showList()" title="목록으로">◀ 이전</button>
+        <button class="btn btn-primary" id="pdfBtn" onclick="downloadPDF()">📄 PDF 저장</button>
+      </div>
     </div>
   </div>
   <div class="report-pdf-area" id="pdfArea"></div>
