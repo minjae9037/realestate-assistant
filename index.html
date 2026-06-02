@@ -1761,6 +1761,119 @@
   .report-pdf-area.pdf-mode .drill-cue, .report-pdf-area.pdf-mode .drill-inline { display: none !important; }
   body.pdf-printing #detailDrawer, body.pdf-printing #detailBackdrop { display: none !important; }
   @media print { #detailDrawer, #detailBackdrop, .drill-cue, .drill-inline { display: none !important; } }
+
+  /* ── SECTION 04B 학군 정보 ── */
+  .sd-cards { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin:6px 0 20px; }
+  .sd-card { background:var(--bg-card,#161B22); border:1px solid var(--rule,#30363D); border-radius:12px; padding:16px 14px; text-align:center; }
+  .sd-card.empty { opacity:.45; }
+  .sd-card .sd-ic { font-size:26px; line-height:1; margin-bottom:8px; }
+  .sd-card .sd-knd { font-size:10px; color:var(--ink-faint,#6E7681); font-weight:700; letter-spacing:.08em; }
+  .sd-card .sd-nm { font-size:14px; font-weight:800; color:var(--ink,#E6EDF3); margin:5px 0 7px; }
+  .sd-card .sd-badge { display:inline-block; font-size:10.5px; font-weight:700; padding:3px 9px; border-radius:20px;
+    background:rgba(212,165,116,.16); color:#D4A574; margin-bottom:6px; }
+  .sd-card .sd-dist { font-size:11px; color:var(--ink-soft,#B0B8C0); }
+  .sd-tabs { display:flex; gap:6px; flex-wrap:wrap; margin:2px 0 14px; }
+  .sd-tab { font-size:11.5px; font-weight:700; padding:7px 15px; border-radius:20px; cursor:pointer;
+    background:var(--bg-card,#161B22); border:1px solid var(--rule,#30363D); color:var(--ink-soft,#B0B8C0); transition:.15s; }
+  .sd-tab:hover { border-color:#D4A574; }
+  .sd-tab.on { background:#D4A574; color:#1a1208; border-color:#D4A574; }
+  .sd-panel { display:none; }
+  .sd-panel.on { display:block; animation:sdfade .22s ease; }
+  @keyframes sdfade { from{opacity:0;transform:translateY(4px)} to{opacity:1;transform:none} }
+  .sd-tbl { width:100%; border-collapse:collapse; font-size:12px; }
+  .sd-tbl th { text-align:left; font-size:10px; color:var(--ink-faint,#6E7681); font-weight:700; padding:8px; border-bottom:1px solid var(--rule,#30363D); }
+  .sd-tbl td { padding:9px 8px; border-bottom:1px solid var(--rule,#30363D); color:var(--ink-soft,#B0B8C0); }
+  .sd-tbl tr:hover td { background:rgba(212,165,116,.05); }
+  .sd-tbl .nm { color:var(--ink,#E6EDF3); font-weight:700; }
+  .sd-tbl .sub { font-size:10px; color:var(--ink-faint,#6E7681); }
+  .sd-grade { font-weight:800; color:#D4A574; }
+  .sd-chip { display:inline-block; font-size:10px; font-weight:700; padding:2px 7px; border-radius:5px; margin:1px 3px 1px 0; white-space:nowrap; }
+  .sd-chip.js { background:rgba(63,185,80,.16); color:#3FB950; }
+  .sd-chip.sci { background:rgba(88,166,255,.16); color:#58A6FF; }
+  .sd-chip.fl { background:rgba(188,140,255,.16); color:#BC8CFF; }
+  .sd-na { color:var(--ink-faint,#6E7681); font-style:italic; font-size:11px; }
+  .sd-cmp { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:16px; }
+  .sd-cmp-card { background:var(--bg-card,#161B22); border:1px solid var(--rule,#30363D); border-radius:10px; padding:13px; }
+  .sd-cmp-lab { font-size:10.5px; color:var(--ink-faint,#6E7681); font-weight:700; margin-bottom:6px; }
+  .sd-cmp-val { font-size:21px; font-weight:800; color:var(--ink,#E6EDF3); margin-bottom:9px; }
+  .sd-cmp-val small { font-size:11px; font-weight:600; color:var(--ink-faint,#6E7681); }
+  .sd-bar { display:flex; align-items:center; gap:7px; margin-bottom:5px; font-size:10px; }
+  .sd-bar .lab { width:54px; flex-shrink:0; color:var(--ink-faint,#6E7681); }
+  .sd-bar .track { flex:1; height:6px; background:rgba(255,255,255,.07); border-radius:3px; overflow:hidden; }
+  .sd-bar .fill { height:100%; border-radius:3px; }
+  .sd-bar .num { width:38px; text-align:right; color:var(--ink-soft,#B0B8C0); flex-shrink:0; }
+  .sd-bar.me .fill { background:#D4A574; } .sd-bar.gu .fill { background:#6E7681; }
+  .sd-kv { display:grid; grid-template-columns:repeat(2,1fr); gap:0 24px; }
+  .sd-kv .row { display:flex; justify-content:space-between; gap:10px; padding:9px 2px; border-bottom:1px solid var(--rule,#30363D); font-size:12px; }
+  .sd-kv .row .k { color:var(--ink-faint,#6E7681); font-weight:600; } .sd-kv .row .v { color:var(--ink,#E6EDF3); font-weight:600; text-align:right; }
+  .sd-grade-bars { display:flex; align-items:flex-end; gap:8px; height:96px; margin:8px 0 2px; padding:0 2px; }
+  .sd-gb { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%; }
+  .sd-gb .c { font-size:10px; color:var(--ink-soft,#B0B8C0); font-weight:700; margin-bottom:3px; }
+  .sd-gb .b { width:100%; max-width:34px; background:linear-gradient(180deg,#D4A574,#b3854f); border-radius:4px 4px 0 0; min-height:3px; }
+  .sd-gb .n { font-size:9px; color:var(--ink-faint,#6E7681); margin-top:5px; }
+  .sd-note { font-size:11.5px; color:var(--ink-soft,#B0B8C0); line-height:1.7; background:rgba(212,165,116,.08);
+    border-left:3px solid #D4A574; padding:10px 12px; border-radius:0 8px 8px 0; margin-top:12px; }
+  .sd-sub-h { font-size:11px; font-weight:700; color:#D4A574; letter-spacing:.05em; margin:4px 0 8px; }
+  .sd-src { font-size:10px; color:var(--ink-faint,#6E7681); margin-top:14px; padding-top:9px; border-top:1px dashed var(--rule,#30363D); line-height:1.6; }
+  html[data-theme=light] .sd-bar .track { background:rgba(0,0,0,.06); }
+  @media (max-width:640px){ .sd-cards,.sd-cmp{grid-template-columns:1fr} .sd-kv{grid-template-columns:1fr} }
+
+  /* ── 전세/월세 · 전세가율 (SECTION 05B) ── */
+  .rt-top { display:grid; grid-template-columns:1.1fr 2fr; gap:14px; margin:6px 0 16px; }
+  .rt-gauge { background:var(--bg-card,#161B22); border:1px solid var(--rule,#30363D); border-radius:12px; padding:16px; text-align:center; }
+  .rt-gauge .lab { font-size:10.5px; color:var(--ink-faint,#6E7681); font-weight:700; letter-spacing:.06em; }
+  .rt-gauge .big { font-size:38px; font-weight:800; line-height:1.1; margin:6px 0 2px; }
+  .rt-gauge .sub { font-size:11px; color:var(--ink-soft,#B0B8C0); }
+  .rt-gauge .ring { height:8px; border-radius:4px; background:rgba(255,255,255,.07); overflow:hidden; margin:10px 0 4px; }
+  .rt-gauge .ring i { display:block; height:100%; border-radius:4px; }
+  .rt-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+  .rt-stat { background:var(--bg-card,#161B22); border:1px solid var(--rule,#30363D); border-radius:10px; padding:12px; }
+  .rt-stat .k { font-size:10px; color:var(--ink-faint,#6E7681); font-weight:700; margin-bottom:5px; }
+  .rt-stat .v { font-size:18px; font-weight:800; color:var(--ink,#E6EDF3); }
+  .rt-stat .v small { font-size:11px; font-weight:600; color:var(--ink-faint,#6E7681); }
+  .rt-stat .d { font-size:10.5px; color:var(--ink-soft,#B0B8C0); margin-top:3px; }
+  .rt-grid2 { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:14px; }
+  @media (max-width:720px){ .rt-top,.rt-grid2{grid-template-columns:1fr} .rt-stats{grid-template-columns:1fr} }
+
+  /* ── 단위세대 평면 (SECTION 단지 내) ── */
+  .fp-tabs { display:flex; gap:6px; flex-wrap:wrap; margin:6px 0 12px; }
+  .fp-tab { font-size:11.5px; font-weight:700; padding:6px 13px; border-radius:18px; cursor:pointer; background:var(--bg-card,#161B22); border:1px solid var(--rule,#30363D); color:var(--ink-soft,#B0B8C0); }
+  .fp-tab.on { background:#58A6FF; color:#06121f; border-color:#58A6FF; }
+  .fp-card { display:none; gap:16px; grid-template-columns:200px 1fr; background:var(--bg-card,#161B22); border:1px solid var(--rule,#30363D); border-radius:12px; padding:16px; }
+  .fp-card.on { display:grid; }
+  .fp-plan { background:#0d1117; border:1px solid var(--rule,#30363D); border-radius:8px; display:flex; align-items:center; justify-content:center; min-height:170px; overflow:hidden; }
+  .fp-plan img { width:100%; height:auto; display:block; }
+  .fp-meta .t { font-size:16px; font-weight:800; color:var(--ink,#E6EDF3); margin-bottom:2px; }
+  .fp-meta .ty { font-size:11px; color:#58A6FF; font-weight:700; margin-bottom:10px; }
+  .fp-spec { display:grid; grid-template-columns:repeat(2,1fr); gap:8px 16px; }
+  .fp-spec .row { display:flex; justify-content:space-between; font-size:12px; padding:6px 0; border-bottom:1px solid var(--rule,#30363D); }
+  .fp-spec .row .k { color:var(--ink-faint,#6E7681); } .fp-spec .row .v { color:var(--ink,#E6EDF3); font-weight:600; }
+  .fp-disclaim { font-size:10px; color:var(--ink-faint,#6E7681); margin-top:10px; font-style:italic; }
+  @media (max-width:560px){ .fp-card{grid-template-columns:1fr} }
+
+  /* ── 보유세 (재산세·종부세) 산출기 ── */
+  .tx-ctrl { display:grid; grid-template-columns:1.3fr 1fr; gap:14px; background:var(--bg-card,#161B22); border:1px solid var(--rule,#30363D); border-radius:12px; padding:16px; margin:6px 0 14px; }
+  .tx-field { margin-bottom:10px; }
+  .tx-field label { display:block; font-size:10.5px; color:var(--ink-faint,#6E7681); font-weight:700; margin-bottom:5px; }
+  .tx-field input[type=number] { width:100%; background:#0d1117; border:1px solid var(--rule,#30363D); border-radius:8px; color:var(--ink,#E6EDF3); font-size:14px; font-weight:700; padding:9px 11px; box-sizing:border-box; }
+  html[data-theme=light] .tx-field input[type=number] { background:#fff; }
+  .tx-seg { display:flex; gap:5px; }
+  .tx-seg button { flex:1; font-size:11.5px; font-weight:700; padding:8px 4px; border-radius:8px; cursor:pointer; background:#0d1117; border:1px solid var(--rule,#30363D); color:var(--ink-soft,#B0B8C0); }
+  .tx-seg button.on { background:#BC8CFF; color:#160a26; border-color:#BC8CFF; }
+  html[data-theme=light] .tx-seg button { background:#fff; }
+  .tx-chk { display:flex; align-items:center; gap:7px; font-size:11.5px; color:var(--ink-soft,#B0B8C0); margin-top:8px; cursor:pointer; }
+  .tx-out { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:12px; }
+  .tx-card { background:var(--bg-card,#161B22); border:1px solid var(--rule,#30363D); border-radius:10px; padding:14px; text-align:center; }
+  .tx-card.total { border-color:#BC8CFF; background:rgba(188,140,255,.07); }
+  .tx-card .k { font-size:10.5px; color:var(--ink-faint,#6E7681); font-weight:700; margin-bottom:6px; }
+  .tx-card .v { font-size:22px; font-weight:800; color:var(--ink,#E6EDF3); }
+  .tx-card .v small { font-size:11px; font-weight:600; color:var(--ink-faint,#6E7681); }
+  .tx-card.total .v { color:#BC8CFF; }
+  .tx-bd { width:100%; border-collapse:collapse; font-size:11.5px; }
+  .tx-bd td { padding:7px 8px; border-bottom:1px solid var(--rule,#30363D); color:var(--ink-soft,#B0B8C0); }
+  .tx-bd td.r { text-align:right; color:var(--ink,#E6EDF3); font-weight:600; }
+  .tx-bd tr.sum td { font-weight:800; color:var(--ink,#E6EDF3); border-top:1px solid var(--rule,#30363D); }
+  @media (max-width:640px){ .tx-ctrl,.tx-out{grid-template-columns:1fr} }
 </style>
 </head>
 <body>
@@ -1983,6 +2096,45 @@ const PROPS_GANGDONG = [
         { name: '동북고', dist: '2.18km', found: '사립', type: '일반고', note: '사립 일반고' }
       ],
       note: '인근 초등 학급당 14~20명(과밀 아님)·전부 공립 → 배정 양호. 중학 성내중(공립 22.9)·동신중(사립 18.9). 사립중은 배정 제한·추첨 변수.'
+    },
+    // ★학군 정보 탭 (SECTION 04B) — 학교알리미 공시 실데이터 + 진학률/학군등급/학원가 WebSearch 보완 (2026-06)
+    schoolDistrict: {
+      src: '학교알리미 OpenAPI(학교기본정보·학교현황·학년별·급식·방과후, 2024 정기공시) · 진학률·학군등급은 리치고·아파트미·오늘학교 / 학원가는 서울 열린데이터광장 (WebSearch 2026-06)',
+      region: '강동구',
+      topCards: {
+        elem: { name: '서울천동초', dist: '0.49km', found: '공립', classSize: 20.1 },
+        mid:  { name: '한산중', dist: '1.05km', found: '공립', grade: '1.4등급', seoulPct: 48 },
+        high: { name: '강동고', dist: '1.09km', found: '공립' }
+      },
+      nearbyMiddle: [
+        { name: '한산중', type: '공립 남녀공학', dist: '1.05km', jasago: 8.0, science: 7.0, foreign: 0.0, grade: '1.4등급', seoulPct: 48, nationPct: 11 },
+        { name: '성내중', type: '공립 남녀공학', dist: '0.99km', jasago: 3.3, science: 0.0, foreign: 6.6, seoulPct: 52, nationPct: 12 },
+        { name: '동신중', type: '사립 남녀공학', dist: '0.06km', note: '사립 — 진학 집계 미공개 (학급당 18.9명)' },
+        { name: '천호중', type: '공립 남녀공학', dist: '1.09km', note: '진학 집계 미확보 (학급당 22.9명)' },
+        { name: '천일중', type: '공립 남녀공학', dist: '1.14km', note: '진학 집계 미확보 (학급당 23.1명)' }
+      ],
+      guAvgJasago: 10.72, guMidCount: 19,
+      basic: {
+        schoolName: '서울천동초등학교', estLabel: '공립 · 1983 개교',
+        foundation: '공립', foundType: '단설', foundDate: '1982.12 설립 / 1983.06 개교', coedu: '남녀공학',
+        address: '서울 강동구 성안로 200 (길동)', tel: '02-483-4445',
+        students: 724, classes: 36, teachers: 43, special: '특수 2학급·11명',
+        afterschool: 77, afterschoolDetail: '교과 13·특기적성 64', meal: '직영', mealStaff: '영양사1·조리사1·조리원5',
+        compare: [
+          { label: '학급당 학생수', unit: '명', school: 20.1, gu: 21.0 },
+          { label: '교사 1인당', unit: '명', school: 16.8, gu: 17.4 },
+          { label: '고학년 비율', unit: '%', school: 50, gu: null }
+        ],
+        byGrade: [ {g:'1',n:109},{g:'2',n:113},{g:'3',n:133},{g:'4',n:120},{g:'5',n:118},{g:'6',n:120} ]
+      },
+      academy: {
+        note: '서울 열린데이터광장 학원·교습소 등록 기준(성내동·길동) · 학원별 학생수는 공시 미제공 → 분야 표기. 정밀 수강생 통계는 호갱노노·아실 민간 데이터 필요.',
+        list: [
+          { name: '눈높이러닝센터 성내강동보습학원', type: '종합(보습)', area: '성내동' },
+          { name: '최상인영어수학보습학원', type: '단과(영·수)', area: '성내동' },
+          { name: 'O.S.S 영어중국어강동어학학원', type: '외국어', area: '성내동' }
+        ]
+      }
     },
     kosisUnsold: {
       summary: '강동구 미분양 6개월 -18.7% 감소세 (안정화)',
@@ -3451,6 +3603,11 @@ const ANALYSES = [
 
 let currentAnalysisCode = 'gangdong';
 let REGION = REGION_GANGDONG;
+/*__LOOKUPS_START__*/
+const SCHOOL_DISTRICT={"강동역두산위브센티움":{"src":"학교알리미 OpenAPI(학교기본정보·학교현황·학년별·급식·방과후, 2024 정기공시) · 진학률·학군등급은 리치고·아파트미·오늘학교 WebSearch 보완(2026-06)","region":"강동구","topCards":{"elem":{"name":"서울천동초","dist":"0.49km","found":"공립","classSize":20.1},"mid":{"name":"한산중","dist":"1.05km","found":"공립","grade":"1.4등급","seoulPct":48},"high":{"name":"둔촌고","dist":"1.09km","found":"공립"}},"nearbyMiddle":[{"name":"동신중","type":"사립 남녀공학","dist":"0.06km","note":"사립 — 진학 집계 미공개 (학급당 18.9명)"},{"name":"성내중","type":"공립 남녀공학","dist":"0.99km","jasago":3.3,"science":0,"foreign":6.6,"seoulPct":52,"nationPct":12},{"name":"한산중","type":"공립 남녀공학","dist":"1.05km","jasago":8,"science":7,"foreign":0,"grade":"1.4등급","seoulPct":48,"nationPct":11},{"name":"천호중","type":"공립 남녀공학","dist":"1.09km","note":"진학 집계 미확보 (학급당 22.9명)"},{"name":"천일중","type":"공립 남녀공학","dist":"1.14km","note":"진학 집계 미확보 (학급당 23.1명)"},{"name":"둔촌중","type":"공립 남녀공학","dist":"1.27km","note":"진학 집계 미확보 (학급당 19.2명)"}],"guAvgJasago":10.72,"guMidCount":19,"basic":{"schoolName":"서울천동초등학교","estLabel":"공립 · 1983 개교","foundation":"공립","foundType":"단설","foundDate":"1982.12 설립 / 1983 개교","coedu":"남녀공학","address":"서울특별시 강동구 성안로 200","tel":"02-483-4445","students":724,"classes":36,"teachers":43,"afterschool":77,"afterschoolDetail":"교과 13 / 특기적성 64","meal":"직영","mealStaff":"영양사 1/조리사 1/조리원 5","compare":[{"label":"학급당 학생수","unit":"명","school":20.1,"gu":21},{"label":"교사 1인당","unit":"명","school":16.8,"gu":17.4},{"label":"고학년 비율","unit":"%","school":50,"gu":null}],"byGrade":[{"g":"1","n":109},{"g":"2","n":113},{"g":"3","n":133},{"g":"4","n":120},{"g":"5","n":118},{"g":"6","n":120}]},"academy":null},"중앙하이츠 (상일동)":{"src":"학교알리미 OpenAPI(학교기본정보·학교현황·학년별·급식·방과후, 2024 정기공시) · 진학률·학군등급은 리치고·아파트미·오늘학교 WebSearch 보완(2026-06)","region":"강동구","topCards":{"elem":{"name":"서울고현초","dist":"0.66km","found":"공립","classSize":27},"mid":{"name":"한영중","dist":"0.27km","found":"사립"},"high":{"name":"강동고","dist":"0.11km","found":"사립"}},"nearbyMiddle":[{"name":"한영중","type":"사립 남녀공학","dist":"0.27km","note":"사립 — 진학 집계 미공개 (학급당 30.6명)"},{"name":"상일중","type":"사립 남녀공학","dist":"0.94km","note":"사립 — 진학 집계 미공개 (학급당 28.6명)"},{"name":"배재중","type":"사립 남","dist":"1.06km","note":"사립 — 진학 집계 미공개 (학급당 31.5명)"},{"name":"고덕중","type":"공립 남녀공학","dist":"1.06km","note":"진학 집계 미확보 (학급당 29.1명)"},{"name":"명일중","type":"공립 남녀공학","dist":"1.27km","note":"진학 집계 미확보 (학급당 27.3명)"},{"name":"신명중","type":"공립 남녀공학","dist":"1.36km","note":"진학 집계 미확보 (학급당 19.8명)"}],"guAvgJasago":10.72,"guMidCount":19,"basic":{"schoolName":"서울고현초등학교","estLabel":"공립 · 2020 개교","foundation":"공립","foundType":"단설","foundDate":"2020.03 설립 / 2020 개교","coedu":"남녀공학","address":"서울특별시 강동구 상일로11길 110","tel":"02-427-9672","students":1352,"classes":50,"teachers":66,"afterschool":45,"afterschoolDetail":"교과 15 / 특기적성 30","meal":"직영","mealStaff":"영양사 1/조리사 1/조리원 9","compare":[{"label":"학급당 학생수","unit":"명","school":27,"gu":21},{"label":"교사 1인당","unit":"명","school":20.5,"gu":17.4},{"label":"고학년 비율","unit":"%","school":50,"gu":null}],"byGrade":[{"g":"1","n":207},{"g":"2","n":238},{"g":"3","n":224},{"g":"4","n":229},{"g":"5","n":236},{"g":"6","n":211}]},"academy":null},"둔촌 현대3 (9호선)":{"src":"학교알리미 OpenAPI(학교기본정보·학교현황·학년별·급식·방과후, 2024 정기공시) · 진학률·학군등급은 리치고·아파트미·오늘학교 WebSearch 보완(2026-06)","region":"강동구","topCards":{"elem":{"name":"서울선린초","dist":"0.27km","found":"공립","classSize":17.3},"mid":{"name":"한산중","dist":"0.44km","found":"공립","grade":"1.4등급","seoulPct":48},"high":{"name":"둔촌고","dist":"0.41km","found":"공립"}},"nearbyMiddle":[{"name":"둔촌중","type":"공립 남녀공학","dist":"0.4km","note":"진학 집계 미확보 (학급당 19.2명)"},{"name":"한산중","type":"공립 남녀공학","dist":"0.44km","jasago":8,"science":7,"foreign":0,"grade":"1.4등급","seoulPct":48,"nationPct":11},{"name":"동북중","type":"사립 남","dist":"0.86km","note":"사립 — 진학 집계 미공개 (학급당 15.3명)"},{"name":"성내중","type":"공립 남녀공학","dist":"1.34km","jasago":3.3,"science":0,"foreign":6.6,"seoulPct":52,"nationPct":12},{"name":"동신중","type":"사립 남녀공학","dist":"1.4km","note":"사립 — 진학 집계 미공개 (학급당 18.9명)"},{"name":"신명중","type":"공립 남녀공학","dist":"1.62km","note":"진학 집계 미확보 (학급당 19.8명)"}],"guAvgJasago":10.72,"guMidCount":19,"basic":{"schoolName":"서울선린초등학교","estLabel":"공립 · 1985 개교","foundation":"공립","foundType":"단설","foundDate":"1985.07 설립 / 1985 개교","coedu":"남녀공학","address":"서울특별시 강동구 진황도로61길 29","tel":"02-471-9800","students":415,"classes":24,"teachers":31,"afterschool":44,"afterschoolDetail":"교과 12 / 특기적성 32","meal":"직영","mealStaff":"영양사 1/조리사 1/조리원 3","compare":[{"label":"학급당 학생수","unit":"명","school":17.3,"gu":21},{"label":"교사 1인당","unit":"명","school":13.4,"gu":17.4},{"label":"고학년 비율","unit":"%","school":50,"gu":null}],"byGrade":[{"g":"1","n":57},{"g":"2","n":68},{"g":"3","n":82},{"g":"4","n":76},{"g":"5","n":50},{"g":"6","n":77}]},"academy":null},"힐스테이트부평":{"src":"학교알리미 OpenAPI(학교기본정보·학교현황·학년별·급식·방과후, 2024 정기공시) · 진학률·학군등급은 리치고·아파트미·오늘학교 WebSearch 보완(2026-06)","region":"부평구","topCards":{"elem":{"name":"인천신촌초","dist":"0.35km","found":"공립","classSize":18.2},"mid":{"name":"부평서여자중","dist":"0.2km","found":"공립"},"high":{"name":"부광고","dist":"0.57km","found":"공립"}},"nearbyMiddle":[{"name":"부평서여자중","type":"공립 녀","dist":"0.2km","note":"진학 집계 미확보 (학급당 19.7명)"},{"name":"부평서중","type":"공립 남","dist":"0.4km","note":"진학 집계 미확보 (학급당 19.8명)"},{"name":"동암중","type":"공립 남녀공학","dist":"1.07km","note":"진학 집계 미확보 (학급당 19.9명)"},{"name":"인천상정중","type":"공립 남녀공학","dist":"1.16km","note":"진학 집계 미확보 (학급당 21.7명)"},{"name":"인천동수중","type":"공립 남녀공학","dist":"1.26km","note":"진학 집계 미확보 (학급당 18.6명)"},{"name":"부원중","type":"공립 남","dist":"1.39km","note":"진학 집계 미확보 (학급당 26.7명)"}],"guAvgJasago":null,"guMidCount":null,"basic":{"schoolName":"인천신촌초등학교","estLabel":"공립 · 1982 개교","foundation":"공립","foundType":"단설","foundDate":"1982.09 설립 / 1982 개교","coedu":"남녀공학","address":"인천광역시 부평구 경원대로 1215","tel":"032-522-2484","students":346,"classes":19,"teachers":23,"afterschool":27,"afterschoolDetail":"교과 12 / 특기적성 15","meal":"직영","mealStaff":"영양사 1/조리사 1/조리원 4","compare":[{"label":"학급당 학생수","unit":"명","school":18.2,"gu":19.7},{"label":"교사 1인당","unit":"명","school":15,"gu":16.6},{"label":"고학년 비율","unit":"%","school":47,"gu":null}],"byGrade":[{"g":"1","n":57},{"g":"2","n":60},{"g":"3","n":62},{"g":"4","n":57},{"g":"5","n":45},{"g":"6","n":57}]},"academy":null},"더샵부평센트럴시티":{"src":"학교알리미 OpenAPI(학교기본정보·학교현황·학년별·급식·방과후, 2024 정기공시) · 진학률·학군등급은 리치고·아파트미·오늘학교 WebSearch 보완(2026-06)","region":"부평구","topCards":{"elem":{"name":"인천하정초","dist":"0.29km","found":"공립","classSize":22.7},"mid":{"name":"인천상정중","dist":"0.43km","found":"공립"},"high":{"name":"인천상정고","dist":"0.44km","found":"공립"}},"nearbyMiddle":[{"name":"인천상정중","type":"공립 남녀공학","dist":"0.43km","note":"진학 집계 미확보 (학급당 21.7명)"},{"name":"동암중","type":"공립 남녀공학","dist":"0.73km","note":"진학 집계 미확보 (학급당 19.9명)"},{"name":"부평서여자중","type":"공립 녀","dist":"1.12km","note":"진학 집계 미확보 (학급당 19.7명)"},{"name":"부평서중","type":"공립 남","dist":"1.16km","note":"진학 집계 미확보 (학급당 19.8명)"},{"name":"인천동수중","type":"공립 남녀공학","dist":"2.08km","note":"진학 집계 미확보 (학급당 18.6명)"},{"name":"산곡여자중","type":"공립 녀","dist":"2.33km","note":"진학 집계 미확보 (학급당 26.2명)"}],"guAvgJasago":null,"guMidCount":null,"basic":{"schoolName":"인천하정초등학교","estLabel":"공립 · 1991 개교","foundation":"공립","foundType":"단설","foundDate":"1991.02 설립 / 1991 개교","coedu":"남녀공학","address":"인천광역시 부평구 이규보로 14","tel":"032-429-3866","students":476,"classes":21,"teachers":27,"afterschool":10,"afterschoolDetail":"교과 3 / 특기적성 7","meal":"직영","mealStaff":"영양사 1/조리사 1/조리원 4","compare":[{"label":"학급당 학생수","unit":"명","school":22.7,"gu":19.7},{"label":"교사 1인당","unit":"명","school":17.6,"gu":16.6},{"label":"고학년 비율","unit":"%","school":46,"gu":null}],"byGrade":[{"g":"1","n":81},{"g":"2","n":97},{"g":"3","n":74},{"g":"4","n":71},{"g":"5","n":71},{"g":"6","n":72}]},"academy":null},"부개주공3단지 (재건축)":{"src":"학교알리미 OpenAPI(학교기본정보·학교현황·학년별·급식·방과후, 2024 정기공시) · 진학률·학군등급은 리치고·아파트미·오늘학교 WebSearch 보완(2026-06)","region":"부평구","topCards":{"elem":{"name":"인천부일초","dist":"0.23km","found":"공립","classSize":17.2},"mid":{"name":"부광중","dist":"0.16km","found":"공립"},"high":{"name":"부광여자고","dist":"0.3km","found":"공립"}},"nearbyMiddle":[{"name":"부광중","type":"공립 남녀공학","dist":"0.16km","note":"진학 집계 미확보 (학급당 28.7명)"},{"name":"부흥중","type":"공립 남녀공학","dist":"0.19km","note":"진학 집계 미확보 (학급당 28.8명)"},{"name":"구산중","type":"공립 남녀공학","dist":"0.4km","note":"진학 집계 미확보 (학급당 29명)"},{"name":"부평동중","type":"공립 남","dist":"0.64km","note":"진학 집계 미확보 (학급당 21.9명)"},{"name":"부평여자중","type":"공립 녀","dist":"0.73km","note":"진학 집계 미확보 (학급당 21.3명)"},{"name":"부평중","type":"공립 남","dist":"0.83km","note":"진학 집계 미확보 (학급당 20.8명)"}],"guAvgJasago":null,"guMidCount":null,"basic":{"schoolName":"인천부일초등학교","estLabel":"공립 · 1999 개교","foundation":"공립","foundType":"단설","foundDate":"1999.03 설립 / 1999 개교","coedu":"남녀공학","address":"인천광역시 부평구 부흥북로 175","tel":"032-458-9085","students":309,"classes":18,"teachers":21,"afterschool":21,"afterschoolDetail":"교과 2 / 특기적성 19","meal":"직영","mealStaff":"영양사 1/조리사 1/조리원 3","compare":[{"label":"학급당 학생수","unit":"명","school":17.2,"gu":19.7},{"label":"교사 1인당","unit":"명","school":14.7,"gu":16.6},{"label":"고학년 비율","unit":"%","school":48,"gu":null}],"byGrade":[{"g":"1","n":39},{"g":"2","n":49},{"g":"3","n":67},{"g":"4","n":46},{"g":"5","n":44},{"g":"6","n":54}]},"academy":null},"SK북한산시티":{"src":"학교알리미 OpenAPI(학교기본정보·학교현황·학년별·급식·방과후, 2024 정기공시) · 진학률·학군등급은 리치고·아파트미·오늘학교 WebSearch 보완(2026-06)","region":"강북구","topCards":{"elem":{"name":"서울삼각산초","dist":"0.27km","found":"공립","classSize":22.2},"mid":{"name":"삼각산중","dist":"0.32km","found":"공립"},"high":{"name":"솔샘고","dist":"0.67km","found":"공립"}},"nearbyMiddle":[{"name":"삼각산중","type":"공립 남녀공학","dist":"0.32km","note":"진학 집계 미확보 (학급당 28.5명)"},{"name":"솔샘중","type":"공립 남녀공학","dist":"0.59km","note":"진학 집계 미확보 (학급당 21.6명)"},{"name":"성암여자중","type":"사립 녀","dist":"1.05km","note":"사립 — 진학 집계 미공개 (학급당 23.1명)"},{"name":"영훈국제중","type":"사립 남녀공학","dist":"1.36km","note":"사립 — 진학 집계 미공개 (학급당 32.9명)"},{"name":"수유중","type":"공립 남녀공학","dist":"1.55km","note":"진학 집계 미확보 (학급당 23.6명)"},{"name":"화계중","type":"공립 남녀공학","dist":"1.62km","note":"진학 집계 미확보 (학급당 20.1명)"}],"guAvgJasago":null,"guMidCount":null,"basic":{"schoolName":"서울삼각산초등학교","estLabel":"공립 · 2002 개교","foundation":"공립","foundType":"단설","foundDate":"2001.12 설립 / 2002 개교","coedu":"남녀공학","address":"서울특별시 강북구 삼양로19길 141","tel":"02-987-5784","students":956,"classes":43,"teachers":52,"afterschool":113,"afterschoolDetail":"교과 38 / 특기적성 75","meal":"직영","mealStaff":"영양사 1/조리사 1/조리원 7","compare":[{"label":"학급당 학생수","unit":"명","school":22.2,"gu":19.5},{"label":"교사 1인당","unit":"명","school":18.4,"gu":15.7},{"label":"고학년 비율","unit":"%","school":58,"gu":null}],"byGrade":[{"g":"1","n":116},{"g":"2","n":135},{"g":"3","n":148},{"g":"4","n":174},{"g":"5","n":171},{"g":"6","n":212}]},"academy":null},"구로두산":{"src":"학교알리미 OpenAPI(학교기본정보·학교현황·학년별·급식·방과후, 2024 정기공시) · 진학률·학군등급은 리치고·아파트미·오늘학교 WebSearch 보완(2026-06)","region":"구로구","topCards":{"elem":{"name":"서울구일초","dist":"0.53km","found":"공립","classSize":21.5},"mid":{"name":"구일중","dist":"0.38km","found":"공립"},"high":{"name":"구일고","dist":"0.4km","found":"공립"}},"nearbyMiddle":[{"name":"구일중","type":"공립 남녀공학","dist":"0.38km","note":"진학 집계 미확보 (학급당 23.9명)"},{"name":"구로중","type":"공립 남녀공학","dist":"1.06km","note":"진학 집계 미확보 (학급당 20.6명)"},{"name":"영림중","type":"공립 남녀공학","dist":"1.1km","note":"진학 집계 미확보 (학급당 21.3명)"},{"name":"고척중","type":"공립 남녀공학","dist":"1.54km","note":"진학 집계 미확보 (학급당 24명)"},{"name":"영서중","type":"공립 남녀공학","dist":"1.55km","note":"진학 집계 미확보 (학급당 21.8명)"},{"name":"신도림중","type":"공립 남녀공학","dist":"1.85km","note":"진학 집계 미확보 (학급당 28.3명)"}],"guAvgJasago":null,"guMidCount":null,"basic":{"schoolName":"서울구일초등학교","estLabel":"공립 · 1987 개교","foundation":"공립","foundType":"병설","foundDate":"1987.10 설립 / 1987 개교","coedu":"남녀공학","address":"서울특별시 구로구 구일로 68","tel":"02-869-9101","students":1009,"classes":47,"teachers":57,"afterschool":29,"afterschoolDetail":"교과 9 / 특기적성 20","meal":"직영","mealStaff":"영양사 1/조리사 1/조리원 8","compare":[{"label":"학급당 학생수","unit":"명","school":21.5,"gu":19.3},{"label":"교사 1인당","unit":"명","school":17.7,"gu":15.8},{"label":"고학년 비율","unit":"%","school":53,"gu":null}],"byGrade":[{"g":"1","n":139},{"g":"2","n":164},{"g":"3","n":168},{"g":"4","n":161},{"g":"5","n":179},{"g":"6","n":186}]},"academy":null},"신내데시앙":{"src":"학교알리미 OpenAPI(학교기본정보·학교현황·학년별·급식·방과후, 2024 정기공시) · 진학률·학군등급은 리치고·아파트미·오늘학교 WebSearch 보완(2026-06)","region":"중랑구","topCards":{"elem":{"name":"서울새솔초","dist":"0.63km","found":"공립","classSize":19.3},"mid":{"name":"송곡중","dist":"1.28km","found":"사립"},"high":{"name":"송곡여자고","dist":"1.18km","found":"사립"}},"nearbyMiddle":[{"name":"송곡중","type":"사립 남녀공학","dist":"1.28km","note":"사립 — 진학 집계 미공개 (학급당 13.5명)"},{"name":"영란여자중","type":"사립 녀","dist":"1.55km","note":"사립 — 진학 집계 미공개 (학급당 19.3명)"},{"name":"동원중","type":"공립 남녀공학","dist":"1.58km","note":"진학 집계 미확보 (학급당 24.1명)"},{"name":"원묵중","type":"공립 남녀공학","dist":"1.73km","note":"진학 집계 미확보 (학급당 25.9명)"},{"name":"신현중","type":"공립 남녀공학","dist":"1.83km","note":"진학 집계 미확보 (학급당 23.7명)"},{"name":"태릉중","type":"공립 남녀공학","dist":"1.92km","note":"진학 집계 미확보 (학급당 22.2명)"}],"guAvgJasago":null,"guMidCount":null,"basic":{"schoolName":"서울새솔초등학교","estLabel":"공립 · 2014 개교","foundation":"공립","foundType":"단설","foundDate":"2014.03 설립 / 2014 개교","coedu":"남녀공학","address":"서울특별시 중랑구 신내역로1길 164","tel":"02-490-2500","students":693,"classes":36,"teachers":44,"afterschool":64,"afterschoolDetail":"교과 21 / 특기적성 43","meal":"직영","mealStaff":"영양사 1/조리사 1/조리원 5","compare":[{"label":"학급당 학생수","unit":"명","school":19.3,"gu":19.4},{"label":"교사 1인당","unit":"명","school":15.8,"gu":15.9},{"label":"고학년 비율","unit":"%","school":65,"gu":null}],"byGrade":[{"g":"1","n":56},{"g":"2","n":90},{"g":"3","n":93},{"g":"4","n":112},{"g":"5","n":169},{"g":"6","n":161}]},"academy":null},"관악산벽산타운5단지":{"src":"학교알리미 OpenAPI(학교기본정보·학교현황·학년별·급식·방과후, 2024 정기공시) · 진학률·학군등급은 리치고·아파트미·오늘학교 WebSearch 보완(2026-06)","region":"금천구","topCards":{"elem":{"name":"서울금산초","dist":"0.77km","found":"공립","classSize":18.7},"mid":{"name":"시흥중","dist":"1.26km","found":"공립"},"high":{"name":"금천고","dist":"1.14km","found":"공립"}},"nearbyMiddle":[{"name":"시흥중","type":"공립 남녀공학","dist":"1.26km","note":"진학 집계 미확보 (학급당 21.1명)"},{"name":"문일중","type":"사립 남","dist":"1.83km","note":"사립 — 진학 집계 미공개 (학급당 21.9명)"},{"name":"동일중","type":"사립 남녀공학","dist":"2.18km","note":"사립 — 진학 집계 미공개 (학급당 24명)"},{"name":"한울중","type":"공립 남녀공학","dist":"3.1km","note":"진학 집계 미확보 (학급당 21.5명)"},{"name":"안천중","type":"공립 남녀공학","dist":"3.22km","note":"진학 집계 미확보 (학급당 22.2명)"},{"name":"가산중","type":"공립 남녀공학","dist":"3.95km","note":"진학 집계 미확보 (학급당 22.4명)"}],"guAvgJasago":null,"guMidCount":null,"basic":{"schoolName":"서울금산초등학교","estLabel":"공립 · 1998 개교","foundation":"공립","foundType":"단설","foundDate":"1998.07 설립 / 1998 개교","coedu":"남녀공학","address":"서울특별시 금천구 시흥대로24길 57","tel":"02-806-0254","students":262,"classes":14,"teachers":17,"afterschool":27,"afterschoolDetail":"교과 7 / 특기적성 20","meal":"직영","mealStaff":"영양사 1/조리사 1/조리원 3","compare":[{"label":"학급당 학생수","unit":"명","school":18.7,"gu":17.9},{"label":"교사 1인당","unit":"명","school":15.4,"gu":13.9},{"label":"고학년 비율","unit":"%","school":51,"gu":null}],"byGrade":[{"g":"1","n":43},{"g":"2","n":39},{"g":"3","n":47},{"g":"4","n":44},{"g":"5","n":32},{"g":"6","n":57}]},"academy":null},"우성2차":{"src":"학교알리미 OpenAPI(학교기본정보·학교현황·학년별·급식·방과후, 2024 정기공시) · 진학률·학군등급은 리치고·아파트미·오늘학교 WebSearch 보완(2026-06)","region":"도봉구","topCards":{"elem":{"name":"서울창도초","dist":"0.56km","found":"공립","classSize":20.4},"mid":{"name":"도봉중","dist":"0.26km","found":"공립"},"high":{"name":"서울문화고","dist":"0.52km","found":"공립"}},"nearbyMiddle":[{"name":"도봉중","type":"공립 남녀공학","dist":"0.26km","note":"진학 집계 미확보 (학급당 21.4명)"},{"name":"창동중","type":"공립 남녀공학","dist":"0.66km","note":"진학 집계 미확보 (학급당 22.8명)"},{"name":"방학중","type":"공립 남녀공학","dist":"1.42km","note":"진학 집계 미확보 (학급당 23.1명)"},{"name":"북서울중","type":"공립 남녀공학","dist":"1.46km","note":"진학 집계 미확보 (학급당 21.3명)"},{"name":"신방학중","type":"공립 남녀공학","dist":"1.6km","note":"진학 집계 미확보 (학급당 24.2명)"},{"name":"백운중","type":"공립 남녀공학","dist":"1.68km","note":"진학 집계 미확보 (학급당 21.9명)"}],"guAvgJasago":null,"guMidCount":null,"basic":{"schoolName":"서울창도초등학교","estLabel":"공립 · 1982 개교","foundation":"공립","foundType":"단설","foundDate":"1982.10 설립 / 1982 개교","coedu":"남녀공학","address":"서울특별시 도봉구 방학로 32-28","tel":"02-3492-0008","students":695,"classes":34,"teachers":40,"afterschool":52,"afterschoolDetail":"교과 12 / 특기적성 40","meal":"직영","mealStaff":"영양사 1/조리사 1/조리원 5","compare":[{"label":"학급당 학생수","unit":"명","school":20.4,"gu":19.6},{"label":"교사 1인당","unit":"명","school":17.4,"gu":16.2},{"label":"고학년 비율","unit":"%","school":55,"gu":null}],"byGrade":[{"g":"1","n":96},{"g":"2","n":105},{"g":"3","n":108},{"g":"4","n":123},{"g":"5","n":127},{"g":"6","n":132}]},"academy":null}};
+const RENT_DATA={"강동역두산위브센티움":{"sale":73300,"ratio":64,"jeonseCount":4,"wolseCount":2,"jeonseLo":39600,"jeonseMed":47000,"jeonseHi":49500,"wolseMedMonthly":135,"jeonseSamples":[{"ar":59.96,"floor":"12","deposit":39600,"ym":"2025.12"},{"ar":59.96,"floor":"3","deposit":42000,"ym":"2025.9"},{"ar":59.96,"floor":"6","deposit":47000,"ym":"2025.8"},{"ar":59.96,"floor":"2","deposit":49500,"ym":"2025.11"}],"wolseSamples":[{"ar":55.82,"floor":"4","deposit":20000,"monthly":87,"ym":"2026.3"},{"ar":59.96,"floor":"2","deposit":5000,"monthly":135,"ym":"2025.10"}]},"중앙하이츠 (상일동)":{"sale":114700,"ratio":39,"jeonseCount":17,"wolseCount":4,"jeonseLo":30000,"jeonseMed":45000,"jeonseHi":51000,"wolseMedMonthly":120,"jeonseSamples":[{"ar":59.52,"floor":"1","deposit":30000,"ym":"2025.11"},{"ar":59.94,"floor":"6","deposit":30000,"ym":"2025.12"},{"ar":59.85,"floor":"2","deposit":35500,"ym":"2025.12"},{"ar":59.94,"floor":"8","deposit":38800,"ym":"2026.1"},{"ar":59.94,"floor":"6","deposit":39000,"ym":"2026.4"},{"ar":61.36,"floor":"5","deposit":45000,"ym":"2025.8"}],"wolseSamples":[{"ar":59.52,"floor":"6","deposit":22000,"monthly":75,"ym":"2025.11"},{"ar":59.85,"floor":"6","deposit":6000,"monthly":75,"ym":"2026.2"},{"ar":59.94,"floor":"10","deposit":7000,"monthly":120,"ym":"2025.8"},{"ar":59.52,"floor":"5","deposit":5000,"monthly":150,"ym":"2026.4"}]},"둔촌 현대3 (9호선)":{"sale":80000,"ratio":62,"jeonseCount":7,"wolseCount":3,"jeonseLo":43000,"jeonseMed":50000,"jeonseHi":55000,"wolseMedMonthly":148,"jeonseSamples":[{"ar":69.3,"floor":"7","deposit":43000,"ym":"2026.3"},{"ar":69.3,"floor":"4","deposit":45000,"ym":"2026.2"},{"ar":69.3,"floor":"7","deposit":46200,"ym":"2025.9"},{"ar":69.3,"floor":"9","deposit":50000,"ym":"2026.3"},{"ar":69.3,"floor":"3","deposit":50000,"ym":"2026.4"},{"ar":69.3,"floor":"10","deposit":55000,"ym":"2026.3"}],"wolseSamples":[{"ar":69.3,"floor":"2","deposit":20000,"monthly":72,"ym":"2025.8"},{"ar":69.3,"floor":"3","deposit":13000,"monthly":148,"ym":"2026.2"},{"ar":58.14,"floor":"6","deposit":5000,"monthly":200,"ym":"2025.11"}]},"힐스테이트부평":{"sale":59000,"ratio":64,"jeonseCount":20,"wolseCount":25,"jeonseLo":26000,"jeonseMed":38000,"jeonseHi":42000,"wolseMedMonthly":135,"jeonseSamples":[{"ar":59.99,"floor":"16","deposit":26000,"ym":"2025.8"},{"ar":59.99,"floor":"7","deposit":26250,"ym":"2025.8"},{"ar":59.99,"floor":"27","deposit":31500,"ym":"2025.8"},{"ar":59.98,"floor":"30","deposit":31500,"ym":"2025.8"},{"ar":59.99,"floor":"13","deposit":34650,"ym":"2025.12"},{"ar":59.98,"floor":"2","deposit":36000,"ym":"2025.12"}],"wolseSamples":[{"ar":59.99,"floor":"5","deposit":10000,"monthly":80,"ym":"2025.8"},{"ar":59.98,"floor":"20","deposit":5000,"monthly":100,"ym":"2025.10"},{"ar":59.98,"floor":"29","deposit":10000,"monthly":100,"ym":"2025.11"},{"ar":59.99,"floor":"10","deposit":3000,"monthly":105,"ym":"2025.8"},{"ar":59.98,"floor":"15","deposit":3000,"monthly":110,"ym":"2025.8"},{"ar":59.99,"floor":"14","deposit":3000,"monthly":120,"ym":"2025.12"}]},"더샵부평센트럴시티":{"sale":48300,"ratio":61,"jeonseCount":132,"wolseCount":833,"jeonseLo":14950,"jeonseMed":29400,"jeonseHi":38000,"wolseMedMonthly":42,"jeonseSamples":[{"ar":59.605,"floor":"4","deposit":14950,"ym":"2026.4"},{"ar":59.9295,"floor":"9","deposit":21000,"ym":"2025.10"},{"ar":59.9295,"floor":"4","deposit":21000,"ym":"2026.1"},{"ar":59.9295,"floor":"9","deposit":22000,"ym":"2025.10"},{"ar":59.9295,"floor":"26","deposit":22000,"ym":"2025.11"},{"ar":59.9295,"floor":"22","deposit":22000,"ym":"2025.11"}],"wolseSamples":[{"ar":59.8032,"floor":"33","deposit":20000,"monthly":35,"ym":"2025.10"},{"ar":59.5385,"floor":"9","deposit":13000,"monthly":36,"ym":"2026.1"},{"ar":59.8032,"floor":"7","deposit":13000,"monthly":36,"ym":"2025.12"},{"ar":59.8032,"floor":"2","deposit":13000,"monthly":36,"ym":"2026.4"},{"ar":59.5381,"floor":"4","deposit":13000,"monthly":36,"ym":"2025.11"},{"ar":59.8032,"floor":"4","deposit":13000,"monthly":37,"ym":"2026.3"}]},"부개주공3단지 (재건축)":{"sale":31300,"ratio":70,"jeonseCount":130,"wolseCount":61,"jeonseLo":15000,"jeonseMed":22050,"jeonseHi":29000,"wolseMedMonthly":80,"jeonseSamples":[{"ar":49.96,"floor":"16","deposit":15000,"ym":"2025.9"},{"ar":59.97,"floor":"17","deposit":16500,"ym":"2026.2"},{"ar":49.96,"floor":"9","deposit":16800,"ym":"2025.8"},{"ar":59.97,"floor":"7","deposit":17000,"ym":"2025.12"},{"ar":59.98,"floor":"5","deposit":17000,"ym":"2026.2"},{"ar":49.96,"floor":"11","deposit":17850,"ym":"2025.10"}],"wolseSamples":[{"ar":59.98,"floor":"2","deposit":18000,"monthly":3,"ym":"2025.12"},{"ar":59.98,"floor":"6","deposit":21000,"monthly":10,"ym":"2025.9"},{"ar":59.97,"floor":"20","deposit":18000,"monthly":20,"ym":"2025.8"},{"ar":59.99,"floor":"17","deposit":20000,"monthly":20,"ym":"2025.12"},{"ar":59.98,"floor":"7","deposit":17000,"monthly":25,"ym":"2025.8"},{"ar":59.56,"floor":"19","deposit":19000,"monthly":25,"ym":"2025.11"}]},"SK북한산시티":{"sale":70000,"ratio":63,"jeonseCount":54,"wolseCount":32,"jeonseLo":10000,"jeonseMed":44100,"jeonseHi":51000,"wolseMedMonthly":160,"jeonseSamples":[{"ar":84.71,"floor":"14","deposit":10000,"ym":"2026.1"},{"ar":84.92,"floor":"24","deposit":36460,"ym":"2025.10"},{"ar":84.76,"floor":"13","deposit":36700,"ym":"2025.8"},{"ar":84.71,"floor":"22","deposit":37000,"ym":"2025.9"},{"ar":84.71,"floor":"8","deposit":38800,"ym":"2025.8"},{"ar":84.76,"floor":"18","deposit":38850,"ym":"2025.8"}],"wolseSamples":[{"ar":84.76,"floor":"17","deposit":1000,"monthly":80,"ym":"2026.3"},{"ar":84.92,"floor":"13","deposit":20000,"monthly":83,"ym":"2025.10"},{"ar":84.76,"floor":"13","deposit":30000,"monthly":90,"ym":"2026.4"},{"ar":84.86,"floor":"21","deposit":20000,"monthly":90,"ym":"2025.10"},{"ar":84.76,"floor":"14","deposit":20000,"monthly":100,"ym":"2026.1"},{"ar":84.76,"floor":"8","deposit":10000,"monthly":120,"ym":"2026.2"}]},"구로두산":{"sale":64500,"ratio":62,"jeonseCount":14,"wolseCount":7,"jeonseLo":29400,"jeonseMed":40000,"jeonseHi":57000,"wolseMedMonthly":150,"jeonseSamples":[{"ar":84.96,"floor":"22","deposit":29400,"ym":"2026.2"},{"ar":84.96,"floor":"24","deposit":37000,"ym":"2025.8"},{"ar":84.9,"floor":"16","deposit":37500,"ym":"2026.2"},{"ar":84.9,"floor":"10","deposit":40000,"ym":"2026.2"},{"ar":82.73,"floor":"25","deposit":40000,"ym":"2026.1"},{"ar":84.9,"floor":"17","deposit":40000,"ym":"2025.8"}],"wolseSamples":[{"ar":84.9,"floor":"14","deposit":38000,"monthly":25,"ym":"2025.8"},{"ar":84.96,"floor":"3","deposit":10000,"monthly":110,"ym":"2025.9"},{"ar":84.96,"floor":"3","deposit":10000,"monthly":110,"ym":"2025.9"},{"ar":84.9,"floor":"3","deposit":5000,"monthly":150,"ym":"2026.1"},{"ar":84.9,"floor":"10","deposit":5000,"monthly":165,"ym":"2026.2"},{"ar":83.39,"floor":"8","deposit":5000,"monthly":190,"ym":"2026.1"}]},"신내데시앙":{"sale":71000,"ratio":59,"jeonseCount":81,"wolseCount":28,"jeonseLo":18949,"jeonseMed":42000,"jeonseHi":55000,"wolseMedMonthly":100,"jeonseSamples":[{"ar":84.3,"floor":"5","deposit":18949,"ym":"2026.3"},{"ar":84.81,"floor":"8","deposit":18949,"ym":"2026.3"},{"ar":84.99,"floor":"13","deposit":18949,"ym":"2026.3"},{"ar":84.99,"floor":"3","deposit":18949,"ym":"2026.3"},{"ar":84.81,"floor":"2","deposit":18949,"ym":"2026.3"},{"ar":84.99,"floor":"7","deposit":18949,"ym":"2026.3"}],"wolseSamples":[{"ar":84.68,"floor":"9","deposit":18416,"monthly":5,"ym":"2026.2"},{"ar":84.94,"floor":"11","deposit":39600,"monthly":7,"ym":"2025.12"},{"ar":84.94,"floor":"9","deposit":42000,"monthly":10,"ym":"2025.11"},{"ar":84.94,"floor":"6","deposit":42000,"monthly":23,"ym":"2025.9"},{"ar":84.65,"floor":"19","deposit":37000,"monthly":38,"ym":"2026.4"},{"ar":84.45,"floor":"8","deposit":40000,"monthly":50,"ym":"2026.1"}]},"관악산벽산타운5단지":{"sale":42700,"ratio":75,"jeonseCount":125,"wolseCount":59,"jeonseLo":22000,"jeonseMed":32000,"jeonseHi":48150,"wolseMedMonthly":100,"jeonseSamples":[{"ar":59.94,"floor":"15","deposit":22000,"ym":"2025.10"},{"ar":59.94,"floor":"17","deposit":23000,"ym":"2025.11"},{"ar":59.94,"floor":"17","deposit":23500,"ym":"2025.12"},{"ar":59.94,"floor":"10","deposit":23600,"ym":"2025.8"},{"ar":59.94,"floor":"13","deposit":25000,"ym":"2025.9"},{"ar":59.94,"floor":"9","deposit":25100,"ym":"2026.3"}],"wolseSamples":[{"ar":59.34,"floor":"12","deposit":27500,"monthly":10,"ym":"2025.11"},{"ar":84.97,"floor":"1","deposit":36000,"monthly":10,"ym":"2026.1"},{"ar":59.34,"floor":"14","deposit":28500,"monthly":10,"ym":"2026.3"},{"ar":59.34,"floor":"14","deposit":28500,"monthly":10,"ym":"2026.3"},{"ar":59.34,"floor":"6","deposit":23500,"monthly":14,"ym":"2026.2"},{"ar":59.34,"floor":"14","deposit":25200,"monthly":15,"ym":"2026.3"}]},"우성2차":{"sale":70000,"ratio":50,"jeonseCount":29,"wolseCount":11,"jeonseLo":25000,"jeonseMed":35000,"jeonseHi":43000,"wolseMedMonthly":120,"jeonseSamples":[{"ar":84.69,"floor":"4","deposit":25000,"ym":"2026.3"},{"ar":84.69,"floor":"1","deposit":26565,"ym":"2026.1"},{"ar":84.69,"floor":"5","deposit":28700,"ym":"2026.1"},{"ar":83.85,"floor":"2","deposit":30200,"ym":"2025.12"},{"ar":84.69,"floor":"1","deposit":30400,"ym":"2025.10"},{"ar":84.98,"floor":"4","deposit":30800,"ym":"2026.1"}],"wolseSamples":[{"ar":84.69,"floor":"7","deposit":25000,"monthly":65,"ym":"2026.3"},{"ar":84.98,"floor":"4","deposit":15000,"monthly":80,"ym":"2025.12"},{"ar":84.69,"floor":"5","deposit":15000,"monthly":80,"ym":"2025.12"},{"ar":84.98,"floor":"7","deposit":10000,"monthly":100,"ym":"2025.9"},{"ar":84.98,"floor":"9","deposit":7000,"monthly":120,"ym":"2025.11"},{"ar":84.98,"floor":"13","deposit":10000,"monthly":120,"ym":"2025.8"}]}};
+const FLOOR_PLANS={"강동역두산위브센티움":{"src":"네이버 부동산·경매물건·실거래 (2026-06 WebSearch) · 평면 모식도는 면적·방/욕실 기반 도식(실제 평면도 아님)","note":"아파트는 전용 60㎡ 단일(주상복합 타워형). 전용 39㎡는 동일 동 오피스텔 라인.","types":[{"type":"60","exclusiveM2":59.96,"supplyM2":88.83,"pyeong":27,"rooms":3,"baths":1,"structure":"주상복합 타워형","facing":"남향","imageUrl":null},{"type":"39(오피스텔)","exclusiveM2":39,"supplyM2":81,"pyeong":24,"rooms":1,"baths":1,"structure":"주상복합 오피스텔","facing":null,"imageUrl":null}]},"중앙하이츠 (상일동)":{"src":"오늘의집·aptrank·실거래 (2026-06 WebSearch) · 정식명 명일중앙하이츠(상일동 476, 1992, 410세대)","note":"전용 약 59㎡(24평형)·84㎡(30평형) 위주.","types":[{"type":"59","exclusiveM2":59,"supplyM2":null,"pyeong":24,"rooms":3,"baths":1,"structure":"계단식","facing":null,"imageUrl":null},{"type":"84","exclusiveM2":84.2,"supplyM2":100.5,"pyeong":30,"rooms":3,"baths":2,"structure":"계단식","facing":null,"imageUrl":null}]},"둔촌 현대3 (9호선)":{"src":"네이버 블로그·경매 (2026-06 WebSearch) · 1988년 160여 세대, 수직증축 리모델링 추진","note":"소규모 구축. 대표 26평형(방3/욕1), 복도식·계단식 혼재.","types":[{"type":"58","exclusiveM2":58,"supplyM2":null,"pyeong":26,"rooms":3,"baths":1,"structure":"복도식·계단식 혼재","facing":null,"imageUrl":null},{"type":"69","exclusiveM2":69,"supplyM2":null,"pyeong":30,"rooms":3,"baths":2,"structure":"계단식","facing":null,"imageUrl":null}]},"힐스테이트부평":{"src":"네이버 부동산·블로그 (2026-06 WebSearch) · 십정동 백운역, 2023.06 입주, 1,409세대 신축","note":"전용 46/59A·59B/75/84 라인업.","types":[{"type":"46","exclusiveM2":46,"supplyM2":null,"pyeong":17,"rooms":2,"baths":1,"structure":"계단식","facing":null,"imageUrl":null},{"type":"59A","exclusiveM2":59,"supplyM2":null,"pyeong":25,"rooms":3,"baths":2,"structure":"계단식","facing":null,"imageUrl":null},{"type":"59B","exclusiveM2":59,"supplyM2":null,"pyeong":25,"rooms":3,"baths":2,"structure":"계단식","facing":null,"imageUrl":null},{"type":"75","exclusiveM2":75,"supplyM2":null,"pyeong":29,"rooms":3,"baths":2,"structure":"계단식","facing":null,"imageUrl":null},{"type":"84","exclusiveM2":84,"supplyM2":null,"pyeong":33,"rooms":3,"baths":2,"structure":"계단식","facing":null,"imageUrl":null}]},"더샵부평센트럴시티":{"src":"네이버 블로그 (2026-06 WebSearch) · 부평구 대단지","note":"평형 11/21/26/30/34/35평 다양(소형~중형). 대표 59·84.","types":[{"type":"59","exclusiveM2":59,"supplyM2":null,"pyeong":26,"rooms":3,"baths":1,"structure":"계단식","facing":null,"imageUrl":null},{"type":"84","exclusiveM2":84,"supplyM2":null,"pyeong":34,"rooms":3,"baths":2,"structure":"계단식","facing":null,"imageUrl":null}]},"부개주공3단지 (재건축)":{"src":"네이버 블로그 (2026-06 WebSearch) · 부개동 1,724세대, 7호선 삼산체육관역, 재건축 추진","note":"전용 49.96㎡(21평·방2/욕1), 84(34평·방3/욕2 계단식).","types":[{"type":"49(21평)","exclusiveM2":49.96,"supplyM2":null,"pyeong":21,"rooms":2,"baths":1,"structure":"계단식","facing":null,"imageUrl":null},{"type":"84(34평)","exclusiveM2":84,"supplyM2":null,"pyeong":34,"rooms":3,"baths":2,"structure":"계단식 맞통풍","facing":null,"imageUrl":null}]},"SK북한산시티":{"src":"네이버 블로그·경매 (2026-06 WebSearch) · 강북구 미아동 대단지","note":"국민평형 84㎡(33평) 중심 + 대형 114㎡.","types":[{"type":"59","exclusiveM2":59,"supplyM2":null,"pyeong":25,"rooms":3,"baths":1,"structure":"계단식","facing":null,"imageUrl":null},{"type":"84","exclusiveM2":84.97,"supplyM2":null,"pyeong":33,"rooms":3,"baths":2,"structure":"계단식","facing":null,"imageUrl":null},{"type":"114","exclusiveM2":114.88,"supplyM2":145.94,"pyeong":44,"rooms":4,"baths":2,"structure":"계단식","facing":"남향","imageUrl":null}]},"구로두산":{"src":"네이버 블로그 (2026-06 WebSearch) · 구로동 1265(도림로 59), 1998년, 7호선 남구로역","note":"공급 66/75/83/108㎡ 라인. 20평형 전용 44.64㎡.","types":[{"type":"59","exclusiveM2":44.64,"supplyM2":66.66,"pyeong":20,"rooms":2,"baths":1,"structure":"계단식","facing":null,"imageUrl":null},{"type":"84","exclusiveM2":84.9,"supplyM2":null,"pyeong":32,"rooms":3,"baths":2,"structure":"계단식","facing":null,"imageUrl":null}]},"신내데시앙":{"src":"네이버 블로그 (2026-06 WebSearch) · 중랑구 신내동 (※ 신내데시앙포레와 별개 단지)","note":"32평형 전용 84.9㎡ 판상형 맞통풍 + 소형(60㎡ 이하).","types":[{"type":"59","exclusiveM2":59,"supplyM2":null,"pyeong":25,"rooms":3,"baths":1,"structure":"판상형","facing":null,"imageUrl":null},{"type":"84","exclusiveM2":84.9,"supplyM2":null,"pyeong":32,"rooms":3,"baths":2,"structure":"판상형 맞통풍","facing":"남향","imageUrl":null}]},"관악산벽산타운5단지":{"src":"네이버 블로그 (2026-06 WebSearch) · 실제 소재 서울 금천구 시흥동(금하로 816, 2004년)","note":"23평(59㎡)/30평(99㎡)/39평(114.8㎡) 3개 평형.","types":[{"type":"59(23평)","exclusiveM2":59,"supplyM2":null,"pyeong":23,"rooms":3,"baths":1,"structure":"계단식","facing":null,"imageUrl":null},{"type":"99(30평)","exclusiveM2":99,"supplyM2":null,"pyeong":30,"rooms":3,"baths":2,"structure":"계단식","facing":null,"imageUrl":null},{"type":"114(39평)","exclusiveM2":114.8,"supplyM2":null,"pyeong":39,"rooms":4,"baths":2,"structure":"계단식","facing":null,"imageUrl":null}]},"우성2차":{"src":"WebSearch (2026-06) · ⚠️ 노원/도봉 소재 동명 단지 미특정 — 면적·타입 미확인","note":"검색상 '우성2차'는 강남 개포우성2차·인천 옥련동 우성2차로만 매칭되어 본 단지 평면 데이터 미확보. 정확도 위해 임의 기재하지 않음.","types":[]}};
+/*__LOOKUPS_END__*/
 let properties = PROPS_GANGDONG;
 
 PROPS_GANGDONG[0].phaseHistory = [];
@@ -3679,6 +3836,309 @@ function buildHistorySvg(history) {
   `;
 }
 
+
+// ====================================
+// ====================================
+// SECTION 04B 학군 정보 — 서브탭 렌더
+// ====================================
+function sdTab(el, key){
+  const sec = el.closest('.rsection'); if(!sec) return;
+  sec.querySelectorAll('.sd-tab').forEach(t=>t.classList.remove('on'));
+  el.classList.add('on');
+  sec.querySelectorAll('.sd-panel').forEach(pn=>pn.classList.toggle('on', pn.getAttribute('data-sd')===key));
+}
+function buildSchoolDistrict(p){
+  const s = p.schoolDistrict || (typeof SCHOOL_DISTRICT!=='undefined' && SCHOOL_DISTRICT && SCHOOL_DISTRICT[p.name]) || null;
+  if(!s) return '';
+  const pct = v => (v==null ? '<span class="sd-na">미제공</span>' : '서울 상위 '+v+'%');
+  // ── 상단 학군등급 높은 학교 카드 (초/중/고)
+  const card = (c, ic, kndLabel) => {
+    if(!c) return `<div class="sd-card empty"><div class="sd-ic" style="filter:grayscale(1)">🏫</div><div class="sd-knd">${kndLabel}</div><div class="sd-nm" style="color:var(--ink-faint)">가까운 학교 정보 없음</div></div>`;
+    const badge = c.grade ? `<div class="sd-badge">${escD(c.grade)}</div>`
+      : (c.seoulPct!=null ? `<div class="sd-badge">서울 상위 ${c.seoulPct}%</div>` : (c.classSize!=null ? `<div class="sd-badge">학급당 ${c.classSize}명</div>` : ''));
+    return `<div class="sd-card"><div class="sd-ic">${ic}</div><div class="sd-knd">${kndLabel}</div>
+      <div class="sd-nm">${escD(c.name)}</div>${badge}<div class="sd-dist">${escD(c.dist||'')}${c.found?' · '+escD(c.found):''}</div></div>`;
+  };
+  const cards = `<div class="sd-cards">${card(s.topCards&&s.topCards.elem,'🏫','초등학교')}${card(s.topCards&&s.topCards.mid,'🎒','중학교')}${card(s.topCards&&s.topCards.high,'🎓','고등학교')}</div>`;
+
+  // ── 탭1: 주변 중학교 (특목·자사고 진학률)
+  const chip = (cls,lab,v) => v==null ? '' : `<span class="sd-chip ${cls}">${lab} ${v}%</span>`;
+  const midRows = (s.nearbyMiddle||[]).map(m=>{
+    const adv = (m.jasago==null && m.science==null && m.foreign==null)
+      ? `<span class="sd-na">${escD(m.note||'진학 집계 미제공')}</span>`
+      : (chip('js','자사고',m.jasago)+chip('sci','과학고',m.science)+chip('fl','외고',m.foreign));
+    const grade = m.grade ? `<span class="sd-grade">${escD(m.grade)}</span>` : (m.seoulPct!=null?`<span class="sd-grade">서울 ${m.seoulPct}%</span>`:'<span class="sd-na">—</span>');
+    return `<tr><td><div class="nm">${escD(m.name)}</div><div class="sub">${escD(m.type||'')}${m.dist?' · '+escD(m.dist):''}</div></td>
+      <td>${adv}</td><td style="text-align:center">${grade}</td></tr>`;
+  }).join('');
+  const guAvg = (s.guAvgJasago!=null) ? `<div class="sd-note">📊 ${escD(s.region||'해당 구')} 평균 특목·자사고 진학률 <strong>${s.guAvgJasago}%</strong>${s.guMidCount?` · 구 내 중학교 ${s.guMidCount}곳`:''} (아파트미·오늘학교 집계). 진학률은 해당 학년 졸업생 기준, 연도별 변동.</div>` : '';
+  const midPanel = `<div class="sd-panel on" data-sd="mid">
+    <div class="sd-sub-h">🎒 주변 중학교 — 특목·자사고 진학률</div>
+    <table class="sd-tbl"><thead><tr><th>중학교</th><th>특목·자사고 진학률</th><th style="text-align:center">학군등급</th></tr></thead><tbody>${midRows||'<tr><td colspan="3" class="sd-na">데이터 준비 중</td></tr>'}</tbody></table>
+    ${guAvg}</div>`;
+
+  // ── 탭2: 기본정보 (학교알리미 실데이터)
+  const b = s.basic;
+  let basicPanel = '<div class="sd-panel" data-sd="basic"><div class="sd-na">기본정보 데이터 준비 중</div></div>';
+  if(b){
+    const cmpCard = c => {
+      const max = Math.max(c.school||0, c.gu||0)*1.15 || 1;
+      const bar = (cls,lab,val) => val==null ? '' : `<div class="sd-bar ${cls}"><span class="lab">${lab}</span><span class="track"><span class="fill" style="width:${Math.min(100,Math.round(val/max*100))}%"></span></span><span class="num">${val}${c.unit||''}</span></div>`;
+      return `<div class="sd-cmp-card"><div class="sd-cmp-lab">${escD(c.label)}</div><div class="sd-cmp-val">${c.school}<small>${c.unit||''}</small></div>
+        ${bar('me','학교',c.school)}${bar('gu','구평균',c.gu)}</div>`;
+    };
+    const cmps = (b.compare||[]).map(cmpCard).join('');
+    const gmax = Math.max(...(b.byGrade||[{n:1}]).map(g=>g.n));
+    const gbars = (b.byGrade||[]).map(g=>`<div class="sd-gb"><div class="c">${g.n}</div><div class="b" style="height:${Math.round(g.n/gmax*100)}%"></div><div class="n">${escD(g.g)}학년</div></div>`).join('');
+    const kv = (k,v)=> v==null?'':`<div class="row"><span class="k">${k}</span><span class="v">${v}</span></div>`;
+    basicPanel = `<div class="sd-panel" data-sd="basic">
+      <div class="sd-sub-h">🏫 ${escD(b.schoolName)} <span style="color:var(--ink-faint);font-weight:600;font-size:10px">${escD(b.estLabel||'')}</span></div>
+      <div class="sd-cmp">${cmps}</div>
+      ${gbars?`<div class="sd-cmp-lab" style="margin-bottom:0">학년별 학생 수 (명)</div><div class="sd-grade-bars">${gbars}</div>`:''}
+      <div class="sd-kv" style="margin-top:14px">
+        ${kv('설립구분', escD(b.foundation)+(b.foundType?' · '+escD(b.foundType):''))}
+        ${kv('설립/개교', escD(b.foundDate))}
+        ${kv('학생 수', b.students!=null?b.students+'명':null)}
+        ${kv('학급 수', b.classes!=null?b.classes+'학급'+(b.special?' ('+escD(b.special)+')':''):null)}
+        ${kv('교사 수', b.teachers!=null?b.teachers+'명':null)}
+        ${kv('공학구분', escD(b.coedu))}
+        ${kv('방과후 프로그램', b.afterschool!=null?b.afterschool+'개'+(b.afterschoolDetail?' ('+escD(b.afterschoolDetail)+')':''):null)}
+        ${kv('급식 운영', escD(b.meal)+(b.mealStaff?' · '+escD(b.mealStaff):''))}
+        ${kv('주소', escD(b.address))}
+        ${kv('대표번호', escD(b.tel))}
+      </div></div>`;
+  }
+
+  // ── 탭3: 학원가
+  const a = s.academy;
+  let acaPanel = '<div class="sd-panel" data-sd="aca"><div class="sd-na">학원가 데이터 준비 중</div></div>';
+  if(a){
+    const rows = (a.list||[]).map(x=>`<tr><td class="nm">${escD(x.name)}</td><td><span class="sd-chip js">${escD(x.type)}</span></td><td>${x.area?escD(x.area):''}</td><td style="text-align:right">${x.students!=null?x.students+'명':'<span class="sd-na">미공시</span>'}</td></tr>`).join('');
+    acaPanel = `<div class="sd-panel" data-sd="aca">
+      <div class="sd-sub-h">📚 인근 학원가</div>
+      <table class="sd-tbl"><thead><tr><th>학원명</th><th>구분</th><th>지역</th><th style="text-align:right">학생수</th></tr></thead><tbody>${rows||'<tr><td colspan="4" class="sd-na">데이터 준비 중</td></tr>'}</tbody></table>
+      ${a.note?`<div class="sd-note">${escD(a.note)}</div>`:''}</div>`;
+  }
+
+  return `<div class="rsection">
+    <div class="rsection-num">SECTION 04B</div>
+    <h2 class="rsection-title">학군 정보 <span class="agent-tag auto">학교알리미 + 학군 조사</span></h2>
+    <p class="rsection-deck">인근 학교 학군등급·특목/자사고 진학률·기본 여건·학원가. <strong>학교알리미 공시(실데이터)</strong> + 진학률·학군등급은 리치고·아파트미·오늘학교 조사 보완.</p>
+    <div style="font-size:11px;color:#D4A574;font-weight:700;letter-spacing:.06em;margin-bottom:8px;">🏫 학군등급 높은 학교</div>
+    ${cards}
+    <div class="sd-tabs">
+      <div class="sd-tab on" onclick="sdTab(this,'mid')">주변 중학교</div>
+      <div class="sd-tab" onclick="sdTab(this,'basic')">기본정보</div>
+      <div class="sd-tab" onclick="sdTab(this,'aca')">학원가</div>
+    </div>
+    ${midPanel}${basicPanel}${acaPanel}
+    <div class="sd-src">출처: ${escD(s.src||'학교알리미 OpenAPI')} · ⚠️ 시·구 단위 매칭이며 정확 배정은 학구도 별도 확인. 진학률·학군등급·학원가 학생수는 공시 외 민간 집계로 연도·기준에 따라 차이.</div>
+  </div>`;
+}
+
+// ====================================
+// SECTION 05B 전·월세 & 전세가율
+// ====================================
+function rentOf(p){ return (p && p.rent) || (typeof RENT_DATA!=='undefined' && RENT_DATA && RENT_DATA[p.name]) || null; }
+function buildRentSection(p){
+  const r = rentOf(p); if(!r) return '';
+  const eok = m => (m==null?'—':(m/10000).toFixed(2)+'억');
+  const ratio = r.ratio;
+  const rc = ratio==null?'#6E7681':ratio>=70?'#3FB950':ratio>=60?'#D4A574':ratio>=50?'#E8833A':'#F85149';
+  const interp = ratio==null?'전세 표본 부족 — 전세가율 산출 보류':
+    ratio>=70?'실거주 수요가 가격을 강하게 떠받침 — <strong>하방 방어력 우수·갭 부담 최소</strong>':
+    ratio>=60?'실수요 지지 양호 — 하방 방어 보통·갭 적정':
+    ratio>=50?'기대수익 일부 선반영 — 갭 부담·변동성 유의':
+    '재건축·개발 기대가 매매가에 크게 선반영 — <strong>실거주가치 대비 고평가</strong>, 갭·하락 변동성 큼';
+  const jr = (r.jeonseSamples||[]).map(d=>`<tr><td>${d.ar}㎡</td><td>${escD(d.floor)}층</td><td>${eok(d.deposit)}</td><td>${escD(d.ym)}</td></tr>`).join('');
+  const wr = (r.wolseSamples||[]).map(d=>`<tr><td>${d.ar}㎡</td><td>${escD(d.floor)}층</td><td>${eok(d.deposit)}/${d.monthly}만</td><td>${escD(d.ym)}</td></tr>`).join('');
+  const gap = (r.sale!=null && r.jeonseMed!=null)? (r.sale - r.jeonseMed):null;
+  return `<div class="rsection">
+    <div class="rsection-num">SECTION 05B</div>
+    <h2 class="rsection-title">전·월세 & 전세가율 <span class="agent-tag auto">국토부 전월세 실거래</span></h2>
+    <p class="rsection-deck">최근 9개월 전·월세 실거래로 산출한 매매 대비 전세가율(=실거주 가치·하방지지력). 전세가율↑ = 갭↓·하방 방어력↑.</p>
+    <div class="rt-top">
+      <div class="rt-gauge">
+        <div class="lab">전세가율 (전세중앙값 ÷ 매매)</div>
+        <div class="big" style="color:${rc}">${ratio!=null?ratio+'%':'—'}</div>
+        <div class="ring"><i style="width:${Math.min(100,ratio||0)}%;background:${rc}"></i></div>
+        <div class="sub">전세 ${eok(r.jeonseMed)} · 매매 ${eok(r.sale)}</div>
+      </div>
+      <div>
+        <div class="rt-stats">
+          <div class="rt-stat"><div class="k">매매 기준가</div><div class="v">${eok(r.sale)}</div><div class="d">최근 실거래</div></div>
+          <div class="rt-stat"><div class="k">전세 중앙값</div><div class="v">${eok(r.jeonseMed)}</div><div class="d">${eok(r.jeonseLo)}~${eok(r.jeonseHi)} · ${r.jeonseCount||0}건</div></div>
+          <div class="rt-stat"><div class="k">매매-전세 갭</div><div class="v">${eok(gap)}</div><div class="d">월세 ${r.wolseCount||0}건${r.wolseMedMonthly?' · 중앙 '+r.wolseMedMonthly+'만/월':''}</div></div>
+        </div>
+        <div class="sd-note" style="border-left-color:${rc}">${interp}</div>
+      </div>
+    </div>
+    <div class="chart-wrap">
+      <div class="chart-title">후보 단지 전세가율 비교 <span class="meta">국토부 전월세 실거래 · 본 단지 강조</span></div>
+      <div class="chart-canvas-wrap" style="height:220px"><canvas id="jeonseChart"></canvas></div>
+    </div>
+    <div class="rt-grid2">
+      <div><div class="sd-sub-h" style="color:#58A6FF">전세 실거래 (낮은가격순)</div><table class="sd-tbl"><thead><tr><th>전용</th><th>층</th><th>보증금</th><th>시점</th></tr></thead><tbody>${jr||'<tr><td colspan="4" class="sd-na">표본 없음</td></tr>'}</tbody></table></div>
+      <div><div class="sd-sub-h" style="color:#58A6FF">월세 실거래 (보증/월)</div><table class="sd-tbl"><thead><tr><th>전용</th><th>층</th><th>보증/월</th><th>시점</th></tr></thead><tbody>${wr||'<tr><td colspan="4" class="sd-na">표본 없음</td></tr>'}</tbody></table></div>
+    </div>
+    <div class="sd-src">출처: 국토부 아파트 전월세 실거래가(RTMSDataSvcAptRent) 최근 9개월 · 전세가율 = 전세 중앙값 ÷ 매매 기준가. 면적·표본에 따라 실제와 차이 가능.</div>
+  </div>`;
+}
+
+// ====================================
+// 단위세대 평면 (타입별 카드 + 구조 모식도)
+// ====================================
+function floorOf(p){ return (typeof FLOOR_PLANS!=='undefined' && FLOOR_PLANS && FLOOR_PLANS[p.name]) || null; }
+function fpTab(el,i){ const sec=el.closest('.rsection'); if(!sec) return; sec.querySelectorAll('.fp-tab').forEach(t=>t.classList.remove('on')); el.classList.add('on'); sec.querySelectorAll('.fp-card').forEach(c=>c.classList.toggle('on', +c.getAttribute('data-fp')===i)); }
+function drawFloorSchematic(rooms,baths,m2){
+  rooms = rooms||(m2>=100?4:m2>=45?3:2); baths = baths||(m2>=75?2:1);
+  rooms=Math.max(1,Math.min(5,rooms)); baths=Math.max(1,Math.min(3,baths));
+  const W=260,H=196,pad=7, wall='#39424f', fill='#0d1117', cell='#1a2330', txt='#8b95a3';
+  let s=`<svg viewBox="0 0 ${W} ${H}" width="100%" preserveAspectRatio="xMidYMid meet">`;
+  s+=`<rect x="${pad}" y="${pad}" width="${W-2*pad}" height="${H-2*pad}" fill="${fill}" stroke="${wall}" stroke-width="2"/>`;
+  const ix=pad, iw=W-2*pad, topY=pad+8, topH=74, bw=iw/rooms;
+  s+=`<rect x="${pad}" y="${pad}" width="${iw}" height="8" fill="#0a0e13" stroke="${wall}" stroke-width="0.5"/>`;
+  for(let i=0;i<rooms;i++){ const x=ix+i*bw;
+    s+=`<rect x="${x}" y="${topY}" width="${bw}" height="${topH}" fill="${cell}" stroke="${wall}" stroke-width="1"/>`;
+    s+=`<text x="${x+bw/2}" y="${topY+topH/2}" fill="${txt}" font-size="9" text-anchor="middle" dominant-baseline="middle">${i===0?'안방':'침실'+i}</text>`; }
+  const botY=topY+topH, botH=(H-pad)-botY, livW=iw*0.6;
+  s+=`<rect x="${ix}" y="${botY}" width="${livW}" height="${botH}" fill="${cell}" stroke="${wall}" stroke-width="1"/>`;
+  s+=`<text x="${ix+livW/2}" y="${botY+botH/2}" fill="${txt}" font-size="10" text-anchor="middle" dominant-baseline="middle">거실 · 주방 (LDK)</text>`;
+  const rx=ix+livW, rw=iw-livW, cells=baths+1, ch=botH/cells;
+  for(let i=0;i<baths;i++){ s+=`<rect x="${rx}" y="${botY+i*ch}" width="${rw}" height="${ch}" fill="${fill}" stroke="${wall}" stroke-width="1"/>`;
+    s+=`<text x="${rx+rw/2}" y="${botY+i*ch+ch/2}" fill="${txt}" font-size="8.5" text-anchor="middle" dominant-baseline="middle">욕실${baths>1?i+1:''}</text>`; }
+  s+=`<rect x="${rx}" y="${botY+baths*ch}" width="${rw}" height="${ch}" fill="${fill}" stroke="${wall}" stroke-width="1"/>`;
+  s+=`<text x="${rx+rw/2}" y="${botY+baths*ch+ch/2}" fill="${txt}" font-size="8.5" text-anchor="middle" dominant-baseline="middle">현관</text>`;
+  s+=`</svg>`; return s;
+}
+function buildFloorPlans(p){
+  const f = floorOf(p); if(!f) return '';
+  if(!f.types || !f.types.length){
+    return `<div class="rsection"><div class="rsection-num">단위세대</div>
+      <h2 class="rsection-title">단위세대 평면 <span class="agent-tag auto">타입별 면적·구조</span></h2>
+      <p class="rsection-deck">${escD(f.note||'평면 데이터 미확보')}</p>
+      <div class="sd-src">출처: ${escD(f.src||'')}</div></div>`;
+  }
+  const tabs = f.types.map((t,i)=>`<div class="fp-tab ${i===0?'on':''}" onclick="fpTab(this,${i})">${escD(t.type)}㎡</div>`).join('');
+  const row=(k,v)=> v==null||v===''?'':`<div class="row"><span class="k">${k}</span><span class="v">${escD(v)}</span></div>`;
+  const cards = f.types.map((t,i)=>{
+    const plan = t.imageUrl ? `<img src="${escD(t.imageUrl)}" alt="${escD(t.type)} 평면도" loading="lazy">` : drawFloorSchematic(t.rooms,t.baths,t.exclusiveM2);
+    return `<div class="fp-card ${i===0?'on':''}" data-fp="${i}">
+      <div class="fp-plan">${plan}</div>
+      <div class="fp-meta">
+        <div class="t">전용 ${escD(t.type)}㎡ ${t.pyeong?`<span style="font-size:11px;color:var(--ink-faint)">(${t.pyeong}평형)</span>`:''}</div>
+        <div class="ty">${escD(t.structure||'구조 정보 미확보')}${t.facing?' · '+escD(t.facing):''}</div>
+        <div class="fp-spec">
+          ${row('전용면적', t.exclusiveM2!=null?t.exclusiveM2+'㎡':null)}
+          ${row('공급면적', t.supplyM2!=null?t.supplyM2+'㎡':null)}
+          ${row('방', t.rooms!=null?t.rooms+'개':null)}
+          ${row('욕실', t.baths!=null?t.baths+'개':null)}
+          ${row('구조', t.structure)}
+          ${row('향', t.facing)}
+        </div>
+        ${t.imageUrl?'':'<div class="fp-disclaim">※ 위 그림은 전용면적·방/욕실 기반 구조 모식도이며 실제 평면도가 아닙니다(실측 평면은 단지 모집공고·네이버 부동산 확인).</div>'}
+      </div></div>`;
+  }).join('');
+  return `<div class="rsection">
+    <div class="rsection-num">단위세대</div>
+    <h2 class="rsection-title">단위세대 평면 <span class="agent-tag auto">타입별 면적·구조</span></h2>
+    <p class="rsection-deck">${escD(f.note||'')}</p>
+    <div class="fp-tabs">${tabs}</div>
+    ${cards}
+    <div class="sd-src">출처: ${escD(f.src||'')}</div>
+  </div>`;
+}
+
+// ====================================
+// 보유세 (재산세·종합부동산세) 산출기
+// ====================================
+function txParseEok(s){ if(s==null) return null; const m=String(s).match(/([0-9]+(\.[0-9]+)?)/); return m?parseFloat(m[1]):null; }
+let txHoldCount = 1;
+function txSeg(b){ b.parentNode.querySelectorAll('button').forEach(x=>x.classList.remove('on')); b.classList.add('on'); txHoldCount=+b.getAttribute('data-n'); computeTax(); }
+function txBrackets(base, br){ for(const b of br){ if(base<=b.upto) return base*b.rate - b.deduct; } const l=br[br.length-1]; return base*l.rate - l.deduct; }
+function computeTax(){
+  const gEl=document.getElementById('txGongsi'); if(!gEl) return;
+  const eok=1e8;
+  const gongsi=(parseFloat(gEl.value)||0)*eok;
+  const otherEl=document.getElementById('txOther'); const other=(otherEl?parseFloat(otherEl.value)||0:0)*eok;
+  const count=txHoldCount;
+  const elderEl=document.getElementById('txElder'); const elder=(elderEl?elderEl.checked:false) && count===1;
+  // 재산세 (이 집 단독)
+  const propBase=gongsi*0.6;
+  const single = count===1 && gongsi<=9*eok;
+  const rBr = single
+    ? [{upto:0.6*eok,rate:0.0005,deduct:0},{upto:1.5*eok,rate:0.001,deduct:30000},{upto:3*eok,rate:0.002,deduct:180000},{upto:Infinity,rate:0.0035,deduct:630000}]
+    : [{upto:0.6*eok,rate:0.001,deduct:0},{upto:1.5*eok,rate:0.0015,deduct:30000},{upto:3*eok,rate:0.0025,deduct:180000},{upto:Infinity,rate:0.004,deduct:630000}];
+  const propMain=Math.max(0,txBrackets(propBase,rBr));
+  const propCity=propBase*0.0014;
+  const propEdu=propMain*0.2;
+  const propTotal=propMain+propCity+propEdu;
+  // 종부세
+  const totalGongsi = count===1?gongsi:(gongsi+other);
+  const deduct=(count===1?12:9)*eok;
+  const cBase=Math.max(0,(totalGongsi-deduct))*0.6;
+  const heavy=count>=3;
+  const cBr = heavy
+    ? [{upto:3*eok,rate:0.005,deduct:0},{upto:6*eok,rate:0.007,deduct:600000},{upto:12*eok,rate:0.01,deduct:2400000},{upto:25*eok,rate:0.02,deduct:14400000},{upto:50*eok,rate:0.03,deduct:39400000},{upto:94*eok,rate:0.04,deduct:89400000},{upto:Infinity,rate:0.05,deduct:183400000}]
+    : [{upto:3*eok,rate:0.005,deduct:0},{upto:6*eok,rate:0.007,deduct:600000},{upto:12*eok,rate:0.01,deduct:2400000},{upto:25*eok,rate:0.013,deduct:6000000},{upto:50*eok,rate:0.015,deduct:11000000},{upto:94*eok,rate:0.02,deduct:36000000},{upto:Infinity,rate:0.027,deduct:101800000}];
+  let compMain = cBase>0?Math.max(0,txBrackets(cBase,cBr)):0;
+  if(elder) compMain*=0.6;
+  const compFarm=compMain*0.2;
+  const compTotal=compMain+compFarm;
+  const total=propTotal+compTotal;
+  const f=v=> (v==null||isNaN(v))?'—':(v>=10000? (Math.round(v/10000)).toLocaleString()+'만원' : Math.round(v).toLocaleString()+'원');
+  const setT=(id,html)=>{ const el=document.getElementById(id); if(el) el.innerHTML=html; };
+  setT('txProp',f(propTotal));
+  setT('txCompre', compTotal>0?f(compTotal):'<span style="font-size:14px;color:#3FB950">비과세</span>');
+  setT('txTotal',f(total));
+  const rows=[
+    ['재산세 과세표준 (공시 × 60%)',f(propBase)],
+    ['　재산세 본세'+(single?' (1주택 특례세율)':''),f(propMain)],
+    ['　도시지역분 (과표 × 0.14%)',f(propCity)],
+    ['　지방교육세 (본세 × 20%)',f(propEdu)],
+    ['종부세 기본공제',f(deduct)+' ('+(count===1?'1주택':'다주택')+')'],
+    ['종부세 과세표준 ((공시합−공제)×60%)',f(cBase)],
+    ['　종부세 산출세액'+(elder?' (1주택 세액공제 40%)':'')+(heavy?' (3주택+ 중과)':''),f(compMain)],
+    ['　농어촌특별세 (종부세 × 20%)',f(compFarm)],
+  ];
+  let html=rows.map(r=>`<tr><td>${r[0]}</td><td class="r">${r[1]}</td></tr>`).join('');
+  html+=`<tr class="sum"><td>연간 보유세 합계 (월 환산 ${f(total/12)})</td><td class="r">${f(total)}</td></tr>`;
+  setT('txBreak',html);
+}
+function buildTaxSection(p){
+  const maemaeEok = txParseEok(p.propertyPrice)||txParseEok(p.lastDeal);
+  if(maemaeEok==null) return '';
+  const gongsiEok = Math.round(maemaeEok*0.69*100)/100;
+  return `<div class="rsection">
+    <div class="rsection-num">보유세</div>
+    <h2 class="rsection-title">재산세·종합부동산세 산출 <span class="agent-tag human">2026 세법 간이계산</span></h2>
+    <p class="rsection-deck">공시가격·보유 주택 수에 따른 연간 보유세(재산세 + 종부세) 예상. 값을 바꾸면 즉시 재계산됩니다.</p>
+    <div class="tx-ctrl">
+      <div>
+        <div class="tx-field"><label>이 집 공시가격 (억원) — 추정 ${gongsiEok}억 (매매가 × 69% 현실화율)</label>
+          <input type="number" id="txGongsi" value="${gongsiEok}" step="0.1" min="0" oninput="computeTax()"></div>
+        <div class="tx-field"><label>(다주택 시) 보유 중 타 주택 공시가격 합 (억원)</label>
+          <input type="number" id="txOther" value="0" step="0.1" min="0" oninput="computeTax()"></div>
+      </div>
+      <div>
+        <div class="tx-field"><label>보유 주택 수 (이 집 포함)</label>
+          <div class="tx-seg" id="txCount">
+            <button class="on" data-n="1" onclick="txSeg(this)">1주택</button>
+            <button data-n="2" onclick="txSeg(this)">2주택</button>
+            <button data-n="3" onclick="txSeg(this)">3주택+</button>
+          </div></div>
+        <label class="tx-chk"><input type="checkbox" id="txElder" onchange="computeTax()"> 1세대1주택 + 만 60세↑ 또는 보유 5년↑ (세액공제)</label>
+      </div>
+    </div>
+    <div class="tx-out">
+      <div class="tx-card"><div class="k">재산세 (+도시·교육)</div><div class="v" id="txProp">—</div></div>
+      <div class="tx-card"><div class="k">종합부동산세 (+농특)</div><div class="v" id="txCompre">—</div></div>
+      <div class="tx-card total"><div class="k">연간 보유세 합계</div><div class="v" id="txTotal">—</div></div>
+    </div>
+    <table class="tx-bd" id="txBreak"></table>
+    <div class="sd-src">⚠️ <strong>간이 추정</strong>(2026 세법): 재산세 공정시장가액 60%·1주택 공시 9억↓ 특례세율 / 종부세 기본공제 1주택 12억·다주택 9억, 공정시장가액 60%, 농특세 20%, 3주택+ 과표 12억 초과 중과. 세부담상한·재산세 중복분 공제·고령/장기 세액공제 세분화는 단순화. 정확액은 위택스·홈택스 또는 세무사 확인.</div>
+  </div>`;
+}
 
 // ====================================
 // REPORT HTML TEMPLATE
@@ -3952,6 +4412,8 @@ function reportHTML(p) {
     </div>` : ''}
   </div>
 
+  ${buildSchoolDistrict(p)}
+
   <div class="rsection">
     <div class="rsection-num">SECTION 05</div>
     <h2 class="rsection-title">시세 분석 <span class="agent-tag auto">국토부 + KB</span></h2>
@@ -4011,6 +4473,12 @@ function reportHTML(p) {
       <div style="font-size:10px;color:var(--ink-faint);margin-top:8px;letter-spacing:0.04em;">출처: KOSIS 통계청 · 국토교통부 미분양주택현황보고 (DT_MLTM_2082)</div>
     </div>` : ''}
   </div>
+
+  ${buildRentSection(p)}
+
+  ${buildFloorPlans(p)}
+
+  ${buildTaxSection(p)}
 
   ${REGION && REGION.cycle ? `
   <div class="rsection">
@@ -4479,6 +4947,29 @@ function initChartsWith(p) {
       }
     });
   }
+
+  // 전세가율 비교 (후보 단지) — SECTION 05B
+  const jc = document.getElementById('jeonseChart');
+  if (jc && typeof rentOf === 'function') {
+    const list = (properties || []).map(pp => ({ name: pp.name, r: rentOf(pp) })).filter(x => x.r && x.r.ratio != null);
+    if (list.length) {
+      const labels = list.map(x => x.name.replace(/\s*\(.*\)/, '').slice(0, 9));
+      const data = list.map(x => x.r.ratio);
+      const cols = list.map(x => x.name === p.name ? gold : '#3a4656');
+      chartInstances.jeonse = new Chart(jc, {
+        type: 'bar',
+        data: { labels, datasets: [{ label: '전세가율 (%)', data, backgroundColor: cols, borderWidth: 0, borderRadius: 3 }] },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => '전세가율 ' + c.parsed.y + '%' } } },
+          scales: {
+            y: { ticks: { color: darkText, callback: v => v + '%' }, grid: { color: darkGrid, drawBorder: false }, beginAtZero: true, suggestedMax: 100 },
+            x: { ticks: { color: darkText, font: { size: 9 } }, grid: { display: false } }
+          }
+        }
+      });
+    }
+  }
 }
 
 // ====================================
@@ -4492,6 +4983,7 @@ function renderProperty(idx) {
   destroyCharts();
   setTimeout(() => initChartsWith(p), 50);
   setTimeout(() => initReportMap(p), 60);
+  setTimeout(() => { if (typeof computeTax === 'function') computeTax(); }, 30);
 }
 
 // ====================================
